@@ -1546,6 +1546,66 @@ mvn package -DskipTests -Ptest_gen_jar
 - 未通过 Builder 设置的其他类型配置参数（如 fr_eq_conversion_method.properties）使用 jar 包中内置配置文件的默认内容
 - Builder 类的实例只能用于生成一个 JavaCG2Entry 对象，生成的 JavaCG2Entry 对象也只能执行一次 run 方法，假如需要再次执行，需要创建新的实例
 
+### 7.4.4. 通过 Builder 方式指定等值转换方法与合并文件开关
+
+在 7.4.3 的基础上，还可以通过以下 Builder 类指定 fr_eq_conversion_method.properties 与 \_javacg2\_merge\_file\_switch/ 目录下表达式配置文件对应的参数，通过 JavaCG2EntryBuilder 的 setFrEqConversionMethod 与 setMergeFileSwitch 方法接线
+
+涉及的 Builder 类如下
+
+|类名称|对应的配置文件|作用|
+|---|---|---|
+|com.adrninistrator.javacg2.builder.JavaCG2FrEqConversionMethodBuilder|\_javacg2\_config/fr\_eq\_conversion\_method.properties|指定方法返回值与被调用对象或参数认为是等值转换的方法|
+|com.adrninistrator.javacg2.builder.JavaCG2MergeFileSwitchBuilder|\_javacg2\_merge\_file\_switch/ 目录下的表达式配置文件|指定合并 jar、war 文件时跳过文件的忽略表达式|
+
+JavaCG2FrEqConversionMethodBuilder 用于指定配置参数的方法如下
+
+|方法名称|方法作用|
+|---|---|
+|addFrEqConversionMethod|添加等值转换方法，追加语义，保留 jar 包中内置配置文件的默认条目|
+|setFrEqConversionMethod|设置等值转换方法，整体覆盖语义，不保留 jar 包中内置配置文件的默认条目|
+
+JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下
+
+|方法名称|方法作用|
+|---|---|
+|ignoreJarInDirByFileName|按文件名忽略目录中的 jar 文件|
+|ignoreWarInDirByFileName|按文件名忽略目录中的 war 文件|
+|ignoreClassInDirByFileName|按文件名忽略目录中的 class 文件|
+|ignoreJarInJarWarByFileName|按文件名忽略 jar、war 文件中的 jar 文件|
+|ignoreClassInJarWarByFileName|按文件名忽略 jar、war 文件中的 class 文件|
+|ignoreJarInDirByFilePath|按文件路径忽略目录中的 jar 文件|
+|ignoreWarInDirByFilePath|按文件路径忽略目录中的 war 文件|
+|ignoreClassInDirByFilePath|按文件路径忽略目录中的 class 文件|
+|ignoreJarInJarWarByFilePath|按文件路径忽略 jar、war 文件中的 jar 文件|
+|ignoreClassInJarWarByFilePath|按文件路径忽略 jar、war 文件中的 class 文件|
+|ignoreOtherInDirByFileExt|按文件后缀忽略目录中的非 jar、war、class 文件|
+|ignoreOtherInJarWarByFileExt|按文件后缀忽略 jar、war 文件中的非 jar、war、class 文件|
+|setIgnoreJarWarByClassDirPrefixExpression|通过原始表达式文本设置通过 class 文件对应指定层级的目录路径判断是否跳过合并当前 jar、war 文件的表达式|
+
+参考示例方法 test.builder.TestFrEqConversionMethodBuilder:testAddKeepDefault 与 test.builder.TestMergeFileSwitchBuilder:testIgnoreNotMatch
+
+示例方法代码如下：
+
+```java
+        JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
+                .setFrEqConversionMethod(JavaCG2FrEqConversionMethodBuilder.builder()
+                        .addFrEqConversionMethod("test.callgraph.dto.TestDto1", "copy", 1))
+                .setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder.builder()
+                        .ignoreJarInDirByFileName("not_needed.jar")
+                        .ignoreOtherInDirByFileExt(".xml", ".properties"))
+                .addJarOrDir(JAR_TEST_JAR)
+                .build();
+        Assert.assertTrue(javaCG2Entry.run());
+```
+
+说明：
+
+- JavaCG2EntryBuilder 的 setFrEqConversionMethod 与 setMergeFileSwitch 方法均可不调用，对应参数使用 jar 包中内置配置文件的默认内容
+- JavaCG2FrEqConversionMethodBuilder 的 add 方法与 set 方法的效果互斥，以后调用的方法为准；add 方法为追加语义，保留内置默认条目，set 方法为整体覆盖语义，不保留内置默认条目
+- JavaCG2FrEqConversionMethodBuilder 支持以“完整类名、方法名、序号”的方式指定条目，也支持以完整格式“完整类名:方法名=序号”的字符串方式指定，方法名允许为空（例如 java.math.BigDecimal:=0）
+- JavaCG2MergeFileSwitchBuilder 的语义化方法内部会生成合法的 Aviator 表达式文本（字符串参数自动以单引号包裹）；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准
+- JavaCG2MergeFileSwitchBuilder 的 ignoreOtherInDirByFileExt 与 ignoreOtherInJarWarByFileExt 方法指定的文件后缀需要以“.”开头
+
 # 8. 人工增加方法调用关系
 
 对于某些方法调用关系，不存在对应的方法调用指令，需要人工增加，可参考 java-all-call-graph 项目相关说明

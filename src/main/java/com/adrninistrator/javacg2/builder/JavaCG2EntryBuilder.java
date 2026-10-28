@@ -18,6 +18,10 @@ import java.util.List;
  *             .setConfig(JavaCG2ConfigBuilder.builder()
  *                     .setOutputRootPath("D:/output")
  *                     .setParseMethodCallTypeValue(true))
+ *             .setFrEqConversionMethod(JavaCG2FrEqConversionMethodBuilder.builder()
+ *                     .addFrEqConversionMethod("test.callgraph.dto.Dto1", "copy", 1))
+ *             .setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder.builder()
+ *                     .ignoreJarInDirByFileName("not_needed.jar"))
  *             .addJarOrDir("D:/tmp/test.jar")
  *             .build();
  *     boolean success = javaCG2Entry.run();
@@ -31,6 +35,10 @@ public class JavaCG2EntryBuilder {
     private JavaCG2ConfigBuilder javaCG2ConfigBuilder;
 
     private JavaCG2JarDirBuilder javaCG2JarDirBuilder;
+
+    private JavaCG2FrEqConversionMethodBuilder javaCG2FrEqConversionMethodBuilder;
+
+    private JavaCG2MergeFileSwitchBuilder javaCG2MergeFileSwitchBuilder;
 
     public static JavaCG2EntryBuilder builder() {
         return new JavaCG2EntryBuilder();
@@ -89,6 +97,34 @@ public class JavaCG2EntryBuilder {
         return this;
     }
 
+    /**
+     * 设置fr_eq_conversion_method.properties对应的Builder，未设置时等值转换方法使用jar包中内置配置文件的默认内容
+     *
+     * @param javaCG2FrEqConversionMethodBuilder
+     * @return
+     */
+    public JavaCG2EntryBuilder setFrEqConversionMethod(JavaCG2FrEqConversionMethodBuilder javaCG2FrEqConversionMethodBuilder) {
+        if (javaCG2FrEqConversionMethodBuilder == null) {
+            throw new JavaCG2ConfigException("不允许传入null " + JavaCG2FrEqConversionMethodBuilder.class.getSimpleName());
+        }
+        this.javaCG2FrEqConversionMethodBuilder = javaCG2FrEqConversionMethodBuilder;
+        return this;
+    }
+
+    /**
+     * 设置_javacg2_merge_file_switch/目录下表达式配置文件对应的Builder，未设置时表达式使用jar包中内置配置文件的默认内容（默认为空白，即不生效）
+     *
+     * @param javaCG2MergeFileSwitchBuilder
+     * @return
+     */
+    public JavaCG2EntryBuilder setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder javaCG2MergeFileSwitchBuilder) {
+        if (javaCG2MergeFileSwitchBuilder == null) {
+            throw new JavaCG2ConfigException("不允许传入null " + JavaCG2MergeFileSwitchBuilder.class.getSimpleName());
+        }
+        this.javaCG2MergeFileSwitchBuilder = javaCG2MergeFileSwitchBuilder;
+        return this;
+    }
+
     private JavaCG2JarDirBuilder genJarDirBuilder() {
         if (javaCG2JarDirBuilder == null) {
             javaCG2JarDirBuilder = JavaCG2JarDirBuilder.builder();
@@ -122,6 +158,15 @@ public class JavaCG2EntryBuilder {
             javaCG2ConfigureWrapper = JavaCG2ConfigBuilder.builder().build();
         } else {
             javaCG2ConfigureWrapper = javaCG2ConfigBuilder.build();
+        }
+
+        if (javaCG2FrEqConversionMethodBuilder != null) {
+            // 追加语义时，需要在生成的wrapper对象上执行先读取jar包中内置默认条目再合并的逻辑
+            javaCG2FrEqConversionMethodBuilder.applyTo(javaCG2ConfigureWrapper);
+        }
+
+        if (javaCG2MergeFileSwitchBuilder != null) {
+            javaCG2MergeFileSwitchBuilder.applyTo(javaCG2ConfigureWrapper);
         }
 
         javaCG2ConfigureWrapper.setOtherConfigList(JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR, jarOrDirPathList);

@@ -1671,6 +1671,49 @@ JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下
 - 语义化方法未覆盖的用法（如 string.containsIC 等函数、方法参数数量等）可通过 setIgnoreClassExpression、setIgnoreMethodExpression、setIgnoreMethodCallExpression、setIgnoreTypeValueCallerExpression 方法使用原始表达式文本指定
 - 表达式允许使用的变量及示例可参考 jar 包中 \_el\_example/ 目录下的说明文档
 
+### 7.4.6. 通过 Builder 方式指定处理 XML 文件中 Spring Bean 的忽略表达式
+
+在 7.4.3 的基础上，还可以通过以下 Builder 类指定 \_javacg2\_handle\_xml\_switch/ 目录下表达式配置文件对应的参数，通过 JavaCG2EntryBuilder 的 setXmlSwitch 方法接线
+
+涉及的 Builder 类如下
+
+|类名称|对应的配置文件|作用|
+|---|---|---|
+|com.adrninistrator.javacg2.builder.JavaCG2XmlSwitchBuilder|\_javacg2\_handle\_xml\_switch/handle\_ignore\_spring\_bean\_in\_xml.av|指定处理 XML 文件中定义的 Spring Bean 时跳过 Bean 的忽略表达式|
+
+JavaCG2XmlSwitchBuilder 用于指定配置参数的方法如下
+
+|方法名称|方法作用|
+|---|---|
+|ignoreSpringBeanByBeanName|按 Spring Bean 名称跳过处理 XML 文件中定义的 Spring Bean|
+|ignoreSpringBeanByClassName|按 Spring Bean 类名跳过处理 XML 文件中定义的 Spring Bean|
+|ignoreSpringBeanByProfile|按 Spring Bean profile 跳过处理 XML 文件中定义的 Spring Bean|
+|ignoreSpringBeanByProfilePrefix|按 Spring Bean profile 前缀跳过处理 XML 文件中定义的 Spring Bean|
+|setIgnoreSpringBeanInXmlExpression|通过原始表达式文本设置跳过处理 XML 文件中定义的 Spring Bean 的表达式|
+
+参考示例方法 test.builder.TestXmlSwitchBuilder:testRunNotMatch
+
+示例方法代码如下：
+
+```java
+        JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
+                .setXmlSwitch(JavaCG2XmlSwitchBuilder.builder()
+                        .ignoreSpringBeanByBeanName("not_needed_bean")
+                        .ignoreSpringBeanByProfile("dev"))
+                .addJarOrDir(JAR_TEST_JAR)
+                .build();
+        Assert.assertTrue(javaCG2Entry.run());
+```
+
+说明：
+
+- JavaCG2EntryBuilder 的 setXmlSwitch 方法可不调用，对应参数使用 jar 包中内置配置文件的默认内容（内置默认为空白，即不生效）
+- 该开关仅当待分析工程通过 XML 文件定义 Spring Bean 时相关，用于在处理 XML 文件中定义的 Spring Bean 时按表达式跳过
+- JavaCG2XmlSwitchBuilder 的语义化方法内部会生成合法的 Aviator 表达式文本（字符串参数自动以单引号包裹，例如 ignoreSpringBeanByBeanName("testService1") 生成 string.equalsAny(bean\_name,'testService1')）；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准
+- 语义化方法未覆盖的用法（如 string.containsIC 等函数）可通过 setIgnoreSpringBeanInXmlExpression 方法使用原始表达式文本指定
+- Spring Bean 的 profile 可能为空字符串，可能包含一级或多级，使用半角逗号拼接
+- 表达式允许使用的变量及示例可参考 jar 包中 \_el\_example/ 目录下的说明文档
+
 # 8. 人工增加方法调用关系
 
 对于某些方法调用关系，不存在对应的方法调用指令，需要人工增加，可参考 java-all-call-graph 项目相关说明

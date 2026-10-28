@@ -504,51 +504,62 @@ public abstract class BaseConfigureWrapper {
 
     /**
      * 设置类似 StringUtils.xxxAny 功能的字符串比较表达式
+     * 生成的表达式文本不以分号结尾，字符串参数自动以单引号包裹，例如 string.equalsAny(file_name,'a','b')
      *
      * @param elConfig              表达式枚举
      * @param stringAnyFunctionEnum 字符串比较方式枚举
      * @param elVariable            表达式变量
-     * @param args                  需要比较的字符串值，一个或多个
+     * @param args                  需要比较的字符串值，一个或多个，不允许为null、空白或包含单引号，否则抛出JavaCG2ConfigException
      */
     public void setElConfigStringAny(ElConfigInterface elConfig, ElStringAnyFunctionEnum stringAnyFunctionEnum, ElAllowedVariableInterface elVariable, String... args) {
         if (ArrayUtils.isEmpty(args)) {
-            throw new JavaCG2RuntimeException("未指定需要比较的字符串值");
+            throw new JavaCG2ConfigException("未指定需要比较的字符串值");
         }
         // 检查表达式变量是否允许使用
         checkElAllowedVariable(elConfig, elVariable);
 
-        StringBuilder elText = new StringBuilder();
-        elText.append(stringAnyFunctionEnum.getName()).append("(").append(elVariable.getVariableName()).append(",");
+        String[] quotedArgs = new String[args.length];
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
-            if (arg == null) {
-                throw new JavaCG2RuntimeException("需要比较的字符串值不允许为空");
+            if (StringUtils.isBlank(arg)) {
+                String errorMsg = "需要比较的字符串值不允许为空 " + elConfig.getKey();
+                logger.error(errorMsg);
+                throw new JavaCG2ConfigException(errorMsg);
             }
-            if (i > 0) {
-                elText.append(",");
+            if (arg.contains("'")) {
+                String errorMsg = "需要比较的字符串值不允许包含单引号 " + elConfig.getKey() + " " + arg;
+                logger.error(errorMsg);
+                throw new JavaCG2ConfigException(errorMsg);
             }
-            elText.append(arg);
+            // 自动为字符串参数添加单引号，保证生成的表达式是合法的Aviator表达式
+            quotedArgs[i] = "'" + arg + "'";
         }
-        elText.append(");");
-        setElConfigText(elConfig, elText.toString());
+        String elText = stringAnyFunctionEnum.getName() + "(" + elVariable.getVariableName() + "," + StringUtils.join(quotedArgs, ",") + ")";
+        setElConfigText(elConfig, elText);
     }
 
     /**
      * 设置比较字符串的表达式
+     * 生成的表达式文本不以分号结尾，字符串参数自动以单引号包裹，例如 string.equalsIC(class_name,'a.b.C')
      *
      * @param elConfig                    表达式枚举
      * @param elStringFunctionTwoArgsEnum 字符串比较方式枚举
      * @param elVariable                  表达式变量
-     * @param arg                         需要比较的字符串值
+     * @param arg                         需要比较的字符串值，不允许为null、空白或包含单引号，否则抛出JavaCG2ConfigException
      */
     public void setElConfigStringAny(ElConfigInterface elConfig, ElStringFunctionTwoArgsEnum elStringFunctionTwoArgsEnum, ElAllowedVariableInterface elVariable, String arg) {
         if (StringUtils.isBlank(arg)) {
-            throw new JavaCG2RuntimeException("未指定需要比较的字符串值");
+            throw new JavaCG2ConfigException("未指定需要比较的字符串值");
+        }
+        if (arg.contains("'")) {
+            String errorMsg = "需要比较的字符串值不允许包含单引号 " + elConfig.getKey() + " " + arg;
+            logger.error(errorMsg);
+            throw new JavaCG2ConfigException(errorMsg);
         }
         // 检查表达式变量是否允许使用
         checkElAllowedVariable(elConfig, elVariable);
 
-        String elText = elStringFunctionTwoArgsEnum.getName() + "(" + elVariable.getVariableName() + "," + arg + ");";
+        String elText = elStringFunctionTwoArgsEnum.getName() + "(" + elVariable.getVariableName() + ",'" + arg + "')";
         setElConfigText(elConfig, elText);
     }
 

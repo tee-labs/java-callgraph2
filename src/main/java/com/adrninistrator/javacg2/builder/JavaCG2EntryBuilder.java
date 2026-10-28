@@ -31,6 +31,8 @@ import java.util.List;
  *                     .ignoreJarInDirByFileName("not_needed.jar"))
  *             .setParseSwitch(JavaCG2ParseSwitchBuilder.builder()
  *                     .ignoreClassByPackageName("com.business.not_needed"))
+ *             .setXmlSwitch(JavaCG2XmlSwitchBuilder.builder()
+ *                     .ignoreSpringBeanByBeanName("not_needed_bean"))
  *             .addJarOrDir("D:/tmp/test.jar")
  *             .build();
  *     boolean success = javaCG2Entry.run();
@@ -53,6 +55,8 @@ public class JavaCG2EntryBuilder {
     private JavaCG2MergeFileSwitchBuilder javaCG2MergeFileSwitchBuilder;
 
     private JavaCG2ParseSwitchBuilder javaCG2ParseSwitchBuilder;
+
+    private JavaCG2XmlSwitchBuilder javaCG2XmlSwitchBuilder;
 
     public static JavaCG2EntryBuilder builder() {
         return new JavaCG2EntryBuilder();
@@ -154,6 +158,20 @@ public class JavaCG2EntryBuilder {
         return this;
     }
 
+    /**
+     * 设置_javacg2_handle_xml_switch/目录下表达式配置文件对应的Builder，未设置时表达式使用jar包中内置配置文件的默认内容（默认为空白，即不生效）
+     *
+     * @param javaCG2XmlSwitchBuilder
+     * @return
+     */
+    public JavaCG2EntryBuilder setXmlSwitch(JavaCG2XmlSwitchBuilder javaCG2XmlSwitchBuilder) {
+        if (javaCG2XmlSwitchBuilder == null) {
+            throw new JavaCG2ConfigException("不允许传入null " + JavaCG2XmlSwitchBuilder.class.getSimpleName());
+        }
+        this.javaCG2XmlSwitchBuilder = javaCG2XmlSwitchBuilder;
+        return this;
+    }
+
     private JavaCG2JarDirBuilder genJarDirBuilder() {
         if (javaCG2JarDirBuilder == null) {
             javaCG2JarDirBuilder = JavaCG2JarDirBuilder.builder();
@@ -202,6 +220,10 @@ public class JavaCG2EntryBuilder {
             javaCG2ParseSwitchBuilder.applyTo(javaCG2ConfigureWrapper);
         }
 
+        if (javaCG2XmlSwitchBuilder != null) {
+            javaCG2XmlSwitchBuilder.applyTo(javaCG2ConfigureWrapper);
+        }
+
         // 对未被任何Builder设置过的表达式配置，使用jar包中内置配置文件的默认内容，保持与通过配置文件指定参数时的行为一致
         applyElDefaultText(javaCG2ConfigureWrapper);
 
@@ -236,6 +258,9 @@ public class JavaCG2EntryBuilder {
         if (javaCG2ParseSwitchBuilder != null && javaCG2ParseSwitchBuilder.getSetElConfigSet().contains(elConfig)) {
             return true;
         }
-        return javaCG2MergeFileSwitchBuilder != null && javaCG2MergeFileSwitchBuilder.getSetElConfigSet().contains(elConfig);
+        if (javaCG2MergeFileSwitchBuilder != null && javaCG2MergeFileSwitchBuilder.getSetElConfigSet().contains(elConfig)) {
+            return true;
+        }
+        return javaCG2XmlSwitchBuilder != null && javaCG2XmlSwitchBuilder.getSetElConfigSet().contains(elConfig);
     }
 }

@@ -124,8 +124,9 @@ class ElSwitchConfigHolder {
         private void applyTo(JavaCG2ConfigureWrapper javaCG2ConfigureWrapper) {
             if (stringAnyFunctionEnum != null) {
                 /*
-                    不使用BaseConfigureWrapper.setElConfigStringAny方法：其生成的表达式文本以分号结尾，
-                    Aviator执行带分号的表达式时返回null而非Boolean，会导致表达式检查失败
+                    Builder不通过BaseConfigureWrapper.setElConfigStringAny方法生成表达式文本：
+                    语义化方法需要在设置参数时完成参数预校验（空白、单引号检查）并输出统一的日志，
+                    因此在putStringAny阶段即完成表达式文本的拼接，应用时直接通过setElConfigText方法设置
                  */
                 javaCG2ConfigureWrapper.setElConfigText(elConfig, genElText());
             } else {

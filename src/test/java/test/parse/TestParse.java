@@ -17,7 +17,7 @@ public class TestParse extends TestBase {
 
     /*
         正常解析
-        需要先在当前项目执行 gradlew test_gen_jar 命令生成对应jar文件
+        需要先在当前项目执行 mvn package -DskipTests -Ptest_gen_jar 命令生成对应jar文件
      */
     @Test
     public void testParseJavaCG2TestLib() {
@@ -64,7 +64,7 @@ public class TestParse extends TestBase {
     }
 
     /*
-        需要先执行 gradlew gen_run_jar gen_jar_in_jar 命令生成对应jar文件
+        需要先执行 mvn package -DskipTests -Pgen_run_jar,gen_jar_in_jar 命令生成对应jar文件
      */
     @Test
     public void testJarInJar() {

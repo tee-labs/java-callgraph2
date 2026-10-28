@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
  * 说明：skip 优化对 栈/本地变量/非静态字段/静态字段 四个维度的逻辑一致且相互独立，
  * 对栈维度证明等价即等价于对每个维度证明等价，进而等价于对 checkExistSnapshotLooseMode 整体证明。
  *
- * 运行：./gradlew test --tests "test.frame.TestCompareLooseModeSkip"
+ * 运行：mvn test -Dtest=test.frame.TestCompareLooseModeSkip
  */
 public class TestCompareLooseModeSkip {
 

@@ -1,10 +1,10 @@
+target/
 build/
 bin/
 out/
 .project
 .settings/
 .idea/
-.gradle/
 *.iml
 .classpath
 jar_output_dir/

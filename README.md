@@ -1212,7 +1212,7 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 
 需要使用 JDK8 及以上版本
 
-若需要通过 IDE 打开项目源码运行，建议安装 Gradle 管理依赖库
+若需要通过 IDE 打开项目源码运行，建议安装 Maven 管理依赖库
 
 ## 7.2. 配置参数
 
@@ -1329,7 +1329,7 @@ com.adrninistrator.javacg2.entry.JavaCG2Entry
 
 ### 7.3.4. 通过 IDE 打开项目源码运行
 
-通过 IDE 打开当前项目，由 Gradle 管理依赖库，可使用源码运行
+通过 IDE 打开当前项目，由 Maven 管理依赖库，可使用源码运行
 
 ### 7.3.5. 在其他项目中引用当前项目的库运行
 
@@ -1372,7 +1372,7 @@ implementation("com.github.adrninistrator:java-callgraph2:{版本号}")
 在项目根目录执行以下命令
 
 ```
-gradlew gen_run_jar
+mvn package -Pgen_run_jar -DskipTests
 ```
 
 #### 7.3.6.2. 生成的文件
@@ -1500,15 +1500,15 @@ gradlew gen_run_jar
 
 ```java
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
-        javaCG2ConfigureWrapper.setOtherConfigList(JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR, "build/test.jar");
+        javaCG2ConfigureWrapper.setOtherConfigList(JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR, "target/test.jar");
         JavaCG2Entry javaCG2Entry = new JavaCG2Entry(javaCG2ConfigureWrapper);
         Assert.assertTrue(javaCG2Entry.run());
 ```
 
-在项目根目录执行以下命令，可生成以上用于解析的示例 jar 文件 build/test.jar
+在项目根目录执行以下命令，可生成以上用于解析的示例 jar 文件 target/test.jar
 
 ```shell
-gradlew test_gen_jar
+mvn package -DskipTests -Ptest_gen_jar
 ```
 
 # 8. 人工增加方法调用关系

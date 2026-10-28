@@ -27,10 +27,10 @@ public abstract class TestBase {
     private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
 
     public static final String JAR_OUTPUT_DIR = "jar_output_dir";
-    public static final String JAR_OUTPUT_JAR = "build/jar_output.jar";
-    public static final String JAR_OUTPUT_WAR = "build/jar_output.war";
+    public static final String JAR_OUTPUT_JAR = "target/jar_output.jar";
+    public static final String JAR_OUTPUT_WAR = "target/jar_output.war";
     public static final String OUT_TEST_DIR = "out/test";
-    public static final String JAR_TEST_JAR = "build/test.jar";
+    public static final String JAR_TEST_JAR = "target/test.jar";
 
     /**
      * 获取 java-all-call-graph 项目中的 test.jar 文件路径

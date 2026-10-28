@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.adrninistrator</groupId>
+    <artifactId>java-callgraph2</artifactId>
+    <version>4.1.0</version>
+    <packaging>jar</packaging>
+
+    <name>java-callgraph2</name>
+    <description>Programs for producing static call graphs for Java programs</description>
+    <url>https://github.com/Adrninistrator/java-callgraph2</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>Adrninistrator</id>
+            <name>zhengyiee</name>
+            <email>zhengyiee@qq.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/Adrninistrator/java-callgraph2.git</connection>
+        <developerConnection>scm:git:https://github.com/Adrninistrator/java-callgraph2.git</developerConnection>
+        <url>https://github.com/Adrninistrator/java-callgraph2</url>
+    </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <!-- 可直接执行jar包及依赖保存目录 -->
+        <jar.output.dir>${project.basedir}/jar_output_dir</jar.output.dir>
+    </properties>
+
+    <dependencies>
+        <!-- Apache Ant -->
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.10.15</version>
+        </dependency>
+
+        <!-- Apache Commons -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.27.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.15.1</version>
+        </dependency>
+
+        <!-- Aviator -->
+        <dependency>
+            <groupId>com.googlecode.aviator</groupId>
+            <artifactId>aviator</artifactId>
+            <version>5.4.3</version>
+        </dependency>
+
+        <!-- 6.7.0版本LDC.getValue()会报错，不使用 -->
+        <dependency>
+            <groupId>org.apache.bcel</groupId>
+            <artifactId>bcel</artifactId>
+            <version>6.10.0</version>
+        </dependency>
+
+        <!-- zip4j -->
+        <dependency>
+            <groupId>net.lingala.zip4j</groupId>
+            <artifactId>zip4j</artifactId>
+            <version>2.11.5</version>
+        </dependency>
+
+        <!-- slf4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+
+        <!-- 测试相关依赖 -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.20.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.20.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.20.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>3.3.7</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.76</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        <arg>-Xlint:unchecked</arg>
+                        <arg>-Xlint:deprecation</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/runlocal/**</exclude>
+                    </excludes>
+                    <!-- 等价于Gradle的minHeapSize/maxHeapSize/forkEvery=1及Metaspace参数 -->
+                    <argLine>-Xms256m -Xmx1g -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=256m</argLine>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${jar.output.dir}</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.6.3</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                        <charset>UTF-8</charset>
+                        <docencoding>UTF-8</docencoding>
+                        <!-- 关闭doclint检查，避免@date、@description等自定义标签导致构建失败 -->
+                        <doclint>none</doclint>
+                        <additionalJOption>-quiet</additionalJOption>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.2.4</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <distributionManagement>
+        <repository>
+            <id>ossrh</id>
+            <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ossrh-snapshots</id>
+            <url>https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <profiles>
+        <!--
+            生成可以直接执行的jar包，并拷贝相关文件，等价于原Gradle的gen_run_jar任务
+            mvn package -Pgen_run_jar -DskipTests
+        -->
+        <profile>
+            <id>gen_run_jar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-run-jar-files</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- 只删除lib以外内容，避免与依赖拷贝任务产生执行顺序问题 -->
+                                        <delete dir="${jar.output.dir}" excludes="lib/**" quiet="true"/>
+                                        <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                              tofile="${jar.output.dir}/jar/run_javacg2.jar"/>
+                                        <!-- 拷贝配置文件目录 -->
+                                        <copy todir="${jar.output.dir}">
+                                            <fileset dir="${project.basedir}/src/main/resources">
+                                                <include name="_javacg2_*/**"/>
+                                                <include name="_el_*/**"/>
+                                            </fileset>
+                                        </copy>
+                                        <copy file="${project.basedir}/src/test/resources/log4j2.xml"
+                                              tofile="${jar.output.dir}/config/log4j2_console.xml"/>
+                                        <copy file="${project.basedir}/src/test/resources/log4j2_file.xml"
+                                              tofile="${jar.output.dir}/config/log4j2.xml"/>
+                                        <copy todir="${jar.output.dir}">
+                                            <fileset dir="${project.basedir}/bat">
+                                                <include name="*.bat"/>
+                                            </fileset>
+                                            <fileset dir="${project.basedir}/shell">
+                                                <include name="*.sh"/>
+                                            </fileset>
+                                        </copy>
+                                        <!-- 拷贝runtime依赖（仅jar文件） -->
+                                        <mkdir dir="${jar.output.dir}/lib"/>
+                                        <copy todir="${jar.output.dir}/lib" flatten="true">
+                                            <restrict>
+                                                <path refid="maven.runtime.classpath"/>
+                                                <name name="*.jar"/>
+                                            </restrict>
+                                        </copy>
+                                        <!-- 拷贝日志相关依赖：log4j、disruptor -->
+                                        <copy todir="${jar.output.dir}/lib" flatten="true">
+                                            <restrict>
+                                                <path refid="maven.test.classpath"/>
+                                                <name name="log4j-*.jar"/>
+                                            </restrict>
+                                        </copy>
+                                        <copy todir="${jar.output.dir}/lib" flatten="true">
+                                            <restrict>
+                                                <path refid="maven.test.classpath"/>
+                                                <name name="disruptor*.jar"/>
+                                            </restrict>
+                                        </copy>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+            将test包测试代码生成jar包 target/test.jar，等价于原Gradle的test_gen_jar任务
+            mvn package -DskipTests -Ptest_gen_jar
+        -->
+        <profile>
+            <id>test_gen_jar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>package-test-jar</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <jar destfile="${project.build.directory}/test.jar">
+                                            <fileset dir="${project.build.testOutputDirectory}">
+                                                <include name="test/**"/>
+                                            </fileset>
+                                        </jar>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+            生成包含jar文件的jar文件 target/jar_output.jar，等价于原Gradle的gen_jar_in_jar任务
+            需要先执行（或同时执行）gen_run_jar
+            mvn package -DskipTests -Pgen_run_jar,gen_jar_in_jar
+        -->
+        <profile>
+            <id>gen_jar_in_jar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>package-jar-in-jar</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="${jar.output.dir}/lib"/>
+                                        <!-- 拷贝bcprov依赖 -->
+                                        <copy todir="${jar.output.dir}/lib" flatten="true">
+                                            <restrict>
+                                                <path refid="maven.test.classpath"/>
+                                                <name name="bcprov*.jar"/>
+                                            </restrict>
+                                        </copy>
+                                        <mkdir dir="${jar.output.dir}/jar"/>
+                                        <jar destfile="${project.build.directory}/jar_output.jar">
+                                            <fileset dir="${project.build.testOutputDirectory}">
+                                                <include name="test/**"/>
+                                            </fileset>
+                                            <zipfileset dir="${jar.output.dir}/jar" prefix="jar"/>
+                                            <zipfileset dir="${jar.output.dir}/lib" prefix="lib"/>
+                                        </jar>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+            生成包含jar文件的war文件 target/jar_output.war，等价于原Gradle的gen_jar_in_war任务
+            需要先执行（或同时执行）gen_run_jar
+            mvn package -DskipTests -Pgen_run_jar,gen_jar_in_war
+        -->
+        <profile>
+            <id>gen_jar_in_war</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>package-jar-in-war</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <zip destfile="${project.build.directory}/jar_output.war">
+                                            <zipfileset dir="${project.build.testOutputDirectory}"
+                                                        includes="test/**"
+                                                        prefix="WEB-INF/classes"/>
+                                            <zipfileset dir="${jar.output.dir}/lib" prefix="WEB-INF/lib"/>
+                                        </zip>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- 发布到Maven Central时使用：生成sources/javadoc包并签名，等价于原publish.gradle
+             执行发布前需要在~/.m2/settings.xml中配置id为ossrh、ossrh-snapshots的server的用户名密码
+             mvn clean deploy -Prelease
+        -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

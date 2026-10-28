@@ -371,9 +371,9 @@ JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR
 
 (格式) 路径中的分隔符支持使用/或\，目录最后指定或不指定分隔符均可
 
-(示例) build/
+(示例) target/
 
-(示例) build/test.jar
+(示例) target/test.jar
 
 (示例) D:/test/build/test.jar
 
@@ -382,7 +382,7 @@ JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR
 - 当前使用参数值
 
 ```
-build/test.jar
+target/test.jar
 ```
 
 # 5. 表达式配置参数

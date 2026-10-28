@@ -1204,7 +1204,7 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 
 ### 6.3.4. multi-release JAR 文件处理
 
-假如需要解析的 jar 文件包含 multi-release JAR，则需要在_javacg2_config/config.properties 配置文件中指定参数 jdk.runtime.major.version，在合并 multi-release JAR 时使用指定版本的 class 文件，即“META-INF/versions/{JDK 主版本号}”目录中的 class 文件
+假如需要解析的 jar 文件包含 multi-release JAR，则需要指定配置参数 jdk.runtime.major.version（可通过 Builder 方式指定，或通过 JavaCG2ConfigWriter 生成配置文件后指定），在合并 multi-release JAR 时使用指定版本的 class 文件，即“META-INF/versions/{JDK 主版本号}”目录中的 class 文件
 
 # 7. 使用说明
 
@@ -1215,6 +1215,14 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 若需要通过 IDE 打开项目源码运行，建议安装 Maven 管理依赖库
 
 ## 7.2. 配置参数
+
+说明：配置文件已不再内置于发布物中（项目 src/main/resources 目录及 jar 包中均不再提供），所有配置参数的默认值由代码中的枚举提供（JavaCG2ConfigKeyEnum、JavaCG2OtherConfigFileUseListEnum、JavaCG2OtherConfigFileUseSetEnum、JavaCG2ElConfigEnum）
+
+将 java-callgraph2 作为库集成时，推荐通过 Builder 方式指定配置参数（参考 7.4.3 及之后小节）
+
+假如确需使用配置文件，可通过 com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter 生成全套默认配置文件后按需修改
+
+以下小节中对各配置参数及其对应配置文件的说明，仍是参数语义的权威描述
 
 ### 7.2.1. 支持的参数配置方式
 
@@ -1267,7 +1275,7 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 
 ### 7.2.4. 重要配置参数
 
-java-callgraph2 需要使用的重要配置参数是配置文件 _javacg2_config/jar_dir.properties
+java-callgraph2 需要使用的重要配置参数对应配置文件 _javacg2_config/jar_dir.properties（该文件已不再内置，可通过 Builder 方式的 JavaCG2JarDirBuilder 指定对应参数，或通过 JavaCG2ConfigWriter 生成）
 
 用于指定需要解析的 jar、war、jmod 文件路径，或保存 class、jar、war、jmod 文件的目录路径
 
@@ -1305,7 +1313,7 @@ java-callgraph2 需要使用的重要配置参数是配置文件 _javacg2_config
 
 ### 7.3.1. 项目入口类
 
-执行以下入口类可对指定的 jar 文件等进行静态分析
+在代码中使用以下入口类可对指定的 jar 文件等进行静态分析
 
 ```
 com.adrninistrator.javacg2.entry.JavaCG2Entry
@@ -1357,9 +1365,9 @@ implementation("com.github.adrninistrator:java-callgraph2:{版本号}")
 
 #### 7.3.5.2. 通过配置文件指定参数运行
 
-假如需要通过配置文件指定参数，则需要将 java-callgraph2 项目的 src/main/resources 目录中以`_javacg2_`开头的目录复制到其他项目的 src/main/resources 或 src/test/resources 目录
+java-callgraph2 的配置文件已不再内置，假如需要通过配置文件指定参数，可通过 com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter 生成全套默认配置文件，再指定配置文件根目录路径（参考 7.4.1）
 
-修改配置文件相关参数后，可运行入口类
+修改配置文件相关参数后，可运行入口类；也可不使用配置文件，直接通过 Builder 方式指定参数（参考 7.4.3）
 
 #### 7.3.5.3. 通过代码指定参数运行
 
@@ -1381,18 +1389,12 @@ mvn package -Pgen_run_jar -DskipTests
 
 |目录、文件名|作用|
 |---|---|
-|_el_example|表达式相关的示例与说明文件|
-|_javacg2_xxx|当前项目使用的配置文件保存目录|
-|config|log4j2 配置文件保存目录|
-|jar|当前项目编译生成的 jar 文件保存目录|
+|jar|当前项目编译生成的 jar 文件（run_javacg2.jar）保存目录|
 |lib|当前项目的依赖库 jar 文件|
-|log_javacg2|保存日志文件目录，运行后会生成|
-|run.bat|用于执行当前项目解析 Java 代码的脚本|
-|run.sh|用于执行当前项目解析 Java 代码的脚本|
 
-#### 7.3.6.3. 通过配置文件指定参数运行
+#### 7.3.6.3. 构建产物的使用方式
 
-对配置文件参数进行配置后，可执行 run.bat 或 run.sh 脚本，调用项目的入口类，解析指定的 Java 代码
+命令行入口与 run.bat、run.sh 脚本已移除，构建生成的 jar/run_javacg2.jar 及 lib 目录中的依赖 jar 可作为库使用：将其加入 classpath，在代码中通过 Builder 方式或入口类 JavaCG2Entry 执行解析（参考 7.4）
 
 ## 7.4. 配置参数指定方式
 
@@ -1400,7 +1402,7 @@ mvn package -Pgen_run_jar -DskipTests
 
 #### 7.4.1.1. 配置文件信息
 
-配置文件及对应的目录信息如下，可从项目目录`src/main/resources`复制
+配置文件及对应的目录信息如下。以下目录与文件均已不再内置，不会随发布物提供；如确需使用，可通过 com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter 生成全套默认配置文件后按需修改（各目录与文件的作用说明不变）
 
 |目录或文件类型|目录或文件名称|作用|
 |---|---|---|
@@ -1430,17 +1432,15 @@ mvn package -Pgen_run_jar -DskipTests
 
 #### 7.4.1.2. 使用默认配置文件根目录路径
 
-创建入口类实例时，使用无参数构造函数，配置文件根目录路径使用默认路径，会尝试从当前目录或 classpath 对应目录读取配置文件
-
-可以直接执行入口类
-
-也可以参考经过封装的类 test.entry.TestJavaCG2Entry
+创建 JavaCG2ConfigureWrapper 实例时，使用参数 onlyUseConfigInJavaCode 为 false 的构造函数且不指定配置文件根目录路径，则配置文件根目录路径使用默认路径，会尝试从当前目录或 classpath 对应目录读取配置文件，配置文件不存在时使用代码中的默认值
 
 ```java
     public static void main(String[] args) {
-        new JavaCG2Entry().run();
+        new JavaCG2Entry(new JavaCG2ConfigureWrapper(false)).run();
     }
 ```
+
+将 java-callgraph2 作为库集成时，推荐通过 Builder 方式指定配置参数（参考 7.4.3），可参考经过封装的类 test.entry.TestJavaCG2Entry
 
 #### 7.4.1.3. 通过 JVM 参数指定配置文件根目录路径
 
@@ -1457,23 +1457,22 @@ mvn package -Pgen_run_jar -DskipTests
 ```java
     public static void main(String[] args) {
         System.setProperty(JavaCG2Constants.JVM_PROP_KEY_INPUT_ROOT_PATH, ".");
-        new JavaCG2Entry().run();
+        new JavaCG2Entry(new JavaCG2ConfigureWrapper(false)).run();
     }
 ```
 
 #### 7.4.1.4. 通过代码指定配置文件根目录路径
 
-创建入口类实例时，使用有参数构造函数，JavaCG2ConfigureWrapper 实例创建时通过 inputRootPath 参数指定配置文件根目录路径
-
-可参考 test.entry.TestJavaCG2EntryConfigPath
+创建入口类实例时，使用有参数构造函数，JavaCG2ConfigureWrapper 实例创建时通过构造函数参数 inputRootPath 指定配置文件根目录路径
 
 ```java
     public static void main(String[] args) {
-        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
-        javaCG2ConfigureWrapper.setInputRootPath("src/main/resources");
+        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper(false, "src/main/resources");
         new JavaCG2Entry(javaCG2ConfigureWrapper).run();
     }
 ```
+
+由于配置文件已不再随项目提供，推荐通过 Builder 方式在代码中指定配置参数（参考 7.4.3），可参考 test.entry.TestJavaCG2EntryConfigPath
 
 ### 7.4.2. 通过代码指定配置参数
 

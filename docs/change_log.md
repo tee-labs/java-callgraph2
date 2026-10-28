@@ -917,3 +917,17 @@ JdbcTemplate.update(String sql, Object... args)
 - spring_di_field
 
 Spring 依赖注入字段信息
+
+## 1.35. (4.2.0)
+
+### 1.35.1. 配置文件不再内置，默认值由代码枚举提供
+
+配置文件已不再内置于发布物中（项目 src/main/resources 目录及 jar 包中均不再提供），所有配置参数的默认值由代码中的枚举提供（JavaCG2ConfigKeyEnum、JavaCG2OtherConfigFileUseListEnum、JavaCG2OtherConfigFileUseSetEnum、JavaCG2ElConfigEnum）
+
+### 1.35.2. 移除命令行入口及 run.bat、run.sh 脚本
+
+java-callgraph2 仅作为库使用，在代码中通过入口类 JavaCG2Entry 或 Builder 方式集成（可参考 README 7.4.3 及之后小节）
+
+### 1.35.3. 支持 JavaCG2ConfigWriter 生成配置文件
+
+假如确需使用配置文件，可通过 com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter 生成全套默认配置文件，按需修改后使用

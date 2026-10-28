@@ -1511,6 +1511,41 @@ mvn package -Pgen_run_jar -DskipTests
 mvn package -DskipTests -Ptest_gen_jar
 ```
 
+### 7.4.3. 通过 Builder 方式指定配置参数
+
+在代码中使用 Builder 类可以以链式方式指定配置参数，不需要依赖磁盘上的配置文件，适合将 java-callgraph2 作为库集成到其他项目中使用的场景
+
+涉及的 Builder 类如下
+
+|类名称|对应的配置文件|作用|
+|---|---|---|
+|com.adrninistrator.javacg2.builder.JavaCG2ConfigBuilder|_javacg2_config/config.properties|设置主要配置参数，未设置的参数使用默认值|
+|com.adrninistrator.javacg2.builder.JavaCG2JarDirBuilder|_javacg2_config/jar_dir.properties|指定需要解析的 jar、war、jmod 文件路径，或保存 class、jar、war、jmod 文件的目录路径|
+|com.adrninistrator.javacg2.builder.JavaCG2EntryBuilder|-|生成入口类 JavaCG2Entry 实例|
+
+参考示例方法 test.builder.TestEntryBuilder:testEntryBuilder
+
+示例方法代码如下：
+
+```java
+        JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
+                .setConfig(JavaCG2ConfigBuilder.builder()
+                        .setOutputRootPath(OUT_TEST_DIR)
+                        .setOutputFileExt(".md")
+                        .setParseMethodCallTypeValue(true)
+                        .setHandleCalleeNewRawActual(JavaCG2CalleeRawActualEnum.CRAE_RAW_ACTUAL))
+                .addJarOrDir(JAR_TEST_JAR)
+                .build();
+        Assert.assertTrue(javaCG2Entry.run());
+```
+
+说明：
+
+- JavaCG2EntryBuilder 的 setConfig 方法可不调用，主要配置参数使用默认值
+- 需要通过 JavaCG2EntryBuilder 的 addJarOrDir 或 setJarDir 方法指定需要解析的文件、目录，指定的路径会在 build 方法中检查是否存在
+- 未通过 Builder 设置的其他类型配置参数（如 fr_eq_conversion_method.properties）使用 jar 包中内置配置文件的默认内容
+- Builder 类的实例只能用于生成一个 JavaCG2Entry 对象，生成的 JavaCG2Entry 对象也只能执行一次 run 方法，假如需要再次执行，需要创建新的实例
+
 # 8. 人工增加方法调用关系
 
 对于某些方法调用关系，不存在对应的方法调用指令，需要人工增加，可参考 java-all-call-graph 项目相关说明

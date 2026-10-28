@@ -242,6 +242,10 @@ public class JavaCG2EntryBuilder {
                 // 已通过Builder设置的表达式配置使用设置的值
                 continue;
             }
+            if (!JavaCG2FileUtil.checkFileExistsInDiskOrClasspath(elConfig.getKey())) {
+                // 内置配置文件不存在时跳过，wrapper对象中已使用枚举中定义的默认值
+                continue;
+            }
             // 读取jar包中内置配置文件的默认内容
             String elText = StringUtils.join(JavaCG2FileUtil.readFile2List(elConfig.getKey(), "##"), "");
             if (StringUtils.isBlank(elText)) {

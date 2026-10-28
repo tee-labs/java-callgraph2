@@ -620,6 +620,16 @@ public abstract class BaseConfigureWrapper {
         String configFileName = mainConfig.getFileName();
         Properties properties = propertiesMap.get(configFileName);
         if (properties == null) {
+            if (!JavaCG2FileUtil.checkFileExistsInDiskOrClasspath(chooseInputRootPath() + configFileName)) {
+                // 配置文件不存在时使用代码中默认的参数
+                logger.info("配置文件不存在，使用代码中默认的参数 {} {}", configFileName, mainConfig.getConfigPrintInfo());
+                if (useConfig) {
+                    // 记录有被使用的主要配置
+                    recordUsedMainConfig(mainConfig);
+                }
+                String strValue = String.valueOf(getDefaultConfig(mainConfig));
+                return (T) setMainConfig(mainConfig, strValue, useConfig);
+            }
             try (BufferedReader reader = JavaCG2FileUtil.genBufferedReader(JavaCG2FileUtil.getFileInputStream(chooseInputRootPath() + configFileName))) {
                 properties = new Properties();
                 properties.load(reader);
@@ -686,7 +696,18 @@ public abstract class BaseConfigureWrapper {
         }
 
         // 获取其他配置文件中的参数
-        configSet = JavaCG2FileUtil.readFile2Set(chooseInputRootPath() + configFileName);
+        if (JavaCG2FileUtil.checkFileExistsInDiskOrClasspath(chooseInputRootPath() + configFileName)) {
+            configSet = JavaCG2FileUtil.readFile2Set(chooseInputRootPath() + configFileName);
+        } else {
+            // 配置文件不存在时使用代码中默认的参数
+            logger.info("配置文件不存在，使用代码中默认的参数 {}", otherConfig.getConfigPrintInfo());
+            String[] defaultValues = otherConfig.getDefaultValues();
+            if (defaultValues == null) {
+                configSet = new HashSet<>();
+            } else {
+                configSet = JavaCG2Util.genSetFromArray(defaultValues);
+            }
+        }
         // 将配置文件中的参数记录到内存中，用于后续使用
         otherConfigSetMap.put(configFileName, configSet);
         if (useConfig) {
@@ -729,7 +750,18 @@ public abstract class BaseConfigureWrapper {
         }
 
         // 获取其他配置文件中的参数
-        configList = JavaCG2FileUtil.readFile2List(chooseInputRootPath() + configFileName);
+        if (JavaCG2FileUtil.checkFileExistsInDiskOrClasspath(chooseInputRootPath() + configFileName)) {
+            configList = JavaCG2FileUtil.readFile2List(chooseInputRootPath() + configFileName);
+        } else {
+            // 配置文件不存在时使用代码中默认的参数
+            logger.info("配置文件不存在，使用代码中默认的参数 {}", otherConfig.getConfigPrintInfo());
+            String[] defaultValues = otherConfig.getDefaultValues();
+            if (defaultValues == null) {
+                configList = new ArrayList<>();
+            } else {
+                configList = JavaCG2Util.genListFromArray(defaultValues);
+            }
+        }
         // 将配置文件中的参数记录到内存中，用于后续使用
         otherConfigListMap.put(configFileName, configList);
         if (useConfig) {
@@ -806,10 +838,16 @@ public abstract class BaseConfigureWrapper {
         }
 
         // 获取配置文件中的参数
-        List<String> list = JavaCG2FileUtil.readFile2List(chooseInputRootPath() + configFileName, "##");
-        elText = StringUtils.join(list, "");
-        if (StringUtils.isBlank(elText)) {
-            // 使用默认值
+        if (JavaCG2FileUtil.checkFileExistsInDiskOrClasspath(chooseInputRootPath() + configFileName)) {
+            List<String> list = JavaCG2FileUtil.readFile2List(chooseInputRootPath() + configFileName, "##");
+            elText = StringUtils.join(list, "");
+            if (StringUtils.isBlank(elText)) {
+                // 使用默认值
+                elText = elConfig.getDefaultValue();
+            }
+        } else {
+            // 配置文件不存在时使用代码中默认值
+            logger.info("配置文件不存在，使用代码中默认的参数 {}", elConfig.getConfigPrintInfo());
             elText = elConfig.getDefaultValue();
         }
         // 将配置文件中的参数记录到内存中，用于后续使用

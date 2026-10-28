@@ -257,6 +257,31 @@ public class JavaCG2FileUtil {
     }
 
     /**
+     * 判断文件在磁盘或classpath中是否存在
+     *
+     * @param filePath 文件路径
+     * @return true: 文件存在，false: 文件不存在
+     */
+    public static boolean checkFileExistsInDiskOrClasspath(String filePath) {
+        if (findFile(filePath) != null) {
+            return true;
+        }
+
+        // 尝试从jar包中获取，路径需要以/开头，从根目录读取
+        try (InputStream inputStream = JavaCG2FileUtil.class.getResourceAsStream(JavaCG2Constants.FLAG_SLASH + filePath)) {
+            if (inputStream != null) {
+                logger.debug("从jar包中获取到文件 {}", filePath);
+                return true;
+            }
+        } catch (IOException e) {
+            logger.error("error ", e);
+            return false;
+        }
+        logger.info("文件不存在 {}", filePath);
+        return false;
+    }
+
+    /**
      * 读取文件内容到Set中，忽略以#开关的行
      *
      * @param filePath 文件路径

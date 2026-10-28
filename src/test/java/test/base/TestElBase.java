@@ -6,6 +6,9 @@ import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import org.junit.Assume;
+
+import java.io.File;
 
 /**
  * @author adrninistrator
@@ -63,6 +66,8 @@ public abstract class TestElBase extends TestBase {
     protected void run(String jarDirPath) {
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper;
         if (StringUtils.isNotBlank(jarDirPath)) {
+            // 期望执行成功，假如通过profile等生成的输入文件或目录不存在，则跳过对应测试，避免对环境产生硬依赖
+            Assume.assumeTrue("指定的输入文件或目录不存在，跳过对应测试 " + jarDirPath, new File(jarDirPath).exists());
             javaCG2ConfigureWrapper = genJavaCG2ConfigureWrapper4JavaCg2(jarDirPath);
         } else {
             javaCG2ConfigureWrapper = genJavaCG2ConfigureWrapper4JACGTest();

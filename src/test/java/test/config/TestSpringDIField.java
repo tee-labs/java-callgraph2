@@ -23,7 +23,7 @@ import java.util.List;
  *    （这是本次解耦符号执行开关改动的核心断言）
  * 2. 每行4列tab分隔：完整类名、注入的Spring Bean字段定义类型、字段名称、字段实际类型
  *
- * 前置条件：需要先在 java-all-call-graph 项目执行 gradlew test_gen_jar 命令生成对应jar文件
+ * 前置条件：需要先在 java-all-call-graph 项目执行 gradlew test_gen_jar 命令生成对应jar文件，缺少时自动跳过测试
  *
  * @author adrninistrator
  * @date 2026/6/19
@@ -35,6 +35,9 @@ public class TestSpringDIField extends TestBase {
      */
     @Test
     public void testSpringDIFieldDecoupledFromSymbolicExecution() {
+        // spring_di_field文件的断言依赖java-all-call-graph测试jar中的Spring DI注解类，本地回退jar不具备该内容，缺少时跳过测试
+        assumeJacgTestJarExists();
+
         // 开关为 true 时生成文件内容
         List<String> contentOn = runAndReadSpringDIField(Boolean.TRUE.toString(), "build/spring_di_field@type_value_on");
         // 开关为 false 时生成文件内容

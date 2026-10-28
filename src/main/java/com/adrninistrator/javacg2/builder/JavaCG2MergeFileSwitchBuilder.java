@@ -7,13 +7,9 @@ import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
 import com.adrninistrator.javacg2.el.enums.interfaces.ElAllowedVariableInterface;
 import com.adrninistrator.javacg2.el.enums.interfaces.ElConfigInterface;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * @author adrninistrator
@@ -26,10 +22,8 @@ import java.util.Map;
  */
 public class JavaCG2MergeFileSwitchBuilder {
 
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2MergeFileSwitchBuilder.class);
-
-    // 待应用的表达式配置，key为表达式配置枚举，同一个枚举以后设置的为准
-    private final Map<ElConfigInterface, PendingElText> pendingElTextMap = new LinkedHashMap<>();
+    // 表达式开关配置的公共逻辑
+    private final ElSwitchConfigHolder elSwitchConfigHolder = new ElSwitchConfigHolder();
 
     public static JavaCG2MergeFileSwitchBuilder builder() {
         return new JavaCG2MergeFileSwitchBuilder();
@@ -180,11 +174,8 @@ public class JavaCG2MergeFileSwitchBuilder {
      * @return
      */
     public JavaCG2MergeFileSwitchBuilder setIgnoreJarWarByClassDirPrefixExpression(String elText) {
-        if (elText == null) {
-            throw new JavaCG2ConfigException("表达式文本不允许传入null " + JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX.getKey());
-        }
-        return putPendingElText(JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX, PendingElText.genRaw(JavaCG2ElConfigEnum
-                .ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX, elText));
+        elSwitchConfigHolder.putRaw(JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX, elText);
+        return this;
     }
 
     /**
@@ -196,49 +187,19 @@ public class JavaCG2MergeFileSwitchBuilder {
         if (javaCG2ConfigureWrapper == null) {
             throw new JavaCG2ConfigException("不允许传入null " + JavaCG2ConfigureWrapper.class.getSimpleName());
         }
-        for (Map.Entry<ElConfigInterface, PendingElText> entry : pendingElTextMap.entrySet()) {
-            entry.getValue().applyTo(javaCG2ConfigureWrapper);
-        }
+        elSwitchConfigHolder.applyTo(javaCG2ConfigureWrapper);
+    }
+
+    // 获取已设置表达式配置的枚举集合
+    Set<ElConfigInterface> getSetElConfigSet() {
+        return elSwitchConfigHolder.getSetElConfigSet();
     }
 
     // 记录使用字符串比较函数生成的表达式配置，字符串参数自动以单引号包裹
     private JavaCG2MergeFileSwitchBuilder putStringAny(ElConfigInterface elConfig, ElStringAnyFunctionEnum stringAnyFunctionEnum, ElAllowedVariableInterface elVariable,
                                                        String... args) {
-        // 检查当前表达式是否允许使用该变量
-        checkElVariableAllowed(elConfig, elVariable);
-        if (ArrayUtils.isEmpty(args)) {
-            throw new JavaCG2ConfigException("不允许传入null或空数组 " + elConfig.getKey());
-        }
-        String[] quotedArgs = new String[args.length];
-        for (int i = 0; i < args.length; i++) {
-            String arg = args[i];
-            if (StringUtils.isBlank(arg)) {
-                throw new JavaCG2ConfigException("参数不允许为空 " + elConfig.getKey());
-            }
-            if (arg.contains("'")) {
-                throw new JavaCG2ConfigException("参数不允许包含单引号 " + elConfig.getKey() + " " + arg);
-            }
-            // 语义化API自动为字符串参数添加单引号，保证生成的表达式是合法的Aviator表达式
-            quotedArgs[i] = "'" + arg + "'";
-        }
-        return putPendingElText(elConfig, PendingElText.genStringAny(elConfig, stringAnyFunctionEnum, elVariable, quotedArgs));
-    }
-
-    // 记录待应用的表达式配置，同一个表达式配置枚举以后设置的为准
-    private JavaCG2MergeFileSwitchBuilder putPendingElText(ElConfigInterface elConfig, PendingElText pendingElText) {
-        logger.info("设置合并文件开关表达式 {} {}", elConfig.getKey(), pendingElText.genPrintInfo());
-        pendingElTextMap.put(elConfig, pendingElText);
+        elSwitchConfigHolder.putStringAny(elConfig, stringAnyFunctionEnum, elVariable, args);
         return this;
-    }
-
-    // 检查当前表达式配置是否允许使用该变量
-    private void checkElVariableAllowed(ElConfigInterface elConfig, ElAllowedVariableInterface elVariable) {
-        for (ElAllowedVariableInterface allowedVariable : elConfig.getElAllowedVariableEnums()) {
-            if (allowedVariable.getVariableName().equals(elVariable.getVariableName())) {
-                return;
-            }
-        }
-        throw new JavaCG2ConfigException("当前表达式不允许使用该变量 " + elConfig.getKey() + " " + elVariable.getVariableName());
     }
 
     // 检查文件后缀格式
@@ -250,66 +211,6 @@ public class JavaCG2MergeFileSwitchBuilder {
             if (!StringUtils.startsWith(fileExt, ".")) {
                 throw new JavaCG2ConfigException("文件后缀需要以“.”开头 " + fileExt);
             }
-        }
-    }
-
-    // 待应用的表达式文本
-    private static class PendingElText {
-
-        // 对应的表达式配置枚举
-        private final ElConfigInterface elConfig;
-
-        // 字符串比较方式枚举，为null时使用原始表达式文本
-        private final ElStringAnyFunctionEnum stringAnyFunctionEnum;
-
-        private final ElAllowedVariableInterface elVariable;
-
-        // 以单引号包裹的字符串参数
-        private final String[] stringAnyArgs;
-
-        // 原始表达式文本
-        private final String rawElText;
-
-        private PendingElText(ElConfigInterface elConfig, ElStringAnyFunctionEnum stringAnyFunctionEnum, ElAllowedVariableInterface elVariable,
-                              String[] stringAnyArgs, String rawElText) {
-            this.elConfig = elConfig;
-            this.stringAnyFunctionEnum = stringAnyFunctionEnum;
-            this.elVariable = elVariable;
-            this.stringAnyArgs = stringAnyArgs;
-            this.rawElText = rawElText;
-        }
-
-        private static PendingElText genStringAny(ElConfigInterface elConfig, ElStringAnyFunctionEnum stringAnyFunctionEnum, ElAllowedVariableInterface elVariable,
-                                                  String... stringAnyArgs) {
-            return new PendingElText(elConfig, stringAnyFunctionEnum, elVariable, stringAnyArgs, null);
-        }
-
-        private static PendingElText genRaw(ElConfigInterface elConfig, String rawElText) {
-            return new PendingElText(elConfig, null, null, null, rawElText);
-        }
-
-        private void applyTo(JavaCG2ConfigureWrapper javaCG2ConfigureWrapper) {
-            if (stringAnyFunctionEnum != null) {
-                /*
-                    不使用BaseConfigureWrapper.setElConfigStringAny方法：其生成的表达式文本以分号结尾，
-                    Aviator执行带分号的表达式时返回null而非Boolean，会导致表达式检查失败
-                 */
-                javaCG2ConfigureWrapper.setElConfigText(elConfig, genElText());
-            } else {
-                javaCG2ConfigureWrapper.setElConfigText(elConfig, rawElText);
-            }
-        }
-
-        // 生成使用字符串比较函数的表达式文本，字符串参数已带单引号，不以分号结尾
-        private String genElText() {
-            return stringAnyFunctionEnum.getName() + "(" + elVariable.getVariableName() + "," + StringUtils.join(stringAnyArgs, ",") + ")";
-        }
-
-        private String genPrintInfo() {
-            if (stringAnyFunctionEnum != null) {
-                return stringAnyFunctionEnum.getName() + " " + elVariable.getVariableName() + " " + StringUtils.join(stringAnyArgs, ",");
-            }
-            return rawElText;
         }
     }
 }

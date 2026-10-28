@@ -1606,6 +1606,71 @@ JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下
 - JavaCG2MergeFileSwitchBuilder 的语义化方法内部会生成合法的 Aviator 表达式文本（字符串参数自动以单引号包裹）；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准
 - JavaCG2MergeFileSwitchBuilder 的 ignoreOtherInDirByFileExt 与 ignoreOtherInJarWarByFileExt 方法指定的文件后缀需要以“.”开头
 
+### 7.4.5. 通过 Builder 方式指定解析类、方法、方法调用的忽略表达式
+
+在 7.4.3 的基础上，还可以通过以下 Builder 类指定 \_javacg2\_parse\_class\_method\_switch/ 与 \_javacg2\_parse\_method\_call\_switch/ 目录下表达式配置文件对应的参数，通过 JavaCG2EntryBuilder 的 setParseSwitch 方法接线
+
+涉及的 Builder 类如下
+
+|类名称|对应的配置文件|作用|
+|---|---|---|
+|com.adrninistrator.javacg2.builder.JavaCG2ParseSwitchBuilder|\_javacg2\_parse\_class\_method\_switch/ 与 \_javacg2\_parse\_method\_call\_switch/ 目录下的表达式配置文件|指定解析类、方法、方法调用时跳过数据的忽略表达式|
+
+JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下
+
+|方法名称|方法作用|
+|---|---|
+|ignoreClassByClassName|按完整类名跳过解析类|
+|ignoreClassByPackageName|按完整包名跳过解析类|
+|ignoreClassByPackageNamePrefix|按完整包名前缀跳过解析类|
+|ignoreClassBySimpleClassName|按简单类名跳过解析类|
+|ignoreMethodByFullMethod|按完整方法跳过解析方法|
+|ignoreMethodByFullMethodSuffix|按完整方法后缀跳过解析方法|
+|ignoreMethodByClassName|按完整类名跳过解析方法|
+|ignoreMethodByClassNamePrefix|按完整类名前缀跳过解析方法|
+|ignoreMethodByMethodName|按方法名跳过解析方法|
+|ignoreMethodCallByCallType|按方法调用类型跳过解析方法调用|
+|ignoreMethodCallByCallerClassName|按调用方完整类名跳过解析方法调用|
+|ignoreMethodCallByCallerPackageName|按调用方完整包名跳过解析方法调用|
+|ignoreMethodCallByCallerPackageNamePrefix|按调用方完整包名前缀跳过解析方法调用|
+|ignoreMethodCallByCallerFullMethod|按调用方完整方法跳过解析方法调用|
+|ignoreMethodCallByCalleeClassName|按被调用方完整类名跳过解析方法调用|
+|ignoreMethodCallByCalleePackageName|按被调用方完整包名跳过解析方法调用|
+|ignoreMethodCallByCalleePackageNamePrefix|按被调用方完整包名前缀跳过解析方法调用|
+|ignoreMethodCallByCalleeMethodName|按被调用方方法名跳过解析方法调用|
+|ignoreMethodCallByCalleeFullMethod|按被调用方完整方法跳过解析方法调用|
+|ignoreTypeValueByCallerClassName|按调用方完整类名跳过解析方法调用被调用对象和参数可能的类型与值|
+|ignoreTypeValueByCallerPackageName|按调用方完整包名跳过解析方法调用被调用对象和参数可能的类型与值|
+|ignoreTypeValueByCallerPackageNamePrefix|按调用方完整包名前缀跳过解析方法调用被调用对象和参数可能的类型与值|
+|ignoreTypeValueByCallerFullMethod|按调用方完整方法跳过解析方法调用被调用对象和参数可能的类型与值|
+|setIgnoreClassExpression|通过原始表达式文本设置跳过解析类的表达式|
+|setIgnoreMethodExpression|通过原始表达式文本设置跳过解析方法的表达式|
+|setIgnoreMethodCallExpression|通过原始表达式文本设置跳过解析方法调用的表达式|
+|setIgnoreTypeValueCallerExpression|通过原始表达式文本设置跳过解析方法调用被调用对象和参数可能的类型与值的表达式|
+
+参考示例方法 test.builder.TestParseSwitchBuilder:testRunNotMatch 与 test.builder.TestParseSwitchBuilder:testIgnoreClassEndToEnd
+
+示例方法代码如下：
+
+```java
+        JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
+                .setParseSwitch(JavaCG2ParseSwitchBuilder.builder()
+                        .ignoreClassByPackageName("com.business.not_needed")
+                        .ignoreMethodByFullMethodSuffix("hashCode()", "equals(java.lang.Object)")
+                        .ignoreMethodCallByCalleeClassName("com.business.thirdparty.Class1"))
+                .addJarOrDir(JAR_TEST_JAR)
+                .build();
+        Assert.assertTrue(javaCG2Entry.run());
+```
+
+说明：
+
+- JavaCG2EntryBuilder 的 setParseSwitch 方法可不调用，对应参数使用 jar 包中内置配置文件的默认内容
+- 未通过 Builder 设置的表达式配置使用 jar 包中内置配置文件的默认内容，与通过配置文件指定参数时的行为一致；其中 \_javacg2\_parse\_class\_method\_switch/parse\_ignore\_method.av 的内置默认表达式会忽略 hashCode 与 equals(java.lang.Object) 方法，其余表达式配置文件的内置默认内容为空白，即不生效
+- JavaCG2ParseSwitchBuilder 的语义化方法内部会生成合法的 Aviator 表达式文本（字符串参数自动以单引号包裹，例如 ignoreClassByClassName("a.b.Class1") 生成 string.equalsAny(class\_name,'a.b.Class1')）；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准
+- 语义化方法未覆盖的用法（如 string.containsIC 等函数、方法参数数量等）可通过 setIgnoreClassExpression、setIgnoreMethodExpression、setIgnoreMethodCallExpression、setIgnoreTypeValueCallerExpression 方法使用原始表达式文本指定
+- 表达式允许使用的变量及示例可参考 jar 包中 \_el\_example/ 目录下的说明文档
+
 # 8. 人工增加方法调用关系
 
 对于某些方法调用关系，不存在对应的方法调用指令，需要人工增加，可参考 java-all-call-graph 项目相关说明

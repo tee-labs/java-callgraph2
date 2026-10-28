@@ -255,13 +255,6 @@
                                         <delete dir="${jar.output.dir}" excludes="lib/**" quiet="true"/>
                                         <copy file="${project.build.directory}/${project.build.finalName}.jar"
                                               tofile="${jar.output.dir}/jar/run_javacg2.jar"/>
-                                        <!-- 拷贝配置文件目录 -->
-                                        <copy todir="${jar.output.dir}">
-                                            <fileset dir="${project.basedir}/src/main/resources">
-                                                <include name="_javacg2_*/**"/>
-                                                <include name="_el_*/**"/>
-                                            </fileset>
-                                        </copy>
                                         <!-- 拷贝runtime依赖（仅jar文件） -->
                                         <mkdir dir="${jar.output.dir}/lib"/>
                                         <copy todir="${jar.output.dir}/lib" flatten="true">

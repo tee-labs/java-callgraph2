@@ -262,18 +262,6 @@
                                                 <include name="_el_*/**"/>
                                             </fileset>
                                         </copy>
-                                        <copy file="${project.basedir}/src/test/resources/log4j2.xml"
-                                              tofile="${jar.output.dir}/config/log4j2_console.xml"/>
-                                        <copy file="${project.basedir}/src/test/resources/log4j2_file.xml"
-                                              tofile="${jar.output.dir}/config/log4j2.xml"/>
-                                        <copy todir="${jar.output.dir}">
-                                            <fileset dir="${project.basedir}/bat">
-                                                <include name="*.bat"/>
-                                            </fileset>
-                                            <fileset dir="${project.basedir}/shell">
-                                                <include name="*.sh"/>
-                                            </fileset>
-                                        </copy>
                                         <!-- 拷贝runtime依赖（仅jar文件） -->
                                         <mkdir dir="${jar.output.dir}/lib"/>
                                         <copy todir="${jar.output.dir}/lib" flatten="true">

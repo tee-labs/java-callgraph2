@@ -103,14 +103,6 @@ public class JavaCG2Entry {
 
     private SpringDefineAopHandler springDefineAopHandler;
 
-    public static void main(String[] args) {
-        new JavaCG2Entry().run();
-    }
-
-    public JavaCG2Entry() {
-        javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper(false, null);
-    }
-
     public JavaCG2Entry(JavaCG2ConfigureWrapper javaCG2ConfigureWrapper) {
         this.javaCG2ConfigureWrapper = javaCG2ConfigureWrapper;
     }

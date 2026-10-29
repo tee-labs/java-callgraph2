@@ -2,6 +2,7 @@ package com.adrninistrator.javacg2.util;
 
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
 import com.adrninistrator.javacg2.extensions.annotationattributes.AnnotationAttributesFormatterInterface;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.ArrayElementValue;
 import org.apache.bcel.classfile.ClassElementValue;
@@ -13,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -89,12 +89,12 @@ public class JavaCG2AnnotationUtil {
     /**
      * 将注解信息写入文件
      *
-     * @param writer
+     * @param sink
      * @param annotationEntries
      * @param annotationAttributesFormatter
      * @param objectInfo                    类名、方法或字段信息，可能包含多项
      */
-    public static void writeAnnotationInfo(Writer writer,
+    public static void writeAnnotationInfo(JavaCG2RecordSink sink,
                                            AnnotationEntry[] annotationEntries,
                                            AnnotationAttributesFormatterInterface annotationAttributesFormatter,
                                            String... objectInfo) {
@@ -108,14 +108,14 @@ public class JavaCG2AnnotationUtil {
                 String annotationClassName = Utility.typeSignatureToString(annotationEntry.getAnnotationType(), false);
                 if (annotationEntry.getElementValuePairs() == null || annotationEntry.getElementValuePairs().length == 0) {
                     // 注解属性为空
-                    JavaCG2FileUtil.write2FileWithTab(writer, objectInfoStr, annotationClassName);
+                    sink.writeRow(objectInfoStr, annotationClassName);
                     continue;
                 }
 
                 // 注解属性非空
                 for (ElementValuePair elementValuePair : annotationEntry.getElementValuePairs()) {
                     String formattedValue = annotationAttributesFormatter.format(elementValuePair);
-                    JavaCG2FileUtil.write2FileWithTab(writer, objectInfoStr, annotationClassName, elementValuePair.getNameString(), formattedValue);
+                    sink.writeRow(objectInfoStr, annotationClassName, elementValuePair.getNameString(), formattedValue);
                 }
             }
         } catch (Exception e) {

@@ -11,6 +11,7 @@ import com.adrninistrator.javacg2.extensions.codeparser.JarEntryOtherFileParser;
 import com.adrninistrator.javacg2.extensions.codeparser.MethodAnnotationParser;
 import com.adrninistrator.javacg2.extensions.codeparser.SpringXmlBeanParserInterface;
 import com.adrninistrator.javacg2.extensions.methodcall.JavaCG2MethodCallExtensionInterface;
+import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,9 @@ public class ExtensionsManager {
 
     private JavaCG2InputAndOutput javaCG2InputAndOutput;
 
+    // 输出适配器
+    private JavaCG2OutputAdapter outputAdapter;
+
     // 对注解属性的元素值进行格式化的类
     private AnnotationAttributesFormatterInterface annotationAttributesFormatter;
 
@@ -82,6 +86,10 @@ public class ExtensionsManager {
         // 固定添加Spring XML Bean信息解析类
         if (springXmlBeanParser != null) {
             allCodeParserList.add(springXmlBeanParser);
+        }
+        if (outputAdapter == null) {
+            logger.error("未设置输出适配器 {}", JavaCG2OutputAdapter.class.getName());
+            return false;
         }
         JavaCG2OutputInfo javaCG2OutputInfo = javaCG2InputAndOutput.getJavaCG2OutputInfo();
         for (CodeParserInterface codeParser : allCodeParserList) {
@@ -102,7 +110,7 @@ public class ExtensionsManager {
                 // 处理解析并将结果保存在文件的类
                 if (codeParser instanceof AbstractSaveData2FileParser) {
                     AbstractSaveData2FileParser saveData2FileParser = (AbstractSaveData2FileParser) codeParser;
-                    if (!saveData2FileParser.init(javaCG2OutputInfo.getOutputDirPath(), javaCG2OutputInfo.getOutputFileExt())) {
+                    if (!saveData2FileParser.init(outputAdapter)) {
                         logger.error("初始化失败 {}", codeParser.getClass().getName());
                         return false;
                     }
@@ -234,6 +242,16 @@ public class ExtensionsManager {
      */
     public void setAnnotationAttributesFormatter(AnnotationAttributesFormatterInterface annotationAttributesFormatter) {
         this.annotationAttributesFormatter = annotationAttributesFormatter;
+    }
+
+    /**
+     * 设置输出适配器
+     * 需要在调用init()方法之前调用当前方法
+     *
+     * @param outputAdapter
+     */
+    public void setOutputAdapter(JavaCG2OutputAdapter outputAdapter) {
+        this.outputAdapter = outputAdapter;
     }
 
     public void setJavaCG2InputAndOutput(JavaCG2InputAndOutput javaCG2InputAndOutput) {

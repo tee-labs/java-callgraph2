@@ -17,6 +17,7 @@ import com.adrninistrator.javacg2.util.JavaCG2ByteCodeUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,7 @@ public class ExtendsImplHandler {
 
     private ClassAndJarNum classAndJarNum;
 
-    private Writer methodCallWriter;
+    private JavaCG2RecordSink methodCallSink;
 
     public ExtendsImplHandler(JavaCG2InputAndOutput javaCG2InputAndOutput) {
         javaCG2ElManager = javaCG2InputAndOutput.getJavaCG2ElManager();
@@ -498,7 +499,7 @@ public class ExtendsImplHandler {
         methodCall.setCalleeMethodName(calleeMethodName);
         methodCall.setCalleeMethodArgTypes(calleeMethodArgTypes);
         methodCall.setRawReturnType(calleeMethodReturnType);
-        JavaCG2FileUtil.write2FileWithTab(methodCallWriter, methodCall.genMethodCallContent(callerClassJarNum, calleeClassJarNum));
+        methodCallSink.writeRow(methodCall.genMethodCallContent(callerClassJarNum, calleeClassJarNum));
     }
 
     //
@@ -542,7 +543,7 @@ public class ExtendsImplHandler {
         this.classExtendsInfoMap = classExtendsInfoMap;
     }
 
-    public void setMethodCallWriter(Writer methodCallWriter) {
-        this.methodCallWriter = methodCallWriter;
+    public void setMethodCallSink(JavaCG2RecordSink methodCallSink) {
+        this.methodCallSink = methodCallSink;
     }
 }

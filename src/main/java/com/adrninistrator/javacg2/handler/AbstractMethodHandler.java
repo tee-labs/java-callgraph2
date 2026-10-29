@@ -11,6 +11,7 @@ import com.adrninistrator.javacg2.dto.type.JavaCG2GenericsType;
 import com.adrninistrator.javacg2.dto.type.JavaCG2Type;
 import com.adrninistrator.javacg2.el.manager.JavaCG2ElManager;
 import com.adrninistrator.javacg2.util.JavaCG2ByteCodeUtil;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.LineNumberTable;
 import org.apache.bcel.classfile.Method;
@@ -76,12 +77,12 @@ public abstract class AbstractMethodHandler {
 
     protected JavaCG2Counter failCounter;
 
-    protected Writer enumInitArgFieldWriter;
-    protected Writer enumInitAssignInfoWriter;
-    protected Writer getMethodWriter;
-    protected Writer setMethodWriter;
-    protected Writer methodReturnConstValueWriter;
-    protected Writer methodReturnFieldInfoWriter;
+    protected JavaCG2RecordSink enumInitArgFieldSink;
+    protected JavaCG2RecordSink enumInitAssignInfoSink;
+    protected JavaCG2RecordSink getMethodSink;
+    protected JavaCG2RecordSink setMethodSink;
+    protected JavaCG2RecordSink methodReturnConstValueSink;
+    protected JavaCG2RecordSink methodReturnFieldInfoSink;
 
     // 非静态字段字段所有可能的类型
     protected FieldPossibleTypes nonStaticFieldPossibleTypes;
@@ -263,28 +264,28 @@ public abstract class AbstractMethodHandler {
         this.failCounter = failCounter;
     }
 
-    public void setEnumInitArgFieldWriter(Writer enumInitArgFieldWriter) {
-        this.enumInitArgFieldWriter = enumInitArgFieldWriter;
+    public void setEnumInitArgFieldSink(JavaCG2RecordSink enumInitArgFieldSink) {
+        this.enumInitArgFieldSink = enumInitArgFieldSink;
     }
 
-    public void setEnumInitAssignInfoWriter(Writer enumInitAssignInfoWriter) {
-        this.enumInitAssignInfoWriter = enumInitAssignInfoWriter;
+    public void setEnumInitAssignInfoSink(JavaCG2RecordSink enumInitAssignInfoSink) {
+        this.enumInitAssignInfoSink = enumInitAssignInfoSink;
     }
 
-    public void setGetMethodWriter(Writer getMethodWriter) {
-        this.getMethodWriter = getMethodWriter;
+    public void setGetMethodSink(JavaCG2RecordSink getMethodSink) {
+        this.getMethodSink = getMethodSink;
     }
 
-    public void setSetMethodWriter(Writer setMethodWriter) {
-        this.setMethodWriter = setMethodWriter;
+    public void setSetMethodSink(JavaCG2RecordSink setMethodSink) {
+        this.setMethodSink = setMethodSink;
     }
 
-    public void setMethodReturnConstValueWriter(Writer methodReturnConstValueWriter) {
-        this.methodReturnConstValueWriter = methodReturnConstValueWriter;
+    public void setMethodReturnConstValueSink(JavaCG2RecordSink methodReturnConstValueSink) {
+        this.methodReturnConstValueSink = methodReturnConstValueSink;
     }
 
-    public void setMethodReturnFieldInfoWriter(Writer methodReturnFieldInfoWriter) {
-        this.methodReturnFieldInfoWriter = methodReturnFieldInfoWriter;
+    public void setMethodReturnFieldInfoSink(JavaCG2RecordSink methodReturnFieldInfoSink) {
+        this.methodReturnFieldInfoSink = methodReturnFieldInfoSink;
     }
 
     public void setNonStaticFieldPossibleTypes(FieldPossibleTypes nonStaticFieldPossibleTypes) {

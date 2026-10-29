@@ -46,6 +46,7 @@ import com.adrninistrator.javacg2.util.JavaCG2ElementUtil;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2InstructionUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
 import org.apache.bcel.Const;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.LocalVariableTable;
@@ -821,7 +822,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
         int argSeq = valueLocalVariableElement.getIndex();
         String fieldType = putFieldParseResult.getFieldType();
         String fieldName = putFieldParseResult.getFieldName();
-        JavaCG2FileUtil.write2FileWithTab(enumInitArgFieldWriter, callerFullMethod, String.valueOf(argSeq), fieldType, fieldName);
+        enumInitArgFieldSink.writeRow(callerFullMethod, String.valueOf(argSeq), fieldType, fieldName);
     }
 
     // 判断PUTFIELD指令是否来自方法参数
@@ -967,7 +968,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
                             enumInitValue = JavaCG2Util.base64Encode(enumInitValue);
                         }
                     }
-                    JavaCG2FileUtil.write2FileWithTab(enumInitAssignInfoWriter, calleeFullMethod, enum1Name, enum2Ordinal, String.valueOf(i + 1), enumInitType,
+                    enumInitAssignInfoSink.writeRow(calleeFullMethod, enum1Name, enum2Ordinal, String.valueOf(i + 1), enumInitType,
                             JavaCG2YesNoEnum.parseStrValue(needBase64), enumInitValue);
                 }
             }
@@ -1278,7 +1279,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
             // 判断非静态字段集合中涉及的泛型类型
             String fieldCategory = judgeFieldGenericsType(getFieldFieldName, javaCG2Type.getType());
             String getFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(callerClassName, callerMethodName, mg.getArgumentTypes());
-            JavaCG2FileUtil.write2FileWithTab(getMethodWriter, callerClassName, callerMethodName, getFieldFieldName, fieldCategory, javaCG2Type.getType(),
+            getMethodSink.writeRow(callerClassName, callerMethodName, getFieldFieldName, fieldCategory, javaCG2Type.getType(),
                     String.valueOf(javaCG2Type.getArrayDimensions()), getFullMethod, methodReturnType);
             // 记录存在get方法的字段名称
             fieldWithGetMethodNameSet.add(getFieldFieldName);
@@ -1318,7 +1319,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
             if (recordedSetMethodSet.add(callerMethodName)) {
                 // 若当前类的当前set方法未被记录时，才写入文件，避免一个类存在多个同名set方法时重复记录（get方法无参数，不会出现同名）
                 String setFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(callerClassName, callerMethodName, mg.getArgumentTypes());
-                JavaCG2FileUtil.write2FileWithTab(setMethodWriter, callerClassName, callerMethodName, putFieldFieldName, fieldCategory, javaCG2Type.getType(),
+                setMethodSink.writeRow(callerClassName, callerMethodName, putFieldFieldName, fieldCategory, javaCG2Type.getType(),
                         String.valueOf(javaCG2Type.getArrayDimensions()), setFullMethod, methodReturnType);
                 // 记录存在set方法的字段名称
                 fieldWithSetMethodNameSet.add(putFieldFieldName);
@@ -1371,7 +1372,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
                     if (needBase64) {
                         constValue = JavaCG2Util.base64Encode(constValue);
                     }
-                    JavaCG2FileUtil.write2FileWithTab(methodReturnConstValueWriter, callerFullMethod, methodReturnType, String.valueOf(returnConstSeq), constElement.getType(),
+                    methodReturnConstValueSink.writeRow(callerFullMethod, methodReturnType, String.valueOf(returnConstSeq), constElement.getType(),
                             JavaCG2YesNoEnum.parseStrValue(needBase64), constValue);
                 }
                 continue;
@@ -1388,7 +1389,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
                     int arrayDimensions = JavaCG2ByteCodeUtil.getTypeArrayDimensions(fieldElement.getType());
                     String fieldType = JavaCG2ClassMethodUtil.removeAllArrayFlag(fieldElement.getType());
                     String fieldInClassName = fieldOfThis ? callerClassName : fieldElement.getClassName();
-                    JavaCG2FileUtil.write2FileWithTab(methodReturnFieldInfoWriter, callerFullMethod, methodReturnType, String.valueOf(returnFieldSeq),
+                    methodReturnFieldInfoSink.writeRow(callerFullMethod, methodReturnType, String.valueOf(returnFieldSeq),
                             JavaCG2YesNoEnum.parseStrValue(staticField), JavaCG2YesNoEnum.parseStrValue(fieldOfThis), fieldInClassName, fieldType,
                             String.valueOf(arrayDimensions), fieldElement.getName());
                 }

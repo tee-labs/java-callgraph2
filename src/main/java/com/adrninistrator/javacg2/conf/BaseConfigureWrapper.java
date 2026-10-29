@@ -18,6 +18,7 @@ import com.adrninistrator.javacg2.markdown.MarkdownConstants;
 import com.adrninistrator.javacg2.markdown.writer.MarkdownWriter;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -1275,14 +1276,14 @@ public abstract class BaseConfigureWrapper {
      * @param otherConfigSetArray
      * @param elConfigSetArray
      */
-    public boolean recordAllConfigToFile(Writer writer, MainConfigInterface[][] mainConfigInterfaceArrays, OtherConfigInterface[] otherConfigListArray,
+    public boolean recordAllConfigToFile(JavaCG2RecordSink recordSink, MainConfigInterface[][] mainConfigInterfaceArrays, OtherConfigInterface[] otherConfigListArray,
                                          OtherConfigInterface[] otherConfigSetArray, ElConfigInterface[] elConfigSetArray) {
         try {
             for (MainConfigInterface[] mainConfigInterfaceArray : mainConfigInterfaceArrays) {
                 for (MainConfigInterface mainConfig : mainConfigInterfaceArray) {
                     Object value = getMainConfig(mainConfig, false);
                     String printValue = JavaCG2Util.getObjectPrintValue(value);
-                    JavaCG2FileUtil.write2FileWithTab(writer, mainConfig.getFileName(), mainConfig.getKey(), printValue,
+                    recordSink.writeRow(mainConfig.getFileName(), mainConfig.getKey(), printValue,
                             JavaCG2Constants.CONFIG_PROPERTIES);
                 }
             }
@@ -1292,7 +1293,7 @@ public abstract class BaseConfigureWrapper {
                 configValueList = getOtherConfigList(otherConfigList, false);
                 int seq = 0;
                 for (String configValue : configValueList) {
-                    JavaCG2FileUtil.write2FileWithTab(writer, otherConfigList.getKey(), String.valueOf(seq), configValue, JavaCG2Constants.CONFIG_LIST);
+                    recordSink.writeRow(otherConfigList.getKey(), String.valueOf(seq), configValue, JavaCG2Constants.CONFIG_LIST);
                     seq++;
                 }
             }
@@ -1304,7 +1305,7 @@ public abstract class BaseConfigureWrapper {
                 Collections.sort(configValueList);
                 int seq = 0;
                 for (String configValue : configValueList) {
-                    JavaCG2FileUtil.write2FileWithTab(writer, otherConfigSet.getKey(), String.valueOf(seq), configValue, JavaCG2Constants.CONFIG_SET);
+                    recordSink.writeRow(otherConfigSet.getKey(), String.valueOf(seq), configValue, JavaCG2Constants.CONFIG_SET);
                     seq++;
                 }
             }
@@ -1315,7 +1316,7 @@ public abstract class BaseConfigureWrapper {
                     continue;
                 }
                 String value = getElConfigText(elConfig);
-                JavaCG2FileUtil.write2FileWithTab(writer, elConfig.getKey(), "", value, JavaCG2Constants.CONFIG_EL);
+                recordSink.writeRow(elConfig.getKey(), "", value, JavaCG2Constants.CONFIG_EL);
             }
             return true;
         } catch (Exception e) {

@@ -20,6 +20,7 @@ import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2GenericsTypeUtil;
 import com.adrninistrator.javacg2.util.JavaCG2JarUtil;
 import com.adrninistrator.javacg2.writer.WriterSupportSkip;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
 import copy.javassist.bytecode.BadBytecode;
 import copy.javassist.bytecode.SignatureAttribute;
 import net.lingala.zip4j.io.inputstream.ZipInputStream;
@@ -34,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,52 +76,52 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
     private Map<String, Boolean> transactionCallbackWithoutResultChildClassMap;
     private Map<String, Boolean> threadChildClassMap;
 
-    private Writer classAnnotationWriter;
-    private Writer classExtImplGenericsTypeWriter;
-    private Writer classInfoWriter;
-    private Writer classReferenceWriter;
-    private Writer dupClassReferenceWriter;
-    private Writer classSignatureGenericsTypeWriter;
-    private Writer dupClassInfoWriter;
-    private Writer dupMethodInfoWriter;
-    private Writer dupFieldInfoWriter;
-    private Writer enumInitArgFieldWriter;
-    private Writer enumInitAssignInfoWriter;
-    private Writer extendsImplWriter;
-    private Writer fieldAnnotationWriter;
-    private Writer fieldGenericsTypeWriter;
-    private Writer fieldInfoWriter;
-    private Writer fieldRelationshipWriter;
-    private Writer fieldUsageOtherWriter;
-    private Writer springDIFieldWriter;
-    private Writer getMethodWriter;
-    private Writer innerClassWriter;
-    private Writer lambdaMethodInfoWriter;
-    private Writer methodAnnotationWriter;
-    private Writer methodArgAnnotationWriter;
-    private Writer methodArgGenericsTypeWriter;
-    private Writer methodArgumentWriter;
-    private Writer methodCallInfoWriter;
-    private Writer methodCallMethodCallReturnWriter;
-    private Writer methodCallStaticFieldWriter;
-    private Writer methodCallNonStaticFieldWriter;
-    private Writer methodCallFieldActualTypeWriter;
-    private Writer methodCallStaticFieldMCRWriter;
-    private Writer methodCallWriter;
-    private Writer methodCallRawCalleeWriter;
-    private Writer methodCatchWriter;
-    private Writer methodFinallyWriter;
-    private Writer methodInfoWriter;
-    private Writer methodLineNumberWriter;
-    private Writer methodReturnArgSeqWriter;
-    private Writer methodReturnCallIdWriter;
-    private Writer methodReturnConstValueWriter;
-    private Writer methodReturnFieldInfoWriter;
-    private Writer methodReturnGenericsTypeWriter;
-    private Writer methodThrowWriter;
-    private Writer packageInfoWriter;
-    private Writer setMethodWriter;
-    private Writer staticFinalFieldMethodCallIdWriter;
+    private JavaCG2RecordSink classAnnotationSink;
+    private JavaCG2RecordSink classExtImplGenericsTypeSink;
+    private JavaCG2RecordSink classInfoSink;
+    private JavaCG2RecordSink classReferenceSink;
+    private JavaCG2RecordSink dupClassReferenceSink;
+    private JavaCG2RecordSink classSignatureGenericsTypeSink;
+    private JavaCG2RecordSink dupClassInfoSink;
+    private JavaCG2RecordSink dupMethodInfoSink;
+    private JavaCG2RecordSink dupFieldInfoSink;
+    private JavaCG2RecordSink enumInitArgFieldSink;
+    private JavaCG2RecordSink enumInitAssignInfoSink;
+    private JavaCG2RecordSink extendsImplSink;
+    private JavaCG2RecordSink fieldAnnotationSink;
+    private JavaCG2RecordSink fieldGenericsTypeSink;
+    private JavaCG2RecordSink fieldInfoSink;
+    private JavaCG2RecordSink fieldRelationshipSink;
+    private JavaCG2RecordSink fieldUsageOtherSink;
+    private JavaCG2RecordSink springDIFieldSink;
+    private JavaCG2RecordSink getMethodSink;
+    private JavaCG2RecordSink innerClassSink;
+    private JavaCG2RecordSink lambdaMethodInfoSink;
+    private JavaCG2RecordSink methodAnnotationSink;
+    private JavaCG2RecordSink methodArgAnnotationSink;
+    private JavaCG2RecordSink methodArgGenericsTypeSink;
+    private JavaCG2RecordSink methodArgumentSink;
+    private JavaCG2RecordSink methodCallInfoSink;
+    private JavaCG2RecordSink methodCallMethodCallReturnSink;
+    private JavaCG2RecordSink methodCallStaticFieldSink;
+    private JavaCG2RecordSink methodCallNonStaticFieldSink;
+    private JavaCG2RecordSink methodCallFieldActualTypeSink;
+    private JavaCG2RecordSink methodCallStaticFieldMCRSink;
+    private JavaCG2RecordSink methodCallSink;
+    private JavaCG2RecordSink methodCallRawCalleeSink;
+    private JavaCG2RecordSink methodCatchSink;
+    private JavaCG2RecordSink methodFinallySink;
+    private JavaCG2RecordSink methodInfoSink;
+    private JavaCG2RecordSink methodLineNumberSink;
+    private JavaCG2RecordSink methodReturnArgSeqSink;
+    private JavaCG2RecordSink methodReturnCallIdSink;
+    private JavaCG2RecordSink methodReturnConstValueSink;
+    private JavaCG2RecordSink methodReturnFieldInfoSink;
+    private JavaCG2RecordSink methodReturnGenericsTypeSink;
+    private JavaCG2RecordSink methodThrowSink;
+    private JavaCG2RecordSink packageInfoSink;
+    private JavaCG2RecordSink setMethodSink;
+    private JavaCG2RecordSink staticFinalFieldMethodCallIdSink;
 
     private WriterSupportSkip logMethodSpendTimeWriter;
 
@@ -264,7 +264,7 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
         if (containsPackageJarNumSet.add(lastJarNum)) {
             // 未记录时记录包名
             int packageLevel = StringUtils.countMatches(packageName, JavaCG2Constants.FLAG_DOT) + 1;
-            JavaCG2FileUtil.write2FileWithTab(packageInfoWriter, packageName, String.valueOf(packageLevel), String.valueOf(lastJarNum), lastJarFileName);
+            packageInfoSink.writeRow(packageName, String.valueOf(packageLevel), String.valueOf(lastJarNum), lastJarFileName);
             return true;
         }
         return false;
@@ -307,7 +307,7 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
 
     // 记录类上的注解信息
     private void recordClassAnnotation(JavaClass javaClass) {
-        JavaCG2AnnotationUtil.writeAnnotationInfo(classAnnotationWriter, javaClass.getAnnotationEntries(), annotationAttributesFormatter, javaClass.getClassName());
+        JavaCG2AnnotationUtil.writeAnnotationInfo(classAnnotationSink, javaClass.getAnnotationEntries(), annotationAttributesFormatter, javaClass.getClassName());
     }
 
     private ClassHandler genClassHandler(JavaClass javaClass, String jarEntryPath, int classJarNum) {
@@ -319,46 +319,46 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
         classHandler.setTransactionCallbackWithoutResultChildClassMap(transactionCallbackWithoutResultChildClassMap);
         classHandler.setThreadChildClassMap(threadChildClassMap);
         classHandler.setCallIdCounter(callIdCounter);
-        classHandler.setClassAnnotationWriter(classAnnotationWriter);
-        classHandler.setClassReferenceWriter(classReferenceWriter);
-        classHandler.setDupClassReferenceWriter(dupClassReferenceWriter);
-        classHandler.setDupMethodInfoWriter(dupMethodInfoWriter);
-        classHandler.setDupFieldInfoWriter(dupFieldInfoWriter);
-        classHandler.setEnumInitArgFieldWriter(enumInitArgFieldWriter);
-        classHandler.setEnumInitAssignInfoWriter(enumInitAssignInfoWriter);
-        classHandler.setFieldAnnotationWriter(fieldAnnotationWriter);
-        classHandler.setFieldGenericsTypeWriter(fieldGenericsTypeWriter);
-        classHandler.setFieldInfoWriter(fieldInfoWriter);
-        classHandler.setFieldRelationshipWriter(fieldRelationshipWriter);
-        classHandler.setFieldUsageOtherWriter(fieldUsageOtherWriter);
-        classHandler.setSpringDIFieldWriter(springDIFieldWriter);
-        classHandler.setGetMethodWriter(getMethodWriter);
-        classHandler.setLambdaMethodInfoWriter(lambdaMethodInfoWriter);
+        classHandler.setClassAnnotationSink(classAnnotationSink);
+        classHandler.setClassReferenceSink(classReferenceSink);
+        classHandler.setDupClassReferenceSink(dupClassReferenceSink);
+        classHandler.setDupMethodInfoSink(dupMethodInfoSink);
+        classHandler.setDupFieldInfoSink(dupFieldInfoSink);
+        classHandler.setEnumInitArgFieldSink(enumInitArgFieldSink);
+        classHandler.setEnumInitAssignInfoSink(enumInitAssignInfoSink);
+        classHandler.setFieldAnnotationSink(fieldAnnotationSink);
+        classHandler.setFieldGenericsTypeSink(fieldGenericsTypeSink);
+        classHandler.setFieldInfoSink(fieldInfoSink);
+        classHandler.setFieldRelationshipSink(fieldRelationshipSink);
+        classHandler.setFieldUsageOtherSink(fieldUsageOtherSink);
+        classHandler.setSpringDIFieldSink(springDIFieldSink);
+        classHandler.setGetMethodSink(getMethodSink);
+        classHandler.setLambdaMethodInfoSink(lambdaMethodInfoSink);
         classHandler.setLogMethodSpendTimeWriter(logMethodSpendTimeWriter);
-        classHandler.setMethodAnnotationWriter(methodAnnotationWriter);
-        classHandler.setMethodArgAnnotationWriter(methodArgAnnotationWriter);
-        classHandler.setMethodArgGenericsTypeWriter(methodArgGenericsTypeWriter);
-        classHandler.setMethodArgumentWriter(methodArgumentWriter);
-        classHandler.setMethodCallInfoWriter(methodCallInfoWriter);
-        classHandler.setMethodCallMethodCallReturnWriter(methodCallMethodCallReturnWriter);
-        classHandler.setMethodCallStaticFieldWriter(methodCallStaticFieldWriter);
-        classHandler.setMethodCallNonStaticFieldWriter(methodCallNonStaticFieldWriter);
-        classHandler.setMethodCallFieldActualTypeWriter(methodCallFieldActualTypeWriter);
-        classHandler.setMethodCallStaticFieldMCRWriter(methodCallStaticFieldMCRWriter);
-        classHandler.setMethodCallWriter(methodCallWriter);
-        classHandler.setMethodCallRawCalleeWriter(methodCallRawCalleeWriter);
-        classHandler.setMethodCatchWriter(methodCatchWriter);
-        classHandler.setMethodFinallyWriter(methodFinallyWriter);
-        classHandler.setMethodInfoWriter(methodInfoWriter);
-        classHandler.setMethodLineNumberWriter(methodLineNumberWriter);
-        classHandler.setMethodReturnArgSeqWriter(methodReturnArgSeqWriter);
-        classHandler.setMethodReturnCallIdWriter(methodReturnCallIdWriter);
-        classHandler.setMethodReturnConstValueWriter(methodReturnConstValueWriter);
-        classHandler.setMethodReturnFieldInfoWriter(methodReturnFieldInfoWriter);
-        classHandler.setMethodReturnGenericsTypeWriter(methodReturnGenericsTypeWriter);
-        classHandler.setMethodThrowWriter(methodThrowWriter);
-        classHandler.setSetMethodWriter(setMethodWriter);
-        classHandler.setStaticFinalFieldMethodCallIdWriter(staticFinalFieldMethodCallIdWriter);
+        classHandler.setMethodAnnotationSink(methodAnnotationSink);
+        classHandler.setMethodArgAnnotationSink(methodArgAnnotationSink);
+        classHandler.setMethodArgGenericsTypeSink(methodArgGenericsTypeSink);
+        classHandler.setMethodArgumentSink(methodArgumentSink);
+        classHandler.setMethodCallInfoSink(methodCallInfoSink);
+        classHandler.setMethodCallMethodCallReturnSink(methodCallMethodCallReturnSink);
+        classHandler.setMethodCallStaticFieldSink(methodCallStaticFieldSink);
+        classHandler.setMethodCallNonStaticFieldSink(methodCallNonStaticFieldSink);
+        classHandler.setMethodCallFieldActualTypeSink(methodCallFieldActualTypeSink);
+        classHandler.setMethodCallStaticFieldMCRSink(methodCallStaticFieldMCRSink);
+        classHandler.setMethodCallSink(methodCallSink);
+        classHandler.setMethodCallRawCalleeSink(methodCallRawCalleeSink);
+        classHandler.setMethodCatchSink(methodCatchSink);
+        classHandler.setMethodFinallySink(methodFinallySink);
+        classHandler.setMethodInfoSink(methodInfoSink);
+        classHandler.setMethodLineNumberSink(methodLineNumberSink);
+        classHandler.setMethodReturnArgSeqSink(methodReturnArgSeqSink);
+        classHandler.setMethodReturnCallIdSink(methodReturnCallIdSink);
+        classHandler.setMethodReturnConstValueSink(methodReturnConstValueSink);
+        classHandler.setMethodReturnFieldInfoSink(methodReturnFieldInfoSink);
+        classHandler.setMethodReturnGenericsTypeSink(methodReturnGenericsTypeSink);
+        classHandler.setMethodThrowSink(methodThrowSink);
+        classHandler.setSetMethodSink(setMethodSink);
+        classHandler.setStaticFinalFieldMethodCallIdSink(staticFinalFieldMethodCallIdSink);
         classHandler.recordExtensionsManager(extensionsManager);
         classHandler.setMethodNumCounter(methodNumCounter);
         classHandler.setFailCounter(failCounter);
@@ -370,8 +370,8 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
     // 记录类的信息
     private void recordClassInfo(JavaClass javaClass, boolean duplicateClass, String className, int classJarNum, String jarEntryPath) throws IOException {
         String classMd5 = DigestUtils.md5Hex(javaClass.getBytes());
-        Writer usedClassInfoWriter = duplicateClass ? dupClassInfoWriter : classInfoWriter;
-        JavaCG2FileUtil.write2FileWithTab(usedClassInfoWriter, className, String.valueOf(javaClass.getAccessFlags()), classMd5, String.valueOf(classJarNum), jarEntryPath);
+        JavaCG2RecordSink usedClassInfoSink = duplicateClass ? dupClassInfoSink : classInfoSink;
+        usedClassInfoSink.writeRow(className, String.valueOf(javaClass.getAccessFlags()), classMd5, String.valueOf(classJarNum), jarEntryPath);
     }
 
     // 将处理失败的类保存到目录中
@@ -394,7 +394,7 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
         String accessFlagsStr = String.valueOf(javaClass.getAccessFlags());
         if (!JavaCG2ClassMethodUtil.isObjectClass(superClassName)) {
             // 仅处理父类非Object类的情况
-            JavaCG2FileUtil.write2FileWithTab(extendsImplWriter,
+            extendsImplSink.writeRow(
                     className,
                     accessFlagsStr,
                     JavaCG2Constants.FILE_KEY_EXTENDS,
@@ -403,7 +403,7 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
 
         for (String interfaceName : javaClass.getInterfaceNames()) {
             // 接口不会是Object类，不需要判断
-            JavaCG2FileUtil.write2FileWithTab(extendsImplWriter,
+            extendsImplSink.writeRow(
                     className,
                     accessFlagsStr,
                     JavaCG2Constants.FILE_KEY_IMPLEMENTS,
@@ -438,14 +438,14 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
                     if (paramClassBound != null) {
                         // 泛型类型继承了特定类的处理
                         String extendsClassName = paramClassBound.jvmTypeName();
-                        JavaCG2FileUtil.write2FileWithTab(classSignatureGenericsTypeWriter, className, String.valueOf(seq), typeVariablesName, extendsClassName);
+                        classSignatureGenericsTypeSink.writeRow(className, String.valueOf(seq), typeVariablesName, extendsClassName);
                         continue;
                     }
                     SignatureAttribute.ObjectType[] paramInterfaceBounds = param.getInterfaceBound();
                     if (ArrayUtils.isNotEmpty(paramInterfaceBounds)) {
                         // 泛型类型继承了特定接口的处理
                         String extendsClassName = paramInterfaceBounds[0].jvmTypeName();
-                        JavaCG2FileUtil.write2FileWithTab(classSignatureGenericsTypeWriter, className, String.valueOf(seq), typeVariablesName, extendsClassName);
+                        classSignatureGenericsTypeSink.writeRow(className, String.valueOf(seq), typeVariablesName, extendsClassName);
                     }
                 }
             }
@@ -477,7 +477,7 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
         // 获取类中的内部类信息
         List<InnerClassInfo> innerClassInfoList = JavaCG2ByteCodeUtil.getInnerClassInfo(javaClass);
         for (InnerClassInfo innerClassInfo : innerClassInfoList) {
-            JavaCG2FileUtil.write2FileWithTab(innerClassWriter, innerClassInfo.getInnerClassName(), innerClassInfo.getOuterClassName(),
+            innerClassSink.writeRow(innerClassInfo.getInnerClassName(), innerClassInfo.getOuterClassName(),
                     JavaCG2YesNoEnum.parseStrValue(innerClassInfo.isAnonymousClass()));
         }
     }
@@ -508,7 +508,7 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
             for (int genericsSeq = 0; genericsSeq < classGenericsTypeList.size(); genericsSeq++) {
                 JavaCG2GenericsType javaCG2GenericsType = classGenericsTypeList.get(genericsSeq);
                 // 记录当前类/接口继承或实现时与父类或接口相同的泛型信息
-                JavaCG2FileUtil.write2FileWithTab(classExtImplGenericsTypeWriter,
+                classExtImplGenericsTypeSink.writeRow(
                         className,
                         extendsOrImplStr,
                         seqStr,
@@ -549,188 +549,188 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
         this.threadChildClassMap = threadChildClassMap;
     }
 
-    public void setClassAnnotationWriter(Writer classAnnotationWriter) {
-        this.classAnnotationWriter = classAnnotationWriter;
+    public void setClassAnnotationSink(JavaCG2RecordSink classAnnotationSink) {
+        this.classAnnotationSink = classAnnotationSink;
     }
 
-    public void setClassExtImplGenericsTypeWriter(Writer classExtImplGenericsTypeWriter) {
-        this.classExtImplGenericsTypeWriter = classExtImplGenericsTypeWriter;
+    public void setClassExtImplGenericsTypeSink(JavaCG2RecordSink classExtImplGenericsTypeSink) {
+        this.classExtImplGenericsTypeSink = classExtImplGenericsTypeSink;
     }
 
-    public void setClassInfoWriter(Writer classInfoWriter) {
-        this.classInfoWriter = classInfoWriter;
+    public void setClassInfoSink(JavaCG2RecordSink classInfoSink) {
+        this.classInfoSink = classInfoSink;
     }
 
-    public void setClassReferenceWriter(Writer classReferenceWriter) {
-        this.classReferenceWriter = classReferenceWriter;
+    public void setClassReferenceSink(JavaCG2RecordSink classReferenceSink) {
+        this.classReferenceSink = classReferenceSink;
     }
 
-    public void setDupClassReferenceWriter(Writer dupClassReferenceWriter) {
-        this.dupClassReferenceWriter = dupClassReferenceWriter;
+    public void setDupClassReferenceSink(JavaCG2RecordSink dupClassReferenceSink) {
+        this.dupClassReferenceSink = dupClassReferenceSink;
     }
 
-    public void setClassSignatureGenericsTypeWriter(Writer classSignatureGenericsTypeWriter) {
-        this.classSignatureGenericsTypeWriter = classSignatureGenericsTypeWriter;
+    public void setClassSignatureGenericsTypeSink(JavaCG2RecordSink classSignatureGenericsTypeSink) {
+        this.classSignatureGenericsTypeSink = classSignatureGenericsTypeSink;
     }
 
-    public void setDupClassInfoWriter(Writer dupClassInfoWriter) {
-        this.dupClassInfoWriter = dupClassInfoWriter;
+    public void setDupClassInfoSink(JavaCG2RecordSink dupClassInfoSink) {
+        this.dupClassInfoSink = dupClassInfoSink;
     }
 
-    public void setDupMethodInfoWriter(Writer dupMethodInfoWriter) {
-        this.dupMethodInfoWriter = dupMethodInfoWriter;
+    public void setDupMethodInfoSink(JavaCG2RecordSink dupMethodInfoSink) {
+        this.dupMethodInfoSink = dupMethodInfoSink;
     }
 
-    public void setDupFieldInfoWriter(Writer dupFieldInfoWriter) {
-        this.dupFieldInfoWriter = dupFieldInfoWriter;
+    public void setDupFieldInfoSink(JavaCG2RecordSink dupFieldInfoSink) {
+        this.dupFieldInfoSink = dupFieldInfoSink;
     }
 
-    public void setEnumInitArgFieldWriter(Writer enumInitArgFieldWriter) {
-        this.enumInitArgFieldWriter = enumInitArgFieldWriter;
+    public void setEnumInitArgFieldSink(JavaCG2RecordSink enumInitArgFieldSink) {
+        this.enumInitArgFieldSink = enumInitArgFieldSink;
     }
 
-    public void setEnumInitAssignInfoWriter(Writer enumInitAssignInfoWriter) {
-        this.enumInitAssignInfoWriter = enumInitAssignInfoWriter;
+    public void setEnumInitAssignInfoSink(JavaCG2RecordSink enumInitAssignInfoSink) {
+        this.enumInitAssignInfoSink = enumInitAssignInfoSink;
     }
 
-    public void setExtendsImplWriter(Writer extendsImplWriter) {
-        this.extendsImplWriter = extendsImplWriter;
+    public void setExtendsImplSink(JavaCG2RecordSink extendsImplSink) {
+        this.extendsImplSink = extendsImplSink;
     }
 
-    public void setFieldAnnotationWriter(Writer fieldAnnotationWriter) {
-        this.fieldAnnotationWriter = fieldAnnotationWriter;
+    public void setFieldAnnotationSink(JavaCG2RecordSink fieldAnnotationSink) {
+        this.fieldAnnotationSink = fieldAnnotationSink;
     }
 
-    public void setFieldGenericsTypeWriter(Writer fieldGenericsTypeWriter) {
-        this.fieldGenericsTypeWriter = fieldGenericsTypeWriter;
+    public void setFieldGenericsTypeSink(JavaCG2RecordSink fieldGenericsTypeSink) {
+        this.fieldGenericsTypeSink = fieldGenericsTypeSink;
     }
 
-    public void setFieldInfoWriter(Writer fieldInfoWriter) {
-        this.fieldInfoWriter = fieldInfoWriter;
+    public void setFieldInfoSink(JavaCG2RecordSink fieldInfoSink) {
+        this.fieldInfoSink = fieldInfoSink;
     }
 
-    public void setFieldRelationshipWriter(Writer fieldRelationshipWriter) {
-        this.fieldRelationshipWriter = fieldRelationshipWriter;
+    public void setFieldRelationshipSink(JavaCG2RecordSink fieldRelationshipSink) {
+        this.fieldRelationshipSink = fieldRelationshipSink;
     }
 
-    public void setFieldUsageOtherWriter(Writer fieldUsageOtherWriter) {
-        this.fieldUsageOtherWriter = fieldUsageOtherWriter;
+    public void setFieldUsageOtherSink(JavaCG2RecordSink fieldUsageOtherSink) {
+        this.fieldUsageOtherSink = fieldUsageOtherSink;
     }
 
-    public void setSpringDIFieldWriter(Writer springDIFieldWriter) {
-        this.springDIFieldWriter = springDIFieldWriter;
+    public void setSpringDIFieldSink(JavaCG2RecordSink springDIFieldSink) {
+        this.springDIFieldSink = springDIFieldSink;
     }
 
-    public void setGetMethodWriter(Writer getMethodWriter) {
-        this.getMethodWriter = getMethodWriter;
+    public void setGetMethodSink(JavaCG2RecordSink getMethodSink) {
+        this.getMethodSink = getMethodSink;
     }
 
-    public void setInnerClassWriter(Writer innerClassWriter) {
-        this.innerClassWriter = innerClassWriter;
+    public void setInnerClassSink(JavaCG2RecordSink innerClassSink) {
+        this.innerClassSink = innerClassSink;
     }
 
-    public void setLambdaMethodInfoWriter(Writer lambdaMethodInfoWriter) {
-        this.lambdaMethodInfoWriter = lambdaMethodInfoWriter;
+    public void setLambdaMethodInfoSink(JavaCG2RecordSink lambdaMethodInfoSink) {
+        this.lambdaMethodInfoSink = lambdaMethodInfoSink;
     }
 
-    public void setMethodAnnotationWriter(Writer methodAnnotationWriter) {
-        this.methodAnnotationWriter = methodAnnotationWriter;
+    public void setMethodAnnotationSink(JavaCG2RecordSink methodAnnotationSink) {
+        this.methodAnnotationSink = methodAnnotationSink;
     }
 
-    public void setMethodArgAnnotationWriter(Writer methodArgAnnotationWriter) {
-        this.methodArgAnnotationWriter = methodArgAnnotationWriter;
+    public void setMethodArgAnnotationSink(JavaCG2RecordSink methodArgAnnotationSink) {
+        this.methodArgAnnotationSink = methodArgAnnotationSink;
     }
 
-    public void setMethodArgGenericsTypeWriter(Writer methodArgGenericsTypeWriter) {
-        this.methodArgGenericsTypeWriter = methodArgGenericsTypeWriter;
+    public void setMethodArgGenericsTypeSink(JavaCG2RecordSink methodArgGenericsTypeSink) {
+        this.methodArgGenericsTypeSink = methodArgGenericsTypeSink;
     }
 
-    public void setMethodArgumentWriter(Writer methodArgumentWriter) {
-        this.methodArgumentWriter = methodArgumentWriter;
+    public void setMethodArgumentSink(JavaCG2RecordSink methodArgumentSink) {
+        this.methodArgumentSink = methodArgumentSink;
     }
 
-    public void setMethodCallInfoWriter(Writer methodCallInfoWriter) {
-        this.methodCallInfoWriter = methodCallInfoWriter;
+    public void setMethodCallInfoSink(JavaCG2RecordSink methodCallInfoSink) {
+        this.methodCallInfoSink = methodCallInfoSink;
     }
 
-    public void setMethodCallMethodCallReturnWriter(Writer methodCallMethodCallReturnWriter) {
-        this.methodCallMethodCallReturnWriter = methodCallMethodCallReturnWriter;
+    public void setMethodCallMethodCallReturnSink(JavaCG2RecordSink methodCallMethodCallReturnSink) {
+        this.methodCallMethodCallReturnSink = methodCallMethodCallReturnSink;
     }
 
-    public void setMethodCallStaticFieldWriter(Writer methodCallStaticFieldWriter) {
-        this.methodCallStaticFieldWriter = methodCallStaticFieldWriter;
+    public void setMethodCallStaticFieldSink(JavaCG2RecordSink methodCallStaticFieldSink) {
+        this.methodCallStaticFieldSink = methodCallStaticFieldSink;
     }
 
-    public void setMethodCallNonStaticFieldWriter(Writer methodCallNonStaticFieldWriter) {
-        this.methodCallNonStaticFieldWriter = methodCallNonStaticFieldWriter;
+    public void setMethodCallNonStaticFieldSink(JavaCG2RecordSink methodCallNonStaticFieldSink) {
+        this.methodCallNonStaticFieldSink = methodCallNonStaticFieldSink;
     }
 
-    public void setMethodCallFieldActualTypeWriter(Writer methodCallFieldActualTypeWriter) {
-        this.methodCallFieldActualTypeWriter = methodCallFieldActualTypeWriter;
+    public void setMethodCallFieldActualTypeSink(JavaCG2RecordSink methodCallFieldActualTypeSink) {
+        this.methodCallFieldActualTypeSink = methodCallFieldActualTypeSink;
     }
 
-    public void setMethodCallStaticFieldMCRWriter(Writer methodCallStaticFieldMCRWriter) {
-        this.methodCallStaticFieldMCRWriter = methodCallStaticFieldMCRWriter;
+    public void setMethodCallStaticFieldMCRSink(JavaCG2RecordSink methodCallStaticFieldMCRSink) {
+        this.methodCallStaticFieldMCRSink = methodCallStaticFieldMCRSink;
     }
 
-    public void setMethodCallWriter(Writer methodCallWriter) {
-        this.methodCallWriter = methodCallWriter;
+    public void setMethodCallSink(JavaCG2RecordSink methodCallSink) {
+        this.methodCallSink = methodCallSink;
     }
 
-    public void setMethodCallRawCalleeWriter(Writer methodCallRawCalleeWriter) {
-        this.methodCallRawCalleeWriter = methodCallRawCalleeWriter;
+    public void setMethodCallRawCalleeSink(JavaCG2RecordSink methodCallRawCalleeSink) {
+        this.methodCallRawCalleeSink = methodCallRawCalleeSink;
     }
 
-    public void setMethodCatchWriter(Writer methodCatchWriter) {
-        this.methodCatchWriter = methodCatchWriter;
+    public void setMethodCatchSink(JavaCG2RecordSink methodCatchSink) {
+        this.methodCatchSink = methodCatchSink;
     }
 
-    public void setMethodFinallyWriter(Writer methodFinallyWriter) {
-        this.methodFinallyWriter = methodFinallyWriter;
+    public void setMethodFinallySink(JavaCG2RecordSink methodFinallySink) {
+        this.methodFinallySink = methodFinallySink;
     }
 
-    public void setMethodInfoWriter(Writer methodInfoWriter) {
-        this.methodInfoWriter = methodInfoWriter;
+    public void setMethodInfoSink(JavaCG2RecordSink methodInfoSink) {
+        this.methodInfoSink = methodInfoSink;
     }
 
-    public void setMethodLineNumberWriter(Writer methodLineNumberWriter) {
-        this.methodLineNumberWriter = methodLineNumberWriter;
+    public void setMethodLineNumberSink(JavaCG2RecordSink methodLineNumberSink) {
+        this.methodLineNumberSink = methodLineNumberSink;
     }
 
-    public void setMethodReturnArgSeqWriter(Writer methodReturnArgSeqWriter) {
-        this.methodReturnArgSeqWriter = methodReturnArgSeqWriter;
+    public void setMethodReturnArgSeqSink(JavaCG2RecordSink methodReturnArgSeqSink) {
+        this.methodReturnArgSeqSink = methodReturnArgSeqSink;
     }
 
-    public void setMethodReturnCallIdWriter(Writer methodReturnCallIdWriter) {
-        this.methodReturnCallIdWriter = methodReturnCallIdWriter;
+    public void setMethodReturnCallIdSink(JavaCG2RecordSink methodReturnCallIdSink) {
+        this.methodReturnCallIdSink = methodReturnCallIdSink;
     }
 
-    public void setMethodReturnConstValueWriter(Writer methodReturnConstValueWriter) {
-        this.methodReturnConstValueWriter = methodReturnConstValueWriter;
+    public void setMethodReturnConstValueSink(JavaCG2RecordSink methodReturnConstValueSink) {
+        this.methodReturnConstValueSink = methodReturnConstValueSink;
     }
 
-    public void setMethodReturnFieldInfoWriter(Writer methodReturnFieldInfoWriter) {
-        this.methodReturnFieldInfoWriter = methodReturnFieldInfoWriter;
+    public void setMethodReturnFieldInfoSink(JavaCG2RecordSink methodReturnFieldInfoSink) {
+        this.methodReturnFieldInfoSink = methodReturnFieldInfoSink;
     }
 
-    public void setMethodReturnGenericsTypeWriter(Writer methodReturnGenericsTypeWriter) {
-        this.methodReturnGenericsTypeWriter = methodReturnGenericsTypeWriter;
+    public void setMethodReturnGenericsTypeSink(JavaCG2RecordSink methodReturnGenericsTypeSink) {
+        this.methodReturnGenericsTypeSink = methodReturnGenericsTypeSink;
     }
 
-    public void setMethodThrowWriter(Writer methodThrowWriter) {
-        this.methodThrowWriter = methodThrowWriter;
+    public void setMethodThrowSink(JavaCG2RecordSink methodThrowSink) {
+        this.methodThrowSink = methodThrowSink;
     }
 
-    public void setPackageInfoWriter(Writer packageInfoWriter) {
-        this.packageInfoWriter = packageInfoWriter;
+    public void setPackageInfoSink(JavaCG2RecordSink packageInfoSink) {
+        this.packageInfoSink = packageInfoSink;
     }
 
-    public void setSetMethodWriter(Writer setMethodWriter) {
-        this.setMethodWriter = setMethodWriter;
+    public void setSetMethodSink(JavaCG2RecordSink setMethodSink) {
+        this.setMethodSink = setMethodSink;
     }
 
-    public void setStaticFinalFieldMethodCallIdWriter(Writer staticFinalFieldMethodCallIdWriter) {
-        this.staticFinalFieldMethodCallIdWriter = staticFinalFieldMethodCallIdWriter;
+    public void setStaticFinalFieldMethodCallIdSink(JavaCG2RecordSink staticFinalFieldMethodCallIdSink) {
+        this.staticFinalFieldMethodCallIdSink = staticFinalFieldMethodCallIdSink;
     }
 
     public void setLogMethodSpendTimeWriter(WriterSupportSkip logMethodSpendTimeWriter) {

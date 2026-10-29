@@ -1,18 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Configuration>
+<!--
+    单元测试日志配置：
+    1. 控制台appender使用AsyncAppender包装：日志事件写入内存队列后立即返回，由后台线程完成格式化及System.out输出，
+       避免分析线程逐条同步写控制台（测试套件单次运行控制台日志约84MB，同步写开销可观）。
+       AsyncAppender基于ArrayBlockingQueue实现，不需要disruptor依赖（disruptor仅AsyncLogger需要）。
+    2. pattern中去掉了%C{1}.%M(%L)位置信息，并将Async的includeLocation显式设置为false：
+       位置信息需要在调用线程捕获栈快照，即使使用AsyncAppender，该开销也无法转移（includeLocation=true时仍在调用线程执行）；
+       测试日志以EL表达式调试、解析进度等重复信息为主，日志内容本身已包含被分析的类名、方法名等上下文，位置信息价值有限。
+       如需恢复位置信息用于排查问题：将pattern改为 %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %C{1}.%M(%L) - %m%n ，
+       并将Async的includeLocation改为true。
+-->
 <Configuration status="info" monitorInterval="5">
     <Appenders>
         <Console name="console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %C{1}.%M(%L) - %m%n"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p - %m%n"/>
         </Console>
+
+        <!-- 队列满时默认阻塞调用线程（blocking=true），保证日志不丢失；加大bufferSize以减少高日志量下的线程竞争 -->
+        <Async name="asyncConsole" bufferSize="4096" includeLocation="false">
+            <AppenderRef ref="console"/>
+        </Async>
     </Appenders>
     <Loggers>
         <Root level="info">
-            <AppenderRef ref="console"/>
+            <AppenderRef ref="asyncConsole"/>
         </Root>
 
         <Logger name="com.adrninistrator" level="info" additivity="false">
-            <AppenderRef ref="console" />
+            <AppenderRef ref="asyncConsole" />
         </Logger>
     </Loggers>
 </Configuration>

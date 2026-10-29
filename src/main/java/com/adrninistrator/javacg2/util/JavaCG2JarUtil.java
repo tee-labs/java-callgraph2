@@ -104,7 +104,9 @@ public class JavaCG2JarUtil {
      * @return
      */
     public static List<String> getAllPathListInJar(String jarFilePath) {
-        try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(jarFilePath)))) {
+        // 文件流需要单独作为try-with-resources的资源，避免zip4j的ZipInputStream未成功读取任何entry时close()不关闭底层文件流
+        try (InputStream fileInputStream = new BufferedInputStream(new FileInputStream(jarFilePath));
+             ZipInputStream zipInputStream = new ZipInputStream(fileInputStream)) {
             List<String> pathList = new ArrayList<>();
             LocalFileHeader fileHeader;
             while ((fileHeader = zipInputStream.getNextEntry()) != null) {

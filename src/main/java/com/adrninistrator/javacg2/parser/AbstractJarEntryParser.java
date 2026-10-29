@@ -59,7 +59,12 @@ public abstract class AbstractJarEntryParser {
         init();
 
         String jarEntryPath = null;
-        try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(jarFilePath)))) {
+        /*
+            文件流需要单独作为try-with-resources的资源
+            zip4j的ZipInputStream在未成功读取任何entry时（如空jar文件），close()方法不会关闭底层文件流，会导致Windows下文件被占用无法删除
+         */
+        try (InputStream fileInputStream = new BufferedInputStream(new FileInputStream(jarFilePath));
+             ZipInputStream zipInputStream = new ZipInputStream(fileInputStream)) {
             LocalFileHeader fileHeader;
             while ((fileHeader = zipInputStream.getNextEntry()) != null) {
                 if (fileHeader.isDirectory()) {

@@ -214,7 +214,9 @@ public class MergeJarHandler {
      * @return
      */
     private List<String> getJarPathListInJar(String jarFilePath) {
-        try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(jarFilePath)))) {
+        // 文件流需要单独作为try-with-resources的资源，避免zip4j的ZipInputStream未成功读取任何entry时close()不关闭底层文件流
+        try (InputStream fileInputStream = new BufferedInputStream(new FileInputStream(jarFilePath));
+             ZipInputStream zipInputStream = new ZipInputStream(fileInputStream)) {
             List<String> jarPathList = new ArrayList<>();
             LocalFileHeader fileHeader;
             while ((fileHeader = zipInputStream.getNextEntry()) != null) {
@@ -566,7 +568,9 @@ public class MergeJarHandler {
     private boolean handleJarWarFile(File sourceJarFile, String jarWarCanonicalPath, String firstLevelDirName, ZipOutputStream targetZos) throws IOException {
         if (javaCG2ElManager.checkNeedIgnoreJarWarByClassDirPrefix()) {
             // 通过class文件对应指定层级的目录路径判断是否跳过合并当前的jar、war文件
-            try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(sourceJarFile)))) {
+            // 文件流需要单独作为try-with-resources的资源，避免zip4j的ZipInputStream未成功读取任何entry时close()不关闭底层文件流
+            try (InputStream sourceJarFileInputStream = new BufferedInputStream(new FileInputStream(sourceJarFile));
+                 ZipInputStream zipInputStream = new ZipInputStream(sourceJarFileInputStream)) {
                 if (checkIgnoreJarWarByClassDirPrefix(zipInputStream)) {
                     log.info("忽略合并当前jar、war文件 {}", sourceJarFile.getAbsolutePath());
                     return true;
@@ -577,12 +581,16 @@ public class MergeJarHandler {
         recordJarInJarNum(jarWarCanonicalPath);
 
         Set<String> loadClassFilePathWithPrefixSet;
-        try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(sourceJarFile)))) {
+        // 文件流需要单独作为try-with-resources的资源，避免zip4j的ZipInputStream未成功读取任何entry时close()不关闭底层文件流
+        try (InputStream sourceJarFileInputStream = new BufferedInputStream(new FileInputStream(sourceJarFile));
+             ZipInputStream zipInputStream = new ZipInputStream(sourceJarFileInputStream)) {
             // 处理 multi-release JAR 文件
             loadClassFilePathWithPrefixSet = handleMultiReleaseJarFile(zipInputStream, jarWarCanonicalPath, "");
         }
 
-        try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(sourceJarFile)))) {
+        // 文件流需要单独作为try-with-resources的资源，避免zip4j的ZipInputStream未成功读取任何entry时close()不关闭底层文件流
+        try (InputStream sourceJarFileInputStream = new BufferedInputStream(new FileInputStream(sourceJarFile));
+             ZipInputStream zipInputStream = new ZipInputStream(sourceJarFileInputStream)) {
             // 执行处理jar、war文件
             doHandleJarWarFile(zipInputStream, jarWarCanonicalPath, firstLevelDirName, targetZos, true, loadClassFilePathWithPrefixSet);
             return true;
@@ -685,7 +693,9 @@ public class MergeJarHandler {
      */
     private boolean checkMultiReleaseJarFile(String jarPath) {
         LocalFileHeader fileHeader;
-        try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(jarPath)))) {
+        // 文件流需要单独作为try-with-resources的资源，避免zip4j的ZipInputStream未成功读取任何entry时close()不关闭底层文件流
+        try (InputStream jarFileInputStream = new BufferedInputStream(new FileInputStream(jarPath));
+             ZipInputStream zipInputStream = new ZipInputStream(jarFileInputStream)) {
             while ((fileHeader = zipInputStream.getNextEntry()) != null) {
                 if (!fileHeader.isDirectory()) {
                     if (JavaCG2Constants.META_INF_MANIFEST.equals(fileHeader.getFileName())) {
@@ -992,7 +1002,9 @@ public class MergeJarHandler {
             }
         }
 
-        try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(mergeJarFile)));
+        // 文件流需要单独作为try-with-resources的资源，避免zip4j的ZipInputStream未成功读取任何entry时close()不关闭底层文件流
+        try (InputStream mergeJarFileInputStream = new BufferedInputStream(new FileInputStream(mergeJarFile));
+             ZipInputStream zipInputStream = new ZipInputStream(mergeJarFileInputStream);
              ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(fatJarFile))) {
             LocalFileHeader fileHeader;
             while ((fileHeader = zipInputStream.getNextEntry()) != null) {

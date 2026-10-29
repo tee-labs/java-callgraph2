@@ -1170,7 +1170,7 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 |war|支持解析 war 文件中的 class 等文件，及 war 文件中的 jar 文件中的文件|
 |jmod|JDK9 及以上的 JDK 标准库文件格式|
 |xml|支持解析 Spring、MyBatis 相关的 XML 数据（需要通过 java-all-call-graph 实现）|
-|properties|解析 properties 文件内容|
+|properties|解析 properties 文件内容（需要通过 java-all-call-graph 实现）|
 
 ## 6.2. 直接使用原始 jar 文件
 
@@ -1192,11 +1192,15 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 
 ### 6.3.2. 合并生成的 jar 文件保存目录
 
-若指定的需要解析的第一个元素为 jar、war、jmod 文件，则新生成的 jar 文件生成在同一个目录中
+若通过代码方式指定了输出根目录参数 output.root.path（可通过 Builder 方式的 setOutputRootPath 方法指定），则新生成的 jar 文件生成在输出根目录中
 
-若指定的需要解析的第一个元素为目录，则新生成的 jar 文件生成在该目录中
+未指定输出根目录参数时，若指定的需要解析的第一个元素为 jar、war、jmod 文件，则新生成的 jar 文件生成在同一个目录中
+
+未指定输出根目录参数时，若指定的需要解析的第一个元素为目录，则新生成的 jar 文件生成在该目录中
 
 文件名在第一个元素名称之后增加“-javacg2_merged.jar”作为后缀
+
+假如配置参数 merge.separate.fat.jar 为 true，还会额外生成一个仅包含 class 文件的 fat jar 文件（所有 jar 文件中的 class 文件合并到根目录），文件名以“-javacg2_merged_fat.jar”作为后缀
 
 ### 6.3.3. 合并生成的 jar 文件结构
 

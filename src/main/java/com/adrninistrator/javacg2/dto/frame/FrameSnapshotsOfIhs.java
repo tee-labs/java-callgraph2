@@ -1,8 +1,7 @@
 package com.adrninistrator.javacg2.dto.frame;
 
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,8 +15,8 @@ import java.util.Set;
  * @date 2022/10/21
  * @description: 指令与对应的栈桢信息快照列表
  */
+@Slf4j
 public class FrameSnapshotsOfIhs {
-    private static final Logger logger = LoggerFactory.getLogger(FrameSnapshotsOfIhs.class);
 
     private final String fullMethod;
 
@@ -115,7 +114,7 @@ public class FrameSnapshotsOfIhs {
         frameSnapshotNum++;
 
         if (frameSnapshotNum >= JavaCG2Constants.MAX_FRAME_SNAP_SHOTS_NUM) {
-            logger.warn("方法的栈桢信息快照数量超过允许的最大数量 {} {} {}", usage, fullMethod, frameSnapshotNum);
+            log.warn("方法的栈桢信息快照数量超过允许的最大数量 {} {} {}", usage, fullMethod, frameSnapshotNum);
             exceedFrameSnapshotNum = true;
             frameSnapshotNumExceedMethodSet.add(fullMethod);
         }

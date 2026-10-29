@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.dto.classes;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2023/3/25
  * @description: 内部类信息
  */
+@Getter
 public class InnerClassInfo {
     // 内部类名
     private final String innerClassName;
@@ -19,17 +22,5 @@ public class InnerClassInfo {
         this.innerClassName = innerClassName;
         this.outerClassName = outerClassName;
         this.anonymousClass = anonymousClass;
-    }
-
-    public String getInnerClassName() {
-        return innerClassName;
-    }
-
-    public String getOuterClassName() {
-        return outerClassName;
-    }
-
-    public boolean isAnonymousClass() {
-        return anonymousClass;
     }
 }

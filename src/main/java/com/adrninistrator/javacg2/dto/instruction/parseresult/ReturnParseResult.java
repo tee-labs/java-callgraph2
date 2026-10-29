@@ -1,12 +1,14 @@
 package com.adrninistrator.javacg2.dto.instruction.parseresult;
 
 import com.adrninistrator.javacg2.dto.element.BaseElement;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2022/11/4
  * @description: RETURN类指令的解析结果
  */
+@Getter
 public class ReturnParseResult extends BaseInstructionParseResult {
 
     // 返回元素
@@ -14,9 +16,5 @@ public class ReturnParseResult extends BaseInstructionParseResult {
 
     public ReturnParseResult(BaseElement returnElement) {
         this.returnElement = returnElement;
-    }
-
-    public BaseElement getReturnElement() {
-        return returnElement;
     }
 }

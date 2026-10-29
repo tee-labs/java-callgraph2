@@ -5,12 +5,14 @@ import com.adrninistrator.javacg2.common.enums.JavaCG2DirEnum;
 import com.adrninistrator.javacg2.conf.enums.interfaces.OtherConfigInterface;
 import com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2022/11/7
  * @description:
  */
+@Getter
 public enum JavaCG2OtherConfigFileUseSetEnum implements OtherConfigInterface {
     OCFUSE_FR_EQ_CONVERSION_METHOD(JavaCG2DirEnum.IDE_CONFIG.getDirName() + "/fr_eq_conversion_method.properties",
             new String[]{"(作用) 在分析dto的字段之间通过get/set方法的关联关系时使用，指定方法返回值与被调用对象或参数认为是等值转换的方法（每行代表一条记录，支持多行）",
@@ -44,16 +46,6 @@ public enum JavaCG2OtherConfigFileUseSetEnum implements OtherConfigInterface {
     @Override
     public String getKey() {
         return fileName;
-    }
-
-    @Override
-    public String[] getDescriptions() {
-        return descriptions;
-    }
-
-    @Override
-    public String[] getDefaultValues() {
-        return defaultValues;
     }
 
     @Override

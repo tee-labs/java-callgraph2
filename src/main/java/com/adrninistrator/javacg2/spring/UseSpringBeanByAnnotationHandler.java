@@ -9,9 +9,8 @@ import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,9 +23,8 @@ import java.util.Map;
  * @date 2022/10/3
  * @description: 处理通过注解使用Spring Bean的信息
  */
+@Slf4j
 public class UseSpringBeanByAnnotationHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(UseSpringBeanByAnnotationHandler.class);
 
     private final Map<String, ClassExtendsInfo> classExtendsInfoMap;
 
@@ -88,9 +86,9 @@ public class UseSpringBeanByAnnotationHandler {
         this.springDefineBeanHandler = springDefineBeanHandler;
         this.springXmlBeanParser = springXmlBeanParser;
         if (springXmlBeanParser != null) {
-            logger.info("指定 {} 实例 {}", SpringXmlBeanParserInterface.class.getSimpleName(), springXmlBeanParser.getClass().getName());
+            log.info("指定 {} 实例 {}", SpringXmlBeanParserInterface.class.getSimpleName(), springXmlBeanParser.getClass().getName());
         } else {
-            logger.info("未指定 {} 实例", SpringXmlBeanParserInterface.class.getSimpleName());
+            log.info("未指定 {} 实例", SpringXmlBeanParserInterface.class.getSimpleName());
         }
     }
 
@@ -329,7 +327,7 @@ public class UseSpringBeanByAnnotationHandler {
             }
 
             // 字段类型，与字段对应的Spring Bean的类型不匹配
-            logger.warn("以下类获取到的字段的Spring Bean类型与字段类型不匹配 {} {} {} {}", className, fieldName, springBeanType, fieldType);
+            log.warn("以下类获取到的字段的Spring Bean类型与字段类型不匹配 {} {} {} {}", className, fieldName, springBeanType, fieldType);
         }
 
         // 记录当前类的当前字段匹配的Spring Bean类型

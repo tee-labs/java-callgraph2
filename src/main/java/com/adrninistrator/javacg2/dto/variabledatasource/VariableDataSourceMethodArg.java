@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.dto.variabledatasource;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2023/6/12
  * @description: 变量的数据来源，使用方法参数
  */
+@Getter
 public class VariableDataSourceMethodArg extends AbstractVariableDataSource {
 
     // 参数的序号（从1开始）
@@ -27,14 +30,6 @@ public class VariableDataSourceMethodArg extends AbstractVariableDataSource {
     public boolean compare(VariableDataSourceMethodArg added) {
         return this.argSeq == added.argSeq &&
                 this.argType.equals(added.argType);
-    }
-
-    public int getArgSeq() {
-        return argSeq;
-    }
-
-    public String getArgType() {
-        return argType;
     }
 
     @Override

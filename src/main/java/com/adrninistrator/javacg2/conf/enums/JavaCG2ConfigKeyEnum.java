@@ -5,12 +5,14 @@ import com.adrninistrator.javacg2.common.enums.JavaCG2CalleeRawActualEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2DirEnum;
 import com.adrninistrator.javacg2.conf.enums.interfaces.MainConfigInterface;
 import com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2022/11/7
  * @description:
  */
+@Getter
 public enum JavaCG2ConfigKeyEnum implements MainConfigInterface {
     CKE_PARSE_METHOD_CALL_TYPE_VALUE("parse.method.call.type.value",
             new String[]{"处理方法调用时是否解析被调用对象和参数可能的类型与值",
@@ -105,16 +107,6 @@ public enum JavaCG2ConfigKeyEnum implements MainConfigInterface {
     }
 
     @Override
-    public String getKey() {
-        return key;
-    }
-
-    @Override
-    public String[] getDescriptions() {
-        return descriptions;
-    }
-
-    @Override
     public String getConfigPrintInfo() {
         return key + " " + JavaCG2ConfigKeyEnum.class.getSimpleName() + "." + name();
     }
@@ -122,21 +114,6 @@ public enum JavaCG2ConfigKeyEnum implements MainConfigInterface {
     @Override
     public String genConfigUsage() {
         return doGenConfigUsage(JavaCG2ConfigWriter.class);
-    }
-
-    @Override
-    public Class<?> getType() {
-        return type;
-    }
-
-    @Override
-    public boolean isNotBlank() {
-        return notBlank;
-    }
-
-    @Override
-    public String getDefaultValue() {
-        return defaultValue;
     }
 
     @Override

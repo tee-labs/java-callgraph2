@@ -1,44 +1,27 @@
 package com.adrninistrator.javacg2.dto.type;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * @author adrninistrator
  * @date 2024/10/24
  * @description: 泛型相关的类型信息
  */
+@Getter
 public class JavaCG2GenericsType extends JavaCG2Type {
 
     // 泛型类型变量名称
+    @Setter
     private String typeVariablesName;
 
     // 通配符
+    @Setter
     private String wildcard;
 
     // 通配符引用的类型，如extends xxx，super xxx
+    @Setter
     private String referenceType;
-
-    public String getTypeVariablesName() {
-        return typeVariablesName;
-    }
-
-    public void setTypeVariablesName(String typeVariablesName) {
-        this.typeVariablesName = typeVariablesName;
-    }
-
-    public String getWildcard() {
-        return wildcard;
-    }
-
-    public void setWildcard(String wildcard) {
-        this.wildcard = wildcard;
-    }
-
-    public String getReferenceType() {
-        return referenceType;
-    }
-
-    public void setReferenceType(String referenceType) {
-        this.referenceType = referenceType;
-    }
 
     @Override
     public String toString() {

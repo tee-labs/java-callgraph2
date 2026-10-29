@@ -3,8 +3,9 @@ package com.adrninistrator.javacg2.dto.element;
 import com.adrninistrator.javacg2.common.enums.JavaCG2ConstantTypeEnum;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
 import com.adrninistrator.javacg2.util.JavaCG2ByteCodeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,8 +15,9 @@ import java.util.Map;
  * @date 2022/5/13
  * @description: 被操作元素的基类
  */
+@Slf4j
+@Getter
 public abstract class BaseElement {
-    private static final Logger logger = LoggerFactory.getLogger(BaseElement.class);
 
     protected String simpleClassName = this.getClass().getSimpleName();
 
@@ -35,6 +37,7 @@ public abstract class BaseElement {
         value
             数组的值
      */
+    @Setter
     private Map<Integer, BaseElement> arrayValueMap;
 
     // 变量或常量的常量值
@@ -82,7 +85,7 @@ public abstract class BaseElement {
     }
 
     public void checkTypeString(String expectedType) {
-        if (!logger.isDebugEnabled()) {
+        if (!log.isDebugEnabled()) {
             return;
         }
 
@@ -121,27 +124,6 @@ public abstract class BaseElement {
 
     protected void setValue(Object value) {
         this.value = value;
-    }
-
-    //
-    public String getType() {
-        return type;
-    }
-
-    public int getArrayDimensions() {
-        return arrayDimensions;
-    }
-
-    public Map<Integer, BaseElement> getArrayValueMap() {
-        return arrayValueMap;
-    }
-
-    public void setArrayValueMap(Map<Integer, BaseElement> arrayValueMap) {
-        this.arrayValueMap = arrayValueMap;
-    }
-
-    public Object getValue() {
-        return value;
     }
 
     @Override

@@ -2,12 +2,14 @@ package com.adrninistrator.javacg2.dto.element.variable;
 
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.dto.element.BaseElement;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2022/10/5
  * @description: 非静态字段
  */
+@Getter
 public class FieldElement extends LocalVariableElement {
 
     // 类名或this
@@ -39,14 +41,6 @@ public class FieldElement extends LocalVariableElement {
         fieldElementCopy.copyVariableDataSource(this);
         fieldElementCopy.setArrayValueMap(getArrayValueMap());
         return fieldElementCopy;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public String getRawType() {
-        return rawType;
     }
 
     @Override

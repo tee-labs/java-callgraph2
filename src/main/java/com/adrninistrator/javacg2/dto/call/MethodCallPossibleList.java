@@ -13,8 +13,8 @@ import com.adrninistrator.javacg2.dto.variabledatasource.VariableDataSourceMetho
 import com.adrninistrator.javacg2.dto.variabledatasource.VariableDataSourceMethodCallReturn;
 import com.adrninistrator.javacg2.util.JavaCG2ByteCodeUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,9 +26,9 @@ import java.util.Map;
  * @date 2022/11/3
  * @description: 方法调用中被调用对象、参数的可能的信息列表
  */
+@Slf4j
+@Getter
 public class MethodCallPossibleList {
-
-    private static final Logger logger = LoggerFactory.getLogger(MethodCallPossibleList.class);
 
     // 方法调用中可能的信息列表
     private List<MethodCallPossibleEntry> methodCallPossibleEntryList;
@@ -201,7 +201,7 @@ public class MethodCallPossibleList {
                     BaseElement arrayElement = map.get(key);
                     if (handledElementList.contains(arrayElement)) {
                         // 假如数组中的元素已经处理过，说明出现了数组元素的循环引用，需要结束，否则会死循环
-                        logger.warn("出现数组元素的循环引用 {}", arrayElement.getType());
+                        log.warn("出现数组元素的循环引用 {}", arrayElement.getType());
                         continue;
                     }
 
@@ -301,14 +301,6 @@ public class MethodCallPossibleList {
 
     public boolean hasType() {
         return typeNum > 0;
-    }
-
-    public List<MethodCallPossibleEntry> getMethodCallPossibleEntryList() {
-        return methodCallPossibleEntryList;
-    }
-
-    public boolean isArrayElement() {
-        return arrayElement;
     }
 
     /**

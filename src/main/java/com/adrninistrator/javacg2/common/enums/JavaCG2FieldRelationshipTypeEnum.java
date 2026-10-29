@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.common.enums;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2023/8/6
  * @description: 通过get/set方法关联的字段关联类型
  */
+@Getter
 public enum JavaCG2FieldRelationshipTypeEnum {
     FRTE_DIRECTLY("DI", "字段直接赋值"),
     FRTE_DIRECTLY_EQUIVALENT_CONVERSION("DI_EQC", "字段经过等值转换直接赋值"),
@@ -20,13 +23,5 @@ public enum JavaCG2FieldRelationshipTypeEnum {
     JavaCG2FieldRelationshipTypeEnum(String type, String desc) {
         this.type = type;
         this.desc = desc;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getDesc() {
-        return desc;
     }
 }

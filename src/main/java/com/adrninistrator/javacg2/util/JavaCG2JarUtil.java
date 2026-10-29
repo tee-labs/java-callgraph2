@@ -2,11 +2,10 @@ package com.adrninistrator.javacg2.util;
 
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.dto.jar.OuterInnerJarPath;
+import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.io.inputstream.ZipInputStream;
 import net.lingala.zip4j.model.LocalFileHeader;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -21,9 +20,8 @@ import java.util.jar.Manifest;
  * @date 2022/2/8
  * @description:
  */
+@Slf4j
 public class JavaCG2JarUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2JarUtil.class);
 
     /**
      * 从jar文件中的文件路径获取文件名称
@@ -44,7 +42,7 @@ public class JavaCG2JarUtil {
      */
     public static String genDirNameInJar(int jarNum, String jarDirName) {
         String dirName = String.format("%04d%s%s", jarNum, JavaCG2Constants.JAR_SEQ_FLAG, jarDirName);
-        logger.info("获得生成的jar文件中的目录名称 {}", dirName);
+        log.info("获得生成的jar文件中的目录名称 {}", dirName);
         return dirName;
     }
 
@@ -114,7 +112,7 @@ public class JavaCG2JarUtil {
             }
             return pathList;
         } catch (Exception e) {
-            logger.error("获取jar文件中所有的文件及目录的路径异常 ", e);
+            log.error("获取jar文件中所有的文件及目录的路径异常 ", e);
             return Collections.emptyList();
         }
     }
@@ -131,7 +129,7 @@ public class JavaCG2JarUtil {
             String multiReleaseValue = manifest.getMainAttributes().getValue("Multi-Release");
             return Boolean.parseBoolean(multiReleaseValue);
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             return false;
         }
     }

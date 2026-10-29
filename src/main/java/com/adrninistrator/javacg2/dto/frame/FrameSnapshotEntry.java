@@ -1,12 +1,14 @@
 package com.adrninistrator.javacg2.dto.frame;
 
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2022/10/21
  * @description: 栈桢对应的信息快照
  */
+@Getter
 public class FrameSnapshotEntry {
 
     // 操作数栈
@@ -33,22 +35,6 @@ public class FrameSnapshotEntry {
         this.localsSnapshot = localsSnapshot;
         this.nonStaticFieldInfoMap = nonStaticFieldInfoMap;
         this.staticFieldInfoMap = staticFieldInfoMap;
-    }
-
-    public JavaCG2OperandStack getStackSnapshot() {
-        return stackSnapshot;
-    }
-
-    public JavaCG2LocalVariables getLocalsSnapshot() {
-        return localsSnapshot;
-    }
-
-    public FieldInformationMap getNonStaticFieldInfoMap() {
-        return nonStaticFieldInfoMap;
-    }
-
-    public FieldInformationMap getStaticFieldInfoMap() {
-        return staticFieldInfoMap;
     }
 
     public JavaCG2OperandStack copyStackSnapshot() {

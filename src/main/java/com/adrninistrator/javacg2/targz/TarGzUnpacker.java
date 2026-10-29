@@ -1,12 +1,11 @@
 package com.adrninistrator.javacg2.targz;
 
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -17,8 +16,8 @@ import java.io.FileInputStream;
  * @date 2024/1/18
  * @description: 用于解压.tar.gz中的war包、jar包及配置文件
  */
+@Slf4j
 public class TarGzUnpacker {
-    private static final Logger logger = LoggerFactory.getLogger(TarGzUnpacker.class);
 
     // 需要解压的tar.gz文件路径
     protected final String tarGzFilePath;
@@ -44,21 +43,21 @@ public class TarGzUnpacker {
      * @return true: 成功 false: 失败
      */
     public boolean unpack() {
-        logger.info("开始处理文件 {}", tarGzFilePath);
+        log.info("开始处理文件 {}", tarGzFilePath);
         File tarGzFile = new File(tarGzFilePath);
         if (!tarGzFile.exists()) {
-            logger.error("文件不存在 {}", tarGzFilePath);
+            log.error("文件不存在 {}", tarGzFilePath);
             return false;
         }
         tarGzFileName = tarGzFile.getName();
 
         if (!JavaCG2FileUtil.isDirectoryExists(unpackDstDirPath, true)) {
-            logger.error("输出目录不存在且无法创建 {} {}", tarGzFileName, unpackDstDirPath);
+            log.error("输出目录不存在且无法创建 {} {}", tarGzFileName, unpackDstDirPath);
             return false;
         }
         File[] files = new File(unpackDstDirPath).listFiles();
         if (!ArrayUtils.isEmpty(files)) {
-            logger.error("保存解压后文件的目录非空，请先清空该目录 {}", unpackDstDirPath);
+            log.error("保存解压后文件的目录非空，请先清空该目录 {}", unpackDstDirPath);
             return false;
         }
 
@@ -73,7 +72,7 @@ public class TarGzUnpacker {
             }
             return true;
         } catch (Exception e) {
-            logger.error("error {} ", tarGzFileName, e);
+            log.error("error {} ", tarGzFileName, e);
             return false;
         }
     }
@@ -82,10 +81,10 @@ public class TarGzUnpacker {
         String tarEntryName = tarEntry.getName();
         // 生成的文件目录保持原有形式
         String filePath = unpackDstDirPath + File.separator + tarEntryName;
-        logger.info("保存文件 {} {} {}", tarGzFileName, tarEntryName, filePath);
+        log.info("保存文件 {} {} {}", tarGzFileName, tarEntryName, filePath);
         File file = new File(filePath);
         if (!JavaCG2FileUtil.isDirectoryExists(file.getParent(), true)) {
-            logger.error("创建文件所在目录失败 {}", file.getParent());
+            log.error("创建文件所在目录失败 {}", file.getParent());
             return false;
         }
         return JavaCG2FileUtil.saveInputToFileNoClose(inputStream, file);

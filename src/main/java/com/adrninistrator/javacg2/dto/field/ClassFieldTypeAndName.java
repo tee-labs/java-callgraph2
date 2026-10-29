@@ -1,6 +1,7 @@
 package com.adrninistrator.javacg2.dto.field;
 
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
+import lombok.Getter;
 
 import java.util.Objects;
 
@@ -9,6 +10,7 @@ import java.util.Objects;
  * @date 2024/2/2
  * @description: 类中的字段类型及名称，包括静态字段及非静态字段
  */
+@Getter
 public class ClassFieldTypeAndName extends FieldTypeAndName {
 
     // 类名
@@ -40,9 +42,5 @@ public class ClassFieldTypeAndName extends FieldTypeAndName {
     @Override
     public int hashCode() {
         return Objects.hash(fieldName, className);
-    }
-
-    public String getClassName() {
-        return className;
     }
 }

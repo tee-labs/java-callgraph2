@@ -1,42 +1,25 @@
 package com.adrninistrator.javacg2.dto.field;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * @author adrninistrator
  * @date 2025/2/21
  * @description: 类中的字段
  */
+@Getter
 public class ClassField {
 
     // 类名
+    @Setter
     private String className;
 
     // 字段名称
+    @Setter
     private String fieldName;
 
     // 字段类型
+    @Setter
     private String fieldType;
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
-
-    public String getFieldType() {
-        return fieldType;
-    }
-
-    public void setFieldType(String fieldType) {
-        this.fieldType = fieldType;
-    }
 }

@@ -7,11 +7,10 @@ import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import test.base.TestBase;
 
 import java.io.File;
@@ -24,9 +23,8 @@ import java.nio.charset.StandardCharsets;
  * @description: JavaCG2ParseSwitchBuilder的测试
  * 需要先在当前项目执行 mvn package -DskipTests -Ptest_gen_jar 命令生成对应jar文件
  */
+@Slf4j
 public class TestParseSwitchBuilder extends TestBase {
-
-    private static final Logger logger = LoggerFactory.getLogger(TestParseSwitchBuilder.class);
 
     // jar包中内置的parse_ignore_method.av默认表达式内容
     private static final String BUILT_IN_IGNORE_METHOD_EL_TEXT = "string.endsWithAny(full_method, 'hashCode()', 'equals(java.lang.Object)')";
@@ -93,14 +91,14 @@ public class TestParseSwitchBuilder extends TestBase {
         // 对照组：设置不匹配任何类的忽略表达式
         String classInfo4Control = runAndReadClassInfo(OUT_DIR_CONTROL, JavaCG2ParseSwitchBuilder.builder()
                 .ignoreClassByClassName("not.exists.Class1"));
-        logger.info("对照组class_info.md中是否出现类 {} {}", CLASS_TO_IGNORE, classInfo4Control.contains(CLASS_TO_IGNORE));
+        log.info("对照组class_info.md中是否出现类 {} {}", CLASS_TO_IGNORE, classInfo4Control.contains(CLASS_TO_IGNORE));
         // 不匹配任何类的忽略表达式不会跳过类
         Assert.assertTrue(classInfo4Control.contains(CLASS_TO_IGNORE));
 
         // 过滤组：设置匹配的忽略表达式
         String classInfo4Ignore = runAndReadClassInfo(OUT_DIR_IGNORE, JavaCG2ParseSwitchBuilder.builder()
                 .ignoreClassByClassName(CLASS_TO_IGNORE));
-        logger.info("过滤组class_info.md中是否出现类 {} {}", CLASS_TO_IGNORE, classInfo4Ignore.contains(CLASS_TO_IGNORE));
+        log.info("过滤组class_info.md中是否出现类 {} {}", CLASS_TO_IGNORE, classInfo4Ignore.contains(CLASS_TO_IGNORE));
         // 匹配的忽略表达式跳过类
         Assert.assertFalse(classInfo4Ignore.contains(CLASS_TO_IGNORE));
     }
@@ -177,42 +175,42 @@ public class TestParseSwitchBuilder extends TestBase {
             JavaCG2ParseSwitchBuilder.builder().ignoreClassByClassName();
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 类名为空白
         try {
             JavaCG2ParseSwitchBuilder.builder().ignoreClassByPackageName(" ");
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 完整方法包含单引号
         try {
             JavaCG2ParseSwitchBuilder.builder().ignoreMethodByFullMethod("a.b.Class1:te'st()");
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 方法调用类型为null
         try {
             JavaCG2ParseSwitchBuilder.builder().ignoreMethodCallByCallType(null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 原始表达式文本为null
         try {
             JavaCG2ParseSwitchBuilder.builder().setIgnoreClassExpression(null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // applyTo方法传入null
         try {
             JavaCG2ParseSwitchBuilder.builder().applyTo(null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 
@@ -223,7 +221,7 @@ public class TestParseSwitchBuilder extends TestBase {
             JavaCG2EntryBuilder.builder().setParseSwitch(null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 }

@@ -6,9 +6,8 @@ import com.adrninistrator.javacg2.conf.enums.JavaCG2ConfigKeyEnum;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseSetEnum;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +19,8 @@ import java.util.Set;
  * @date 2022/11/4
  * @description: 配置参数管理类
  */
+@Slf4j
 public class JavaCG2ConfManager {
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2ConfManager.class);
 
     public static JavaCG2ConfInfo getConfInfo(JavaCG2ConfigureWrapper javaCG2ConfigureWrapper) {
         JavaCG2ConfInfo javaCG2ConfInfo = new JavaCG2ConfInfo();
@@ -35,13 +34,13 @@ public class JavaCG2ConfManager {
             if (firstParseInitMethodType) {
                 String logContent = String.format("配置文件 %s 中的 %s 参数值为false时， %s 参数值不会生效-1", JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE.getFileName(),
                         JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE.getKey(), JavaCG2ConfigKeyEnum.CKE_FIRST_PARSE_INIT_METHOD_TYPE.getKey());
-                logger.warn("{}", logContent);
+                log.warn("{}", logContent);
                 firstParseInitMethodType = false;
             }
             if (analyseFieldRelationship) {
                 String logContent = String.format("配置文件 %s 中的 %s 参数值为false时， %s 参数值不会生效-2", JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE.getFileName(),
                         JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE.getKey(), JavaCG2ConfigKeyEnum.CKE_ANALYSE_FIELD_RELATIONSHIP.getKey());
-                logger.warn("{}", logContent);
+                log.warn("{}", logContent);
                 analyseFieldRelationship = false;
             }
         }
@@ -60,13 +59,13 @@ public class JavaCG2ConfManager {
 
         boolean parseJarCompatibilityMode = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_PARSE_JAR_COMPATIBILITY_MODE);
         if (parseJarCompatibilityMode) {
-            logger.info("使用Jar兼容性检查模式，仅解析类、方法、字段等基础信息");
+            log.info("使用Jar兼容性检查模式，仅解析类、方法、字段等基础信息");
         }
         javaCG2ConfInfo.setParseJarCompatibilityMode(parseJarCompatibilityMode);
 
         boolean parseOnlyClassMode = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_PARSE_ONLY_CLASS_MODE);
         if (parseOnlyClassMode) {
-            logger.info("仅解析类信息");
+            log.info("仅解析类信息");
         }
         javaCG2ConfInfo.setParseOnlyClassMode(parseOnlyClassMode);
 
@@ -86,20 +85,20 @@ public class JavaCG2ConfManager {
             String[] data1 = StringUtils.splitPreserveAllTokens(frEqConversionMethod, JavaCG2Constants.FLAG_EQUAL);
             if (data1.length != 2) {
                 String errorMsg = "配置文件内容不是合法的properties参数 " + configKey + " " + frEqConversionMethod;
-                logger.error(errorMsg);
+                log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }
             String classAndMethod = data1[0];
             int argObjSeq = Integer.parseInt(data1[1]);
             if (argObjSeq < 0) {
                 String errorMsg = "配置文件被调用对象（使用0表示）或方法参数（从1开始）序号非法 " + configKey + " " + frEqConversionMethod;
-                logger.error(errorMsg);
+                log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }
             String[] data2 = StringUtils.splitPreserveAllTokens(classAndMethod, JavaCG2Constants.FLAG_COLON);
             if (data2.length != 2) {
                 String errorMsg = "配置文件内容不是合法的类名与方法名 " + configKey + " " + frEqConversionMethod;
-                logger.error(errorMsg);
+                log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }
             String className = data2[0];

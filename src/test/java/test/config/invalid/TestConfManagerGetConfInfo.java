@@ -7,11 +7,10 @@ import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2ConfigKeyEnum;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseSetEnum;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -22,9 +21,8 @@ import java.util.Set;
  * @date 2026/5/24
  * @description: 验证JavaCG2ConfManager.getConfInfo方法对于不同配置参数与场景的处理是否正确
  */
+@Slf4j
 public class TestConfManagerGetConfInfo {
-
-    private static final Logger logger = LoggerFactory.getLogger(TestConfManagerGetConfInfo.class);
 
     private JavaCG2ConfigureWrapper configureWrapper;
 
@@ -197,7 +195,7 @@ public class TestConfManagerGetConfInfo {
 
         JavaCG2ConfigException e = Assert.assertThrows(JavaCG2ConfigException.class,
                 () -> JavaCG2ConfManager.getConfInfo(configureWrapper));
-        logger.error("error ", e);
+        log.error("error ", e);
     }
 
     // 测试 fr_eq_conversion_method 非法值-不是合法的类名与方法名（缺少:）
@@ -209,7 +207,7 @@ public class TestConfManagerGetConfInfo {
 
         JavaCG2ConfigException e = Assert.assertThrows(JavaCG2ConfigException.class,
                 () -> JavaCG2ConfManager.getConfInfo(configureWrapper));
-        logger.error("error ", e);
+        log.error("error ", e);
     }
 
     // 测试 fr_eq_conversion_method 非法值-序号为负数
@@ -221,7 +219,7 @@ public class TestConfManagerGetConfInfo {
 
         JavaCG2ConfigException e = Assert.assertThrows(JavaCG2ConfigException.class,
                 () -> JavaCG2ConfManager.getConfInfo(configureWrapper));
-        logger.error("error ", e);
+        log.error("error ", e);
     }
 
     // 测试 fr_eq_conversion_method 序号为0（合法-代表被调用对象）

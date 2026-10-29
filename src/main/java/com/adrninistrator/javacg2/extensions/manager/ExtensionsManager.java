@@ -12,9 +12,9 @@ import com.adrninistrator.javacg2.extensions.codeparser.MethodAnnotationParser;
 import com.adrninistrator.javacg2.extensions.codeparser.SpringXmlBeanParserInterface;
 import com.adrninistrator.javacg2.extensions.methodcall.JavaCG2MethodCallExtensionInterface;
 import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,9 +26,8 @@ import java.util.Map;
  * @date 2023/2/6
  * @description: 扩展类管理类
  */
+@Slf4j
 public class ExtensionsManager {
-
-    private static final Logger logger = LoggerFactory.getLogger(ExtensionsManager.class);
 
     // 保存所有的代码解析扩展类列表
     private final List<CodeParserInterface> allCodeParserList = new ArrayList<>();
@@ -64,15 +63,19 @@ public class ExtensionsManager {
      */
     private final Map<String, String> saveData2FileParserNameMap = new HashMap<>();
 
+    @Setter
     private JavaCG2InputAndOutput javaCG2InputAndOutput;
 
     // 输出适配器
+    @Setter
     private JavaCG2OutputAdapter outputAdapter;
 
     // 对注解属性的元素值进行格式化的类
+    @Setter
     private AnnotationAttributesFormatterInterface annotationAttributesFormatter;
 
     // Spring XML Bean信息解析类
+    @Setter
     private SpringXmlBeanParserInterface springXmlBeanParser;
 
     private boolean inited = false;
@@ -88,7 +91,7 @@ public class ExtensionsManager {
             allCodeParserList.add(springXmlBeanParser);
         }
         if (outputAdapter == null) {
-            logger.error("未设置输出适配器 {}", JavaCG2OutputAdapter.class.getName());
+            log.error("未设置输出适配器 {}", JavaCG2OutputAdapter.class.getName());
             return false;
         }
         JavaCG2OutputInfo javaCG2OutputInfo = javaCG2InputAndOutput.getJavaCG2OutputInfo();
@@ -111,7 +114,7 @@ public class ExtensionsManager {
                 if (codeParser instanceof AbstractSaveData2FileParser) {
                     AbstractSaveData2FileParser saveData2FileParser = (AbstractSaveData2FileParser) codeParser;
                     if (!saveData2FileParser.init(outputAdapter)) {
-                        logger.error("初始化失败 {}", codeParser.getClass().getName());
+                        log.error("初始化失败 {}", codeParser.getClass().getName());
                         return false;
                     }
                     // 增加其他文件信息
@@ -125,7 +128,7 @@ public class ExtensionsManager {
                     for (String tmpOutputFileName : outputFileNames) {
                         String existedAbstractSaveData2FileParserName = saveData2FileParserNameMap.get(tmpOutputFileName);
                         if (existedAbstractSaveData2FileParserName != null) {
-                            logger.error("出现不同的 {} 实现类使用了相同的生成文件名 {} {} {}", AbstractSaveData2FileParser.class.getName(), tmpOutputFileName,
+                            log.error("出现不同的 {} 实现类使用了相同的生成文件名 {} {} {}", AbstractSaveData2FileParser.class.getName(), tmpOutputFileName,
                                     saveData2FileParser.getClass().getName(), existedAbstractSaveData2FileParserName);
                             return false;
                         }
@@ -144,7 +147,7 @@ public class ExtensionsManager {
                     }
                 }
             } else {
-                logger.error("不支持的类型 {}", codeParser.getClass().getName());
+                log.error("不支持的类型 {}", codeParser.getClass().getName());
                 return false;
             }
         }
@@ -229,32 +232,5 @@ public class ExtensionsManager {
 
     public SpringXmlBeanParserInterface getSpringXmlBeanParser() {
         return springXmlBeanParser;
-    }
-
-    public void setSpringXmlBeanParser(SpringXmlBeanParserInterface springXmlBeanParser) {
-        this.springXmlBeanParser = springXmlBeanParser;
-    }
-
-    /**
-     * 设置注解属性格式化类
-     *
-     * @param annotationAttributesFormatter
-     */
-    public void setAnnotationAttributesFormatter(AnnotationAttributesFormatterInterface annotationAttributesFormatter) {
-        this.annotationAttributesFormatter = annotationAttributesFormatter;
-    }
-
-    /**
-     * 设置输出适配器
-     * 需要在调用init()方法之前调用当前方法
-     *
-     * @param outputAdapter
-     */
-    public void setOutputAdapter(JavaCG2OutputAdapter outputAdapter) {
-        this.outputAdapter = outputAdapter;
-    }
-
-    public void setJavaCG2InputAndOutput(JavaCG2InputAndOutput javaCG2InputAndOutput) {
-        this.javaCG2InputAndOutput = javaCG2InputAndOutput;
     }
 }

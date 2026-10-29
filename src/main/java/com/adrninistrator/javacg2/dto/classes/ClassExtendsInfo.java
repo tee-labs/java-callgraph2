@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.dto.classes;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2024/7/10
  * @description: 类涉及继承的信息，包含类的accessFlags，父类
  */
+@Getter
 public class ClassExtendsInfo {
 
     // 类的accessFlags
@@ -16,13 +19,5 @@ public class ClassExtendsInfo {
     public ClassExtendsInfo(int accessFlags, String superClassName) {
         this.accessFlags = accessFlags;
         this.superClassName = superClassName;
-    }
-
-    public int getAccessFlags() {
-        return accessFlags;
-    }
-
-    public String getSuperClassName() {
-        return superClassName;
     }
 }

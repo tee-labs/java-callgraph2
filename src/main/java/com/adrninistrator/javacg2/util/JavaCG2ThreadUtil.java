@@ -1,7 +1,6 @@
 package com.adrninistrator.javacg2.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,9 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2025/7/20
  * @description:
  */
+@Slf4j
 public class JavaCG2ThreadUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2ThreadUtil.class);
 
     /**
      * 等待直到任务执行完毕
@@ -28,13 +26,13 @@ public class JavaCG2ThreadUtil {
             int activeThreadCount = threadPoolExecutor.getActiveCount();
             int runningTaskNumValue = runningTaskNum.get();
             if (queueSize == 0 && activeThreadCount == 0 && runningTaskNumValue == 0) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{} 线程池中的任务已执行完毕", currentSimpleClassName);
+                if (log.isDebugEnabled()) {
+                    log.debug("{} 线程池中的任务已执行完毕", currentSimpleClassName);
                 }
                 return;
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("{} 等待线程池任务执行完毕，任务队列数量 {} 活跃线程数 {} 正在执行的任务数量 {}", currentSimpleClassName, queueSize, activeThreadCount, runningTaskNumValue);
+            if (log.isDebugEnabled()) {
+                log.debug("{} 等待线程池任务执行完毕，任务队列数量 {} 活跃线程数 {} 正在执行的任务数量 {}", currentSimpleClassName, queueSize, activeThreadCount, runningTaskNumValue);
             }
             JavaCG2Util.sleep(100L);
         }
@@ -52,12 +50,12 @@ public class JavaCG2ThreadUtil {
     public static void executeByTPE(String currentSimpleClassName, ThreadPoolExecutor threadPoolExecutor, AtomicInteger runningTaskNum, Runnable runnable) {
         threadPoolExecutor.execute(() -> {
             int currentRunningTaskNum = runningTaskNum.addAndGet(1);
-            logger.debug("{} 开始执行任务 正在执行的任务数量 {}", currentSimpleClassName, currentRunningTaskNum);
+            log.debug("{} 开始执行任务 正在执行的任务数量 {}", currentSimpleClassName, currentRunningTaskNum);
             try {
                 runnable.run();
             } finally {
                 int currentRunningTaskNum2 = runningTaskNum.decrementAndGet();
-                logger.debug("{} 结束执行任务 正在执行的任务数量 {}", currentSimpleClassName, currentRunningTaskNum2);
+                log.debug("{} 结束执行任务 正在执行的任务数量 {}", currentSimpleClassName, currentRunningTaskNum2);
             }
         });
     }
@@ -74,7 +72,7 @@ public class JavaCG2ThreadUtil {
             if (threadPoolExecutor.getQueue().size() < taskQueueMaxSize) {
                 return;
             }
-            logger.debug("{} wait4TPEExecute ...", currentSimpleClassName);
+            log.debug("{} wait4TPEExecute ...", currentSimpleClassName);
             JavaCG2Util.sleep(100L);
         }
     }

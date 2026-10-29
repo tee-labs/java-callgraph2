@@ -3,6 +3,7 @@ package com.adrninistrator.javacg2.dto.call;
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.dto.counter.JavaCG2Counter;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
  * @date 2023/2/7
  * @description: 方法之间调用关系列表
  */
+@Getter
 public class MethodCallList {
 
     // 保存方法之间调用关系
@@ -47,9 +49,5 @@ public class MethodCallList {
         }
         methodCall.setCallId(callIdCounter.addAndGet());
         methodCallList.add(methodCall);
-    }
-
-    public List<MethodCall> getMethodCallList() {
-        return methodCallList;
     }
 }

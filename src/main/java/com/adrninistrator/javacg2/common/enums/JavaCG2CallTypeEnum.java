@@ -1,6 +1,7 @@
 package com.adrninistrator.javacg2.common.enums;
 
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.Map;
  * @date 2021/8/2
  * @description: 方法调用类型枚举
  */
-
+@Getter
 public enum JavaCG2CallTypeEnum {
     // 原始的调用类型，不以“_”开头，其他的都需要以“_”开头
     CTE_RAW_INVOKE_VIRTUAL("VIR", true, false, false, false, false, false, false, "JVM的原始方法指令: INVOKEVIRTUAL"),
@@ -140,42 +141,6 @@ public enum JavaCG2CallTypeEnum {
         this.runInOtherThread = runInOtherThread;
         this.runInSpringTx = runInSpringTx;
         this.desc = desc;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public boolean isExistsInstruction() {
-        return existsInstruction;
-    }
-
-    public boolean isChildCallSuper() {
-        return childCallSuper;
-    }
-
-    public boolean isSuperCallChild() {
-        return superCallChild;
-    }
-
-    public boolean isInitMethodCall() {
-        return initMethodCall;
-    }
-
-    public boolean isCalleeReplaceType() {
-        return calleeReplaceType;
-    }
-
-    public boolean isRunInOtherThread() {
-        return runInOtherThread;
-    }
-
-    public boolean isRunInSpringTx() {
-        return runInSpringTx;
-    }
-
-    public String getDesc() {
-        return desc;
     }
 
     @Override

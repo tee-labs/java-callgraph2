@@ -2,6 +2,7 @@ package com.adrninistrator.javacg2.dto.element.variable;
 
 import com.adrninistrator.javacg2.dto.element.BaseElement;
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
+import lombok.Getter;
 import org.apache.bcel.generic.Type;
 
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import java.util.Arrays;
  * @date 2022/11/11
  * @description: 静态字段的方法调用返回值
  */
+@Getter
 public class StaticFieldMethodCallReturnElement extends LocalVariableElement {
 
     /*
@@ -50,22 +52,6 @@ public class StaticFieldMethodCallReturnElement extends LocalVariableElement {
 
     public String getDetailInfo() {
         return JavaCG2ClassMethodUtil.formatClassFieldMethodArgTypes(className, getName(), fieldType, methodName, methodArgTypes, getType());
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public String getFieldType() {
-        return fieldType;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public Type[] getMethodArgTypes() {
-        return methodArgTypes;
     }
 
     @Override

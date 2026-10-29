@@ -3,12 +3,14 @@ package com.adrninistrator.javacg2.el.enums;
 import com.adrninistrator.javacg2.common.enums.JavaCG2CallTypeEnum;
 import com.adrninistrator.javacg2.el.enums.interfaces.ElAllowedVariableInterface;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2025/8/20
  * @description: 公共的允许使用表达式的变量枚举
  */
+@Getter
 public enum CommonElAllowedVariableEnum implements ElAllowedVariableInterface {
 
     EAVE_METHOD_CALL_TYPE("method_call_type", String.class.getSimpleName(),
@@ -77,23 +79,8 @@ public enum CommonElAllowedVariableEnum implements ElAllowedVariableInterface {
     }
 
     @Override
-    public String getType() {
-        return type;
-    }
-
-    @Override
     public boolean isPrefixWithNum() {
         return false;
-    }
-
-    @Override
-    public String[] getDescriptions() {
-        return descriptions;
-    }
-
-    @Override
-    public String[] getValueExamples() {
-        return valueExamples;
     }
 
     @Override

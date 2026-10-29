@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.dto.exception;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2023/12/28
  * @description: Exception table中的finally信息
  */
+@Getter
 public class FinallyInfo {
     protected final int fromPosition;
     protected final int toPosition;
@@ -16,22 +19,6 @@ public class FinallyInfo {
         this.toPosition = toPosition;
         this.endPosition = endPosition;
         this.targetPosition = targetPosition;
-    }
-
-    public int getFromPosition() {
-        return fromPosition;
-    }
-
-    public int getToPosition() {
-        return toPosition;
-    }
-
-    public int getEndPosition() {
-        return endPosition;
-    }
-
-    public int getTargetPosition() {
-        return targetPosition;
     }
 
     @Override

@@ -9,10 +9,9 @@ import org.apache.bcel.classfile.ClassElementValue;
 import org.apache.bcel.classfile.ElementValue;
 import org.apache.bcel.classfile.ElementValuePair;
 import org.apache.bcel.classfile.SimpleElementValue;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.bcel.classfile.Utility;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +22,8 @@ import java.util.Set;
  * @date 2022/8/28
  * @description: 对注解进行处理的工具类
  */
+@Slf4j
 public class JavaCG2AnnotationUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2AnnotationUtil.class);
 
     /**
      * 获取注解中指定名称的注解属性值，String类型
@@ -119,7 +117,7 @@ public class JavaCG2AnnotationUtil {
                 }
             }
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
         }
     }
 
@@ -140,7 +138,7 @@ public class JavaCG2AnnotationUtil {
                 annotationTypeSet.add(annotationClassName);
             }
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
         }
     }
 

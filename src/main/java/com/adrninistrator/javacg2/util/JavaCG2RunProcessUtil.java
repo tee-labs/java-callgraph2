@@ -1,8 +1,7 @@
 package com.adrninistrator.javacg2.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,9 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2025/7/9
  * @description: 启动进程工具
  */
+@Slf4j
 public class JavaCG2RunProcessUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2RunProcessUtil.class);
 
     private static final ThreadFactory threadFactoryStdout = genThreadFactory("wait_stdout");
     private static final ThreadFactory threadFactoryStderr = genThreadFactory("wait_stderr");
@@ -42,7 +40,7 @@ public class JavaCG2RunProcessUtil {
      * @return
      */
     public static boolean runProcess(String[] args) {
-        logger.info("启动进程时使用的参数 {}", StringUtils.join(args, " "));
+        log.info("启动进程时使用的参数 {}", StringUtils.join(args, " "));
         ProcessBuilder processBuilder = new ProcessBuilder(args);
         try {
             Process childProcess = processBuilder.start();
@@ -50,13 +48,13 @@ public class JavaCG2RunProcessUtil {
             // 等待子进程结束
             int exitCode = waitProcess(childProcess);
             if (exitCode != 0) {
-                logger.error("子进程执行失败，返回码 {}", exitCode);
+                log.error("子进程执行失败，返回码 {}", exitCode);
                 return false;
             }
-            logger.info("子进程执行返回码 {}", exitCode);
+            log.info("子进程执行返回码 {}", exitCode);
             return true;
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             return false;
         }
     }
@@ -67,10 +65,10 @@ public class JavaCG2RunProcessUtil {
             try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = in.readLine()) != null) {
-                    logger.info("stdout {}", line);
+                    log.info("stdout {}", line);
                 }
             } catch (Exception e) {
-                logger.error("error ", e);
+                log.error("error ", e);
             } finally {
                 /* MDC 内容清理 */
             }
@@ -81,10 +79,10 @@ public class JavaCG2RunProcessUtil {
             try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
                 String line;
                 while ((line = in.readLine()) != null) {
-                    logger.info("stderr {}", line);
+                    log.info("stderr {}", line);
                 }
             } catch (Exception e) {
-                logger.error("error ", e);
+                log.error("error ", e);
             } finally {
                 /* MDC 内容清理 */
             }
@@ -98,7 +96,7 @@ public class JavaCG2RunProcessUtil {
             threadStderr.join();
             return process.waitFor();
         } catch (InterruptedException e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             Thread.currentThread().interrupt();
             return -1;
         }

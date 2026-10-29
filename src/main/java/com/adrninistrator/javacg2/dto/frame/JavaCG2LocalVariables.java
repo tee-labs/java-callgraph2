@@ -14,8 +14,7 @@ import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +25,8 @@ import java.util.Set;
  * @date 2022/10/20
  * @description:
  */
+@Slf4j
 public class JavaCG2LocalVariables {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2LocalVariables.class);
 
     private List<LocalVariableElement> localVariableElementList;
 
@@ -161,8 +159,8 @@ public class JavaCG2LocalVariables {
             localVariableElement.setArrayValueMap(baseElement.getArrayValueMap());
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("添加本地变量 ({}) {}", index, localVariableElement);
+        if (log.isDebugEnabled()) {
+            log.debug("添加本地变量 ({}) {}", index, localVariableElement);
         }
 
         if (localVariableElementList.size() > index) {

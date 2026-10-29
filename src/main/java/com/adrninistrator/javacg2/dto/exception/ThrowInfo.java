@@ -1,5 +1,7 @@
 package com.adrninistrator.javacg2.dto.exception;
 
+import lombok.Getter;
+
 import java.util.Objects;
 
 /**
@@ -7,6 +9,7 @@ import java.util.Objects;
  * @date 2024/1/2
  * @description: 方法中抛出的异常信息
  */
+@Getter
 public class ThrowInfo {
 
     // 抛出的异常类型
@@ -30,26 +33,6 @@ public class ThrowInfo {
         this.catchStartPosition = catchStartPosition;
         this.catchExceptionVariableName = catchExceptionVariableName;
         this.invokeInstructionPosition = invokeInstructionPosition;
-    }
-
-    public String getThrowExceptionType() {
-        return throwExceptionType;
-    }
-
-    public String getThrowFlag() {
-        return throwFlag;
-    }
-
-    public Integer getCatchStartPosition() {
-        return catchStartPosition;
-    }
-
-    public String getCatchExceptionVariableName() {
-        return catchExceptionVariableName;
-    }
-
-    public Integer getInvokeInstructionPosition() {
-        return invokeInstructionPosition;
     }
 
     @Override

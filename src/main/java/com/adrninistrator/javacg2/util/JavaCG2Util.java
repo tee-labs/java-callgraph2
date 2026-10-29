@@ -2,10 +2,9 @@ package com.adrninistrator.javacg2.util;
 
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,8 +29,8 @@ import java.util.Set;
  * @description:
  */
 
+@Slf4j
 public class JavaCG2Util {
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2Util.class);
 
     private static volatile Boolean DEBUG_MODE;
 
@@ -72,7 +71,7 @@ public class JavaCG2Util {
 
             return new ByteArrayInputStream(baos.toByteArray());
         } catch (Exception e) {
-            logger.error("出现异常 ", e);
+            log.error("出现异常 ", e);
             return null;
         }
     }
@@ -111,7 +110,7 @@ public class JavaCG2Util {
         }
 
         String newDirPath = JavaCG2FileUtil.addSeparator4FilePath(dirPath);
-        logger.info("获取到JVM参数 {} {} 在路径结尾增加分隔符为 {}", jvmOptionKey, dirPath, newDirPath);
+        log.info("获取到JVM参数 {} {} 在路径结尾增加分隔符为 {}", jvmOptionKey, dirPath, newDirPath);
         return newDirPath;
     }
 
@@ -251,12 +250,12 @@ public class JavaCG2Util {
         }
         for (String arg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
             if (arg.startsWith("-Xrunjdwp") || arg.startsWith("-agentlib:jdwp")) {
-                logger.info("当前是调试模式");
+                log.info("当前是调试模式");
                 DEBUG_MODE = Boolean.TRUE;
                 return true;
             }
         }
-        logger.info("当前不是调试模式");
+        log.info("当前不是调试模式");
         DEBUG_MODE = Boolean.FALSE;
         return false;
     }
@@ -361,7 +360,7 @@ public class JavaCG2Util {
         try {
             Thread.sleep(time);
         } catch (InterruptedException e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             Thread.currentThread().interrupt();
         }
     }

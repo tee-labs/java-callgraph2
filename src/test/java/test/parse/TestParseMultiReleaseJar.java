@@ -4,12 +4,11 @@ import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2ConfigKeyEnum;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.LICENSE;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import test.base.TestBase;
 
 /**
@@ -17,15 +16,15 @@ import test.base.TestBase;
  * @date 2025/7/29
  * @description:
  */
+@Slf4j
 public class TestParseMultiReleaseJar extends TestBase {
-    private static final Logger logger = LoggerFactory.getLogger(TestParseMultiReleaseJar.class);
 
     private String bcprovJarFilePath;
 
     @Before
     public void init() {
         bcprovJarFilePath = JavaCG2FileUtil.getJarFilePathOfClass(LICENSE.class);
-        logger.info("bcprovJarFilePath {}", bcprovJarFilePath);
+        log.info("bcprovJarFilePath {}", bcprovJarFilePath);
     }
 
     @Test

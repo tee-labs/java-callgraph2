@@ -11,9 +11,8 @@ import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
 import com.adrninistrator.javacg2.thread.ThreadFactory4TPE;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ThreadUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.FileNotFoundException;
@@ -30,9 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2025/2/2
  * @description: 表达式管理类基类
  */
+@Slf4j
 public abstract class AbstractElManager implements Closeable {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractElManager.class);
     /*
             保存表达式处理类的Map
             key     配置文件名称
@@ -75,11 +74,11 @@ public abstract class AbstractElManager implements Closeable {
     protected AbstractElManager(BaseConfigureWrapper configureWrapper, ElConfigInterface[] elConfigInterfaces, String outputDirPath) {
         if (outputDirPath != null) {
             String elIgnoreDataFilePath = JavaCG2FileUtil.addSeparator4FilePath(outputDirPath) + JavaCG2Constants.EL_IGNORE_DATA_LOG_FILE_NAME;
-            logger.info("保存表达式忽略数据的文件路径 {}", elIgnoreDataFilePath);
+            log.info("保存表达式忽略数据的文件路径 {}", elIgnoreDataFilePath);
             try {
                 elIgnoreDataWriter = JavaCG2FileUtil.genBufferedWriter(elIgnoreDataFilePath);
             } catch (FileNotFoundException e) {
-                logger.error("出现异常 ", e);
+                log.error("出现异常 ", e);
                 throw new JavaCG2RuntimeException();
             }
 
@@ -89,17 +88,17 @@ public abstract class AbstractElManager implements Closeable {
             // 在JVM关闭时检查是否有执行关闭操作
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 if (!closed) {
-                    logger.error("未执行关闭操作");
+                    log.error("未执行关闭操作");
                     close();
                 }
             }));
         } else {
-            logger.info("检查模式，不生成表达式忽略数据文件");
+            log.info("检查模式，不生成表达式忽略数据文件");
         }
 
         // 选择EL表达式忽略数据文件的最大行数
         elIgnoreDataMaxLineNum = chooseElIgnoreDataMaxLineNum(configureWrapper);
-        logger.info("EL表达式忽略数据文件的最大行数 {}", elIgnoreDataMaxLineNum);
+        log.info("EL表达式忽略数据文件的最大行数 {}", elIgnoreDataMaxLineNum);
 
         // 生成ElHandler对象
         for (ElConfigInterface elConfig : elConfigInterfaces) {
@@ -118,7 +117,7 @@ public abstract class AbstractElManager implements Closeable {
                 AbstractElChecker elChecker = elCheckerClass.newInstance();
                 elChecker.check(this, elConfig);
             } catch (Exception e) {
-                logger.error("EL表达式初始化失败 {} ", elCheckerClass.getName(), e);
+                log.error("EL表达式初始化失败 {} ", elCheckerClass.getName(), e);
                 throw new JavaCG2ElConfigRuntimeException(e.getMessage(), elConfig);
             }
         }
@@ -156,14 +155,14 @@ public abstract class AbstractElManager implements Closeable {
     public void close() {
         closed = true;
         if (writeFileTPE != null) {
-            logger.info("开始等待EL表达式执行结果写文件线程执行");
+            log.info("开始等待EL表达式执行结果写文件线程执行");
             JavaCG2ThreadUtil.wait4TPEDone(this.getClass().getSimpleName(), writeFileTPE, new AtomicInteger(0));
             writeFileTPE.shutdown();
             try {
                 boolean result = writeFileTPE.awaitTermination(30, TimeUnit.SECONDS);
-                logger.info("等待EL表达式执行结果写文件线程执行完毕 {}", result);
+                log.info("等待EL表达式执行结果写文件线程执行完毕 {}", result);
             } catch (InterruptedException e) {
-                logger.error("error ", e);
+                log.error("error ", e);
                 Thread.currentThread().interrupt();
             }
         }

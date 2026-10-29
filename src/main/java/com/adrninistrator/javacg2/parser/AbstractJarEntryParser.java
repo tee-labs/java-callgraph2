@@ -5,12 +5,11 @@ import com.adrninistrator.javacg2.dto.inputoutput.JavaCG2InputAndOutput;
 import com.adrninistrator.javacg2.el.manager.JavaCG2ElManager;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2JarUtil;
+import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.io.inputstream.ZipInputStream;
 import net.lingala.zip4j.model.LocalFileHeader;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -22,9 +21,8 @@ import java.io.InputStream;
  * @date 2022/9/14
  * @description: 解析jar文件中的文件，基类
  */
+@Slf4j
 public abstract class AbstractJarEntryParser {
-
-    private static final Logger logger = LoggerFactory.getLogger(AbstractJarEntryParser.class);
 
     protected String simpleClassName = this.getClass().getSimpleName();
 
@@ -69,7 +67,7 @@ public abstract class AbstractJarEntryParser {
                 }
 
                 jarEntryPath = fileHeader.getFileName();
-                logger.debug("{} 处理文件: {}", simpleClassName, jarEntryPath);
+                log.debug("{} 处理文件: {}", simpleClassName, jarEntryPath);
 
                 // 获取当前处理的jar文件信息
                 if (!handleCurrentJarInfo(jarEntryPath)) {
@@ -84,7 +82,7 @@ public abstract class AbstractJarEntryParser {
 
             return true;
         } catch (Exception e) {
-            logger.error("{} 处理jar文件中的文件出现问题 {}", simpleClassName, jarEntryPath, e);
+            log.error("{} 处理jar文件中的文件出现问题 {}", simpleClassName, jarEntryPath, e);
             return false;
         }
     }
@@ -149,7 +147,7 @@ public abstract class AbstractJarEntryParser {
         // jar文件数量大于1个，从Map取值时使用当前JarEntry的第一层目录名称
         int index = jarEntryPath.indexOf(JavaCG2Constants.FLAG_SLASH);
         if (index == -1) {
-            logger.error("JarEntry名称中不包含/ {}", jarEntryPath);
+            log.error("JarEntry名称中不包含/ {}", jarEntryPath);
             return false;
         }
 

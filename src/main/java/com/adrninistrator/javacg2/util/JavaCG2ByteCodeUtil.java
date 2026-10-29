@@ -7,6 +7,7 @@ import com.adrninistrator.javacg2.common.enums.JavaCG2ConstantTypeEnum;
 import com.adrninistrator.javacg2.dto.classes.InnerClassInfo;
 import com.adrninistrator.javacg2.dto.method.MethodArgReturnTypes;
 import com.adrninistrator.javacg2.dto.type.JavaCG2Type;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.bcel.Const;
 import org.apache.bcel.classfile.AccessFlags;
 import org.apache.bcel.classfile.Attribute;
@@ -25,8 +26,6 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ObjectType;
 import org.apache.bcel.generic.Type;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,9 +37,8 @@ import java.util.Map;
  * @date 2022/9/21
  * @description:
  */
+@Slf4j
 public class JavaCG2ByteCodeUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2ByteCodeUtil.class);
 
     /**
      * 判断当前方法是否为涉及继承的方法
@@ -198,7 +196,7 @@ public class JavaCG2ByteCodeUtil {
         }
 
         if (!isArrayType(arrayType) && !isNullType(arrayType)) {
-            logger.error("类名不是数组形式 {}", arrayType);
+            log.error("类名不是数组形式 {}", arrayType);
             return arrayType;
         }
 
@@ -269,7 +267,7 @@ public class JavaCG2ByteCodeUtil {
             return true;
         }
 
-        logger.error("类型与预期的不一致 actualType: {} expectedType: {}", actualType, expectedType);
+        log.error("类型与预期的不一致 actualType: {} expectedType: {}", actualType, expectedType);
         return false;
     }
 

@@ -2,6 +2,8 @@ package com.adrninistrator.javacg2.dto.call;
 
 import com.adrninistrator.javacg2.common.enums.JavaCG2CalleeObjTypeEnum;
 import com.adrninistrator.javacg2.dto.element.BaseElement;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,9 +15,11 @@ import java.util.Map;
  * @date 2022/11/3
  * @description: 方法调用可能的信息，包括对应的被调用对象及参数
  */
+@Getter
 public class MethodCallPossibleInfo {
 
     // 被调用类型
+    @Setter
     private JavaCG2CalleeObjTypeEnum objTypeEnum;
 
     // 被调用对象可能的信息
@@ -29,14 +33,6 @@ public class MethodCallPossibleInfo {
             方法调用中被调用对象、参数的可能的信息
      */
     private Map<Integer, MethodCallPossibleList> methodCallPossibleListMap4Args;
-
-    public JavaCG2CalleeObjTypeEnum getObjTypeEnum() {
-        return objTypeEnum;
-    }
-
-    public void setObjTypeEnum(JavaCG2CalleeObjTypeEnum objTypeEnum) {
-        this.objTypeEnum = objTypeEnum;
-    }
 
     /**
      * 为被调用对象添加可能的信息

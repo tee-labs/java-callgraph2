@@ -7,8 +7,7 @@ import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
 import com.adrninistrator.javacg2.el.enums.interfaces.ElAllowedVariableInterface;
 import com.adrninistrator.javacg2.el.enums.interfaces.ElConfigInterface;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
 
@@ -22,9 +21,8 @@ import java.util.Set;
  * 该开关仅当待分析工程通过XML文件定义Spring Bean时相关
  * 当前类的实例只能通过applyTo方法应用到一个JavaCG2ConfigureWrapper对象，假如需要应用多个，请创建当前类的多个实例
  */
+@Slf4j
 public class JavaCG2XmlSwitchBuilder {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2XmlSwitchBuilder.class);
 
     // 表达式开关配置的公共逻辑
     private final ElSwitchConfigHolder elSwitchConfigHolder = new ElSwitchConfigHolder();

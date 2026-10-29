@@ -1,5 +1,7 @@
 package com.adrninistrator.javacg2.dto.field;
 
+import lombok.Getter;
+
 import java.util.Objects;
 
 /**
@@ -7,6 +9,7 @@ import java.util.Objects;
  * @date 2022/11/3
  * @description: 字段类型及名称
  */
+@Getter
 public class FieldTypeAndName {
 
     // 字段类型
@@ -37,14 +40,5 @@ public class FieldTypeAndName {
     public String toString() {
         return "fieldType=" + fieldType +
                 ", fieldName=" + fieldName;
-    }
-
-    //
-    public String getFieldType() {
-        return fieldType;
-    }
-
-    public String getFieldName() {
-        return fieldName;
     }
 }

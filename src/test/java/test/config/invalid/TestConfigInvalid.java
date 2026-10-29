@@ -4,20 +4,18 @@ import com.adrninistrator.javacg2.common.enums.JavaCG2CalleeRawActualEnum;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2ConfigKeyEnum;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author adrninistrator
  * @date 2026/5/24
  * @description: 验证各配置参数对于合法及非法值赋值的处理是否正确
  */
+@Slf4j
 public class TestConfigInvalid {
-
-    private static final Logger logger = LoggerFactory.getLogger(TestConfigInvalid.class);
 
     private JavaCG2ConfigureWrapper javaCG2ConfigureWrapper;
 
@@ -39,7 +37,7 @@ public class TestConfigInvalid {
     public void testHandleCalleeNewRawActual_Invalid() {
         JavaCG2ConfigException e = Assert.assertThrows(JavaCG2ConfigException.class,
                 () -> javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_HANDLE_CALLEE_NEW_RAW_ACTUAL, "invalid_value"));
-        logger.error("error ", e);
+        log.error("error ", e);
     }
 
     // 测试 CKE_HANDLE_CALLEE_SPRING_BEAN_RAW_ACTUAL 合法值
@@ -55,7 +53,7 @@ public class TestConfigInvalid {
     public void testHandleCalleeSpringBeanRawActual_Invalid() {
         JavaCG2ConfigException e = Assert.assertThrows(JavaCG2ConfigException.class,
                 () -> javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_HANDLE_CALLEE_SPRING_BEAN_RAW_ACTUAL, "invalid_value"));
-        logger.error("error ", e);
+        log.error("error ", e);
     }
 
     // 测试 Boolean 类型参数合法值
@@ -72,7 +70,7 @@ public class TestConfigInvalid {
     public void testBooleanInvalid() {
         JavaCG2ConfigException e = Assert.assertThrows(JavaCG2ConfigException.class,
                 () -> javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE, "yes"));
-        logger.error("error ", e);
+        log.error("error ", e);
     }
 
     // 测试 Integer 类型参数合法值
@@ -87,7 +85,7 @@ public class TestConfigInvalid {
     public void testIntegerInvalid() {
         JavaCG2ConfigException e = Assert.assertThrows(JavaCG2ConfigException.class,
                 () -> javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_JDK_RUNTIME_MAJOR_VERSION, "abc"));
-        logger.error("error ", e);
+        log.error("error ", e);
     }
 
     // 测试参数不允许为null
@@ -95,7 +93,7 @@ public class TestConfigInvalid {
     public void testNullValue() {
         JavaCG2ConfigException e = Assert.assertThrows(JavaCG2ConfigException.class,
                 () -> javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE, null));
-        logger.error("error ", e);
+        log.error("error ", e);
     }
 
     // 测试不允许为空的参数传入空字符串
@@ -103,6 +101,6 @@ public class TestConfigInvalid {
     public void testNotBlankEmptyValue() {
         JavaCG2ConfigException e = Assert.assertThrows(JavaCG2ConfigException.class,
                 () -> javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_JDK_RUNTIME_MAJOR_VERSION, ""));
-        logger.error("error ", e);
+        log.error("error ", e);
     }
 }

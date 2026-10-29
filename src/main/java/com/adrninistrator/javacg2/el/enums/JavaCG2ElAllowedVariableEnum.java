@@ -2,6 +2,7 @@ package com.adrninistrator.javacg2.el.enums;
 
 import com.adrninistrator.javacg2.el.enums.interfaces.ElAllowedVariableInterface;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.Getter;
 
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import java.util.Set;
  * @date 2025/1/29
  * @description: 允许使用表达式的变量枚举
  */
+@Getter
 public enum JavaCG2ElAllowedVariableEnum implements ElAllowedVariableInterface {
 
     // 合并jar/war文件、目录相关
@@ -92,26 +94,6 @@ public enum JavaCG2ElAllowedVariableEnum implements ElAllowedVariableInterface {
     @Override
     public String getVariableName() {
         return name;
-    }
-
-    @Override
-    public String getType() {
-        return type;
-    }
-
-    @Override
-    public boolean isPrefixWithNum() {
-        return prefixWithNum;
-    }
-
-    @Override
-    public String[] getDescriptions() {
-        return descriptions;
-    }
-
-    @Override
-    public String[] getValueExamples() {
-        return valueExamples;
     }
 
     @Override

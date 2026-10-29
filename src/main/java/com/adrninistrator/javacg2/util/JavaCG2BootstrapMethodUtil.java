@@ -3,6 +3,7 @@ package com.adrninistrator.javacg2.util;
 import com.adrninistrator.javacg2.common.JavaCG2CommonNameConstants;
 import com.adrninistrator.javacg2.dto.method.JavaCG2BootstrapMethod;
 import com.adrninistrator.javacg2.dto.method.JavaCG2MethodInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.bcel.Const;
 import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.BootstrapMethod;
@@ -19,16 +20,14 @@ import org.apache.bcel.classfile.ConstantUtf8;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Utility;
 import org.apache.bcel.generic.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author adrninistrator
  * @date 2022/10/7
  * @description:
  */
+@Slf4j
 public class JavaCG2BootstrapMethodUtil {
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2BootstrapMethodUtil.class);
 
     /**
      * 获得JavaClass中指定序号的BootstrapMethod
@@ -61,7 +60,7 @@ public class JavaCG2BootstrapMethodUtil {
         ConstantPool constantPool = javaClass.getConstantPool();
         Constant constantBootstrapMethodRef = constantPool.getConstant(bootstrapMethod.getBootstrapMethodRef());
         if (!(constantBootstrapMethodRef instanceof ConstantMethodHandle)) {
-            logger.warn("获取bootstrapMethod方法引用类型与预期不一致 {}", constantBootstrapMethodRef.getClass().getName());
+            log.warn("获取bootstrapMethod方法引用类型与预期不一致 {}", constantBootstrapMethodRef.getClass().getName());
             return null;
         }
 
@@ -86,7 +85,7 @@ public class JavaCG2BootstrapMethodUtil {
                     ConstantMethodType constantMethodType = (ConstantMethodType) constantArg;
                     Constant constantArgUtf8 = constantPool.getConstant(constantMethodType.getDescriptorIndex());
                     if (!(constantArgUtf8 instanceof ConstantUtf8)) {
-                        logger.warn("constantUtf8 类型不符合预期 {}", constantArgUtf8.getClass().getName());
+                        log.warn("constantUtf8 类型不符合预期 {}", constantArgUtf8.getClass().getName());
                     } else {
                         // Lambda表达式方法参数类型使用第一次出现的ConstantMethodType对应的
                         ConstantUtf8 constantUtf8 = (ConstantUtf8) constantArgUtf8;
@@ -119,12 +118,12 @@ public class JavaCG2BootstrapMethodUtil {
 
         Constant constantCP = constantPool.getConstant(constantMethodHandle.getReferenceIndex());
         if (!(constantCP instanceof ConstantCP)) {
-            logger.warn("不满足instanceof ConstantCP {}", constantCP.getClass().getName());
+            log.warn("不满足instanceof ConstantCP {}", constantCP.getClass().getName());
             return null;
         }
 
         if (constantCP instanceof ConstantFieldref) {
-            logger.warn("constantCP 类型为 {}", constantCP.getClass().getName());
+            log.warn("constantCP 类型为 {}", constantCP.getClass().getName());
             return null;
         }
         ConstantCP constantClassAndMethod = (ConstantCP) constantCP;
@@ -133,7 +132,7 @@ public class JavaCG2BootstrapMethodUtil {
 
         Constant constantNAT = constantPool.getConstant(constantClassAndMethod.getNameAndTypeIndex());
         if (!(constantNAT instanceof ConstantNameAndType)) {
-            logger.warn("不满足instanceof ConstantNameAndType {}", constantNAT.getClass().getName());
+            log.warn("不满足instanceof ConstantNameAndType {}", constantNAT.getClass().getName());
             return null;
         }
         ConstantNameAndType constantNameAndType = (ConstantNameAndType) constantNAT;
@@ -145,12 +144,12 @@ public class JavaCG2BootstrapMethodUtil {
                 Type returnType = Type.getReturnType(methodArgsReturn);
                 return new JavaCG2MethodInfo(className, methodName, methodArgTypes, returnType);
             } catch (ClassFormatException e) {
-                logger.warn("方法参数与返回类型不符合预期，不处理 {} {}", methodArgsReturn, constantClassAndMethod.getClass().getName());
+                log.warn("方法参数与返回类型不符合预期，不处理 {} {}", methodArgsReturn, constantClassAndMethod.getClass().getName());
                 return null;
             }
         }
 
-        logger.warn("获取方法信息失败 {} {} {} {}", javaClass.getClassName(), className, methodName, methodArgsReturn);
+        log.warn("获取方法信息失败 {} {} {} {}", javaClass.getClassName(), className, methodName, methodArgsReturn);
         return null;
     }
 

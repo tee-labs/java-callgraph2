@@ -6,10 +6,9 @@ import com.adrninistrator.javacg2.builder.JavaCG2JarDirBuilder;
 import com.adrninistrator.javacg2.common.enums.JavaCG2CalleeRawActualEnum;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import test.base.TestBase;
 
 /**
@@ -18,9 +17,8 @@ import test.base.TestBase;
  * @description: 通过Builder生成JavaCG2Entry的测试
  * 需要先在当前项目执行 mvn package -DskipTests -Ptest_gen_jar 命令生成对应jar文件
  */
+@Slf4j
 public class TestEntryBuilder extends TestBase {
-
-    private static final Logger logger = LoggerFactory.getLogger(TestEntryBuilder.class);
 
     // 通过Builder正常生成入口类并执行
     @Test
@@ -60,7 +58,7 @@ public class TestEntryBuilder extends TestBase {
             JavaCG2EntryBuilder.builder().build();
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 
@@ -72,7 +70,7 @@ public class TestEntryBuilder extends TestBase {
             JavaCG2EntryBuilder.builder().addJarOrDir(notExistsJarPath).build();
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 
@@ -83,7 +81,7 @@ public class TestEntryBuilder extends TestBase {
             JavaCG2JarDirBuilder.builder().addJarOrDir(" ");
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 }

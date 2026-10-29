@@ -7,10 +7,9 @@ import com.adrninistrator.javacg2.el.enums.JavaCG2ElAllowedVariableEnum;
 import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import test.base.TestBase;
 
 /**
@@ -18,9 +17,8 @@ import test.base.TestBase;
  * @date 2026/10/28
  * @description: BaseConfigureWrapper.setElConfigStringAny方法的测试，验证生成的表达式文本不以分号结尾、字符串参数自动以单引号包裹、非法参数抛出异常
  */
+@Slf4j
 public class TestElConfigStringAny extends TestBase {
-
-    private static final Logger logger = LoggerFactory.getLogger(TestElConfigStringAny.class);
 
     // ElStringAnyFunctionEnum版本生成的表达式文本正确：不以分号结尾，字符串参数自动以单引号包裹
     @Test
@@ -29,7 +27,7 @@ public class TestElConfigStringAny extends TestBase {
         javaCG2ConfigureWrapper.setElConfigStringAny(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML, ElStringAnyFunctionEnum.EQUALS_ANY,
                 JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME, "testService1", "testService2");
         String elText = javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML);
-        logger.info("生成的表达式文本 [{}]", elText);
+        log.info("生成的表达式文本 [{}]", elText);
         Assert.assertEquals("string.equalsAny(bean_name,'testService1','testService2')", elText);
         // 不以分号结尾
         Assert.assertFalse(elText.endsWith(";"));
@@ -45,7 +43,7 @@ public class TestElConfigStringAny extends TestBase {
         javaCG2ConfigureWrapper.setElConfigStringAny(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS, ElStringFunctionTwoArgsEnum.EQUALS_IGNORE_CASE,
                 JavaCG2ElAllowedVariableEnum.EAVE_PARSE_CLASS_NAME, "a.b.Class1");
         String elText = javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS);
-        logger.info("生成的表达式文本 [{}]", elText);
+        log.info("生成的表达式文本 [{}]", elText);
         Assert.assertEquals("string.equalsIC(class_name,'a.b.Class1')", elText);
         // 不以分号结尾
         Assert.assertFalse(elText.endsWith(";"));
@@ -62,7 +60,7 @@ public class TestElConfigStringAny extends TestBase {
                     JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME, "a.b.Class1");
             Assert.fail();
         } catch (JavaCG2RuntimeException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 
@@ -77,7 +75,7 @@ public class TestElConfigStringAny extends TestBase {
                     JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 字符串值为null
         try {
@@ -85,7 +83,7 @@ public class TestElConfigStringAny extends TestBase {
                     JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME, null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 字符串值为空白
         try {
@@ -93,7 +91,7 @@ public class TestElConfigStringAny extends TestBase {
                     JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME, " ");
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 字符串值包含单引号
         try {
@@ -101,7 +99,7 @@ public class TestElConfigStringAny extends TestBase {
                     JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME, "te'st");
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 两个参数的版本传入null
         try {
@@ -109,7 +107,7 @@ public class TestElConfigStringAny extends TestBase {
                     JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME, null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 两个参数的版本传入空白
         try {
@@ -117,7 +115,7 @@ public class TestElConfigStringAny extends TestBase {
                     JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME, " ");
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 两个参数的版本传入包含单引号的字符串
         try {
@@ -125,7 +123,7 @@ public class TestElConfigStringAny extends TestBase {
                     JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME, "te'st");
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 }

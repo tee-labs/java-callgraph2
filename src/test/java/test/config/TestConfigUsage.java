@@ -6,18 +6,16 @@ import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseListEnum;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseSetEnum;
 import com.adrninistrator.javacg2.conf.enums.interfaces.ConfigInterface;
 import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author adrninistrator
  * @date 2025/6/2
  * @description:
  */
+@Slf4j
 public class TestConfigUsage {
-
-    private static final Logger logger = LoggerFactory.getLogger(TestConfigUsage.class);
 
     private final JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
 
@@ -32,7 +30,7 @@ public class TestConfigUsage {
     private void doTest(ConfigInterface[] configInterfaces) {
         for (ConfigInterface configInterface : configInterfaces) {
             String usage = configInterface.genConfigUsage();
-            logger.info("### {}", usage);
+            log.info("### {}", usage);
         }
     }
 }

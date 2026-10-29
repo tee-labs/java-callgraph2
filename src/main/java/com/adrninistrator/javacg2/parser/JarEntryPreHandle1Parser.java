@@ -15,13 +15,13 @@ import com.adrninistrator.javacg2.util.JavaCG2ByteCodeUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
 import com.adrninistrator.javacg2.util.JavaCG2JarUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.io.inputstream.ZipInputStream;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,37 +36,52 @@ import java.util.Set;
  * @date 2022/9/14
  * @description: 解析jar文件中的文件，第一次预处理
  */
+@Slf4j
 public class JarEntryPreHandle1Parser extends AbstractJarEntryParser {
-
-    private static final Logger logger = LoggerFactory.getLogger(JarEntryPreHandle1Parser.class);
 
     private final boolean parseJarCompatibilityMode;
     private final boolean parseOnlyClassMode;
 
+    @Setter
     private Map<String, List<String>> classImplementsInfoMap;
 
+    @Setter
     private Map<String, Map<MethodArgReturnTypes, Integer>> classExtendsImplMethodWithArgTypesMap;
+    @Setter
     private Map<String, Map<MethodArgReturnTypes, Integer>> interfaceMethodWithArgTypesMap;
 
+    @Setter
     private Map<String, Boolean> runnableImplClassMap;
+    @Setter
     private Map<String, Boolean> callableImplClassMap;
+    @Setter
     private Map<String, Boolean> transactionCallbackImplClassMap;
+    @Setter
     private Map<String, Boolean> transactionCallbackWithoutResultChildClassMap;
+    @Setter
     private Map<String, Boolean> threadChildClassMap;
+    @Setter
     private Set<String> allClassNameSet;
 
+    @Setter
     private Map<String, String> classAndSuperMap;
 
+    @Setter
     private Set<String> interfaceExtendsSet;
 
+    @Setter
     private ClassAndJarNum classAndJarNum;
 
+    @Setter
     private ExtensionsManager extensionsManager;
 
+    @Setter
     private SpringDefineBeanHandler springDefineBeanHandler;
 
+    @Setter
     private SpringDefineComponentScanHandler springDefineComponentScanHandler;
 
+    @Setter
     private SpringDefineAopHandler springDefineAopHandler;
 
     public JarEntryPreHandle1Parser(JavaCG2InputAndOutput javaCG2InputAndOutput, boolean onlyOneJar) {
@@ -91,11 +106,11 @@ public class JarEntryPreHandle1Parser extends AbstractJarEntryParser {
 
         // 非class文件，判断是否需要使用扩展类处理jar文件中的文件
         String jarEntryFileExt = JavaCG2Constants.FLAG_DOT + StringUtils.substringAfterLast(jarEntryPath, JavaCG2Constants.FLAG_DOT);
-        logger.debug("jar文件中文件的后缀: [{}] {}", jarEntryPath, jarEntryFileExt);
+        log.debug("jar文件中文件的后缀: [{}] {}", jarEntryPath, jarEntryFileExt);
         List<JarEntryOtherFileParser> jarEntryOtherFileParserList = extensionsManager.getJarEntryOtherFileParserList(jarEntryFileExt);
         if (jarEntryOtherFileParserList == null) {
             // 当前文件不存在对应的扩展类，不处理
-            logger.debug("当前文件不存在对应的扩展类，不处理 {}", jarEntryFileExt);
+            log.debug("当前文件不存在对应的扩展类，不处理 {}", jarEntryFileExt);
             return true;
         }
 
@@ -112,12 +127,12 @@ public class JarEntryPreHandle1Parser extends AbstractJarEntryParser {
             try {
                 // 处理一个jar文件中的文件
                 if (!jarEntryOtherFileParser.parseJarEntryOtherFile(cachedInputStream, jarEntryPath, jarEntryName)) {
-                    logger.error("处理一个jar文件中的文件失败 {} {}", jarEntryOtherFileParser.getClass().getName(), jarEntryPath);
+                    log.error("处理一个jar文件中的文件失败 {} {}", jarEntryOtherFileParser.getClass().getName(), jarEntryPath);
                     return false;
                 }
             } catch (Throwable e) {
                 // 内部有可能抛出Error等非Exception异常，需要捕获
-                logger.error("处理文件出现未知异常 {} ", jarEntryPath, e);
+                log.error("处理文件出现未知异常 {} ", jarEntryPath, e);
                 return false;
             }
             // 重置缓存的InputStream，使下次能够从头开始继续读取
@@ -131,7 +146,7 @@ public class JarEntryPreHandle1Parser extends AbstractJarEntryParser {
     protected boolean handleClassEntry(JavaClass javaClass, String jarEntryPath) {
         String className = javaClass.getClassName();
         if (javaCG2ElManager.checkIgnoreParseClass(className)) {
-            logger.debug("跳过解析类 {}", className);
+            log.debug("跳过解析类 {}", className);
             return true;
         }
 
@@ -237,69 +252,5 @@ public class JarEntryPreHandle1Parser extends AbstractJarEntryParser {
             classAndSuperMap.put(className, superClassName);
         }
         return true;
-    }
-
-    public void setClassImplementsInfoMap(Map<String, List<String>> classImplementsInfoMap) {
-        this.classImplementsInfoMap = classImplementsInfoMap;
-    }
-
-    public void setClassExtendsImplMethodWithArgTypesMap(Map<String, Map<MethodArgReturnTypes, Integer>> classExtendsImplMethodWithArgTypesMap) {
-        this.classExtendsImplMethodWithArgTypesMap = classExtendsImplMethodWithArgTypesMap;
-    }
-
-    public void setInterfaceMethodWithArgTypesMap(Map<String, Map<MethodArgReturnTypes, Integer>> interfaceMethodWithArgTypesMap) {
-        this.interfaceMethodWithArgTypesMap = interfaceMethodWithArgTypesMap;
-    }
-
-    public void setRunnableImplClassMap(Map<String, Boolean> runnableImplClassMap) {
-        this.runnableImplClassMap = runnableImplClassMap;
-    }
-
-    public void setCallableImplClassMap(Map<String, Boolean> callableImplClassMap) {
-        this.callableImplClassMap = callableImplClassMap;
-    }
-
-    public void setTransactionCallbackImplClassMap(Map<String, Boolean> transactionCallbackImplClassMap) {
-        this.transactionCallbackImplClassMap = transactionCallbackImplClassMap;
-    }
-
-    public void setTransactionCallbackWithoutResultChildClassMap(Map<String, Boolean> transactionCallbackWithoutResultChildClassMap) {
-        this.transactionCallbackWithoutResultChildClassMap = transactionCallbackWithoutResultChildClassMap;
-    }
-
-    public void setThreadChildClassMap(Map<String, Boolean> threadChildClassMap) {
-        this.threadChildClassMap = threadChildClassMap;
-    }
-
-    public void setAllClassNameSet(Set<String> allClassNameSet) {
-        this.allClassNameSet = allClassNameSet;
-    }
-
-    public void setClassAndSuperMap(Map<String, String> classAndSuperMap) {
-        this.classAndSuperMap = classAndSuperMap;
-    }
-
-    public void setInterfaceExtendsSet(Set<String> interfaceExtendsSet) {
-        this.interfaceExtendsSet = interfaceExtendsSet;
-    }
-
-    public void setClassAndJarNum(ClassAndJarNum classAndJarNum) {
-        this.classAndJarNum = classAndJarNum;
-    }
-
-    public void setExtensionsManager(ExtensionsManager extensionsManager) {
-        this.extensionsManager = extensionsManager;
-    }
-
-    public void setSpringDefineBeanHandler(SpringDefineBeanHandler springDefineBeanHandler) {
-        this.springDefineBeanHandler = springDefineBeanHandler;
-    }
-
-    public void setSpringDefineComponentScanHandler(SpringDefineComponentScanHandler springDefineComponentScanHandler) {
-        this.springDefineComponentScanHandler = springDefineComponentScanHandler;
-    }
-
-    public void setSpringDefineAopHandler(SpringDefineAopHandler springDefineAopHandler) {
-        this.springDefineAopHandler = springDefineAopHandler;
     }
 }

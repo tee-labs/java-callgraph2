@@ -1,12 +1,14 @@
 package com.adrninistrator.javacg2.dto.instruction.parseresult;
 
 import com.adrninistrator.javacg2.dto.element.BaseElement;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2023/7/16
  * @description: PUTFIELD指令解析结果
  */
+@Getter
 public class PutFieldParseResult extends BaseInstructionParseResult {
 
     // 字段名称
@@ -26,21 +28,5 @@ public class PutFieldParseResult extends BaseInstructionParseResult {
         this.fieldType = fieldType;
         this.value = value;
         this.object = object;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public String getFieldType() {
-        return fieldType;
-    }
-
-    public BaseElement getValue() {
-        return value;
-    }
-
-    public BaseElement getObject() {
-        return object;
     }
 }

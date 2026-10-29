@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.common.enums;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2023/3/12
  * @description:
  */
+@Getter
 public enum JavaCG2YesNoEnum {
     YES("1", 1, "是"),
     NO("0", 0, "否"),
@@ -55,17 +58,5 @@ public enum JavaCG2YesNoEnum {
 
     public static boolean isNotSureDesc(String desc) {
         return NOT_SURE.desc.equals(desc);
-    }
-
-    public String getStrValue() {
-        return strValue;
-    }
-
-    public int getIntValue() {
-        return intValue;
-    }
-
-    public String getDesc() {
-        return desc;
     }
 }

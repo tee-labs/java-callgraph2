@@ -4,12 +4,14 @@ import com.adrninistrator.javacg2.common.enums.JavaCG2DirEnum;
 import com.adrninistrator.javacg2.conf.enums.interfaces.OtherConfigInterface;
 import com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2022/11/7
  * @description:
  */
+@Getter
 public enum JavaCG2OtherConfigFileUseListEnum implements OtherConfigInterface {
     OCFULE_JAR_DIR(JavaCG2DirEnum.IDE_CONFIG.getDirName() + "/jar_dir.properties",
             new String[]{"(作用) 指定需要解析的jar、war、jmod文件路径，或保存class、jar、war、jmod文件的目录路径（每行代表一条记录，支持多行）",
@@ -43,16 +45,6 @@ public enum JavaCG2OtherConfigFileUseListEnum implements OtherConfigInterface {
     @Override
     public String getKey() {
         return fileName;
-    }
-
-    @Override
-    public String[] getDescriptions() {
-        return descriptions;
-    }
-
-    @Override
-    public String[] getDefaultValues() {
-        return defaultValues;
     }
 
     @Override

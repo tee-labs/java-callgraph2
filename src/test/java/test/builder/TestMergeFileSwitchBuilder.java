@@ -5,11 +5,10 @@ import com.adrninistrator.javacg2.builder.JavaCG2EntryBuilder;
 import com.adrninistrator.javacg2.builder.JavaCG2MergeFileSwitchBuilder;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import test.base.TestBase;
 
 import java.io.File;
@@ -22,9 +21,8 @@ import java.util.zip.ZipFile;
  * @description: JavaCG2MergeFileSwitchBuilder的测试
  * 需要先在当前项目执行 mvn package -DskipTests -Ptest_gen_jar 命令生成对应jar文件
  */
+@Slf4j
 public class TestMergeFileSwitchBuilder extends TestBase {
-
-    private static final Logger logger = LoggerFactory.getLogger(TestMergeFileSwitchBuilder.class);
 
     // 用于测试按文件名忽略的目录，每次使用前会清空
     private static final String MERGE_SWITCH_DIR = "target/merge_switch_dir";
@@ -81,13 +79,13 @@ public class TestMergeFileSwitchBuilder extends TestBase {
                         .ignoreJarInDirByFileName("test.jar"))
                 .addJarOrDir(MERGE_SWITCH_DIR)
                 .build();
-        logger.info("执行结果 {}", javaCG2Entry.run());
+        log.info("执行结果 {}", javaCG2Entry.run());
 
         // 设置了output.root.path参数，检查在输出根目录中生成的合并jar文件
         File mergedJarFile = new File(OUT_TEST_DIR, "merge_switch_dir-javacg2_merged.jar");
         Assert.assertTrue(mergedJarFile.exists());
         int entryNum = countJarEntry(mergedJarFile);
-        logger.info("合并生成的jar文件中的条目数量 {}", entryNum);
+        log.info("合并生成的jar文件中的条目数量 {}", entryNum);
         // 表达式跳过了目录中唯一的jar文件，合并生成的jar文件中没有任何条目
         Assert.assertEquals(0, entryNum);
     }
@@ -127,42 +125,42 @@ public class TestMergeFileSwitchBuilder extends TestBase {
             JavaCG2MergeFileSwitchBuilder.builder().ignoreJarInDirByFileName();
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 文件名为空白
         try {
             JavaCG2MergeFileSwitchBuilder.builder().ignoreWarInDirByFileName(" ");
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 文件名包含单引号
         try {
             JavaCG2MergeFileSwitchBuilder.builder().ignoreClassInDirByFileName("a'b.class");
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 文件后缀未以.开头
         try {
             JavaCG2MergeFileSwitchBuilder.builder().ignoreOtherInDirByFileExt("xml");
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // 原始表达式文本为null
         try {
             JavaCG2MergeFileSwitchBuilder.builder().setIgnoreJarWarByClassDirPrefixExpression(null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         // applyTo方法传入null
         try {
             JavaCG2MergeFileSwitchBuilder.builder().applyTo(null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 
@@ -173,13 +171,13 @@ public class TestMergeFileSwitchBuilder extends TestBase {
             JavaCG2EntryBuilder.builder().setFrEqConversionMethod(null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         try {
             JavaCG2EntryBuilder.builder().setMergeFileSwitch(null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 }

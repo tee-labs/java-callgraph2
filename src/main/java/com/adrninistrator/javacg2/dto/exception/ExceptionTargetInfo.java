@@ -1,5 +1,6 @@
 package com.adrninistrator.javacg2.dto.exception;
 
+import lombok.Getter;
 import org.apache.bcel.generic.InstructionHandle;
 
 /**
@@ -7,6 +8,7 @@ import org.apache.bcel.generic.InstructionHandle;
  * @date 2022/10/30
  * @description: Exception table的target指令及异常类型
  */
+@Getter
 public class ExceptionTargetInfo {
 
     // Exception table的target指令
@@ -18,13 +20,5 @@ public class ExceptionTargetInfo {
     public ExceptionTargetInfo(InstructionHandle target, String exceptionType) {
         this.target = target;
         this.exceptionType = exceptionType;
-    }
-
-    public InstructionHandle getTarget() {
-        return target;
-    }
-
-    public String getExceptionType() {
-        return exceptionType;
     }
 }

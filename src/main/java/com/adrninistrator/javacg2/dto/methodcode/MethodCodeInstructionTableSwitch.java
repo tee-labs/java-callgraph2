@@ -1,5 +1,8 @@
 package com.adrninistrator.javacg2.dto.methodcode;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 /**
@@ -7,49 +10,22 @@ import java.util.List;
  * @date 2025/3/21
  * @description: 方法代码指令，tableswitch
  */
+@Getter
 public class MethodCodeInstructionTableSwitch extends MethodCodeInstruction {
 
     // 默认跳转目标指令偏移量
+    @Setter
     private int defaultTargetOffset;
 
     // case最小值
+    @Setter
     private int low;
 
     // case最大值
+    @Setter
     private int high;
 
     // 跳转目标列表
+    @Setter
     private List<Integer> jumpTargetOffsetList;
-
-    public int getDefaultTargetOffset() {
-        return defaultTargetOffset;
-    }
-
-    public void setDefaultTargetOffset(int defaultTargetOffset) {
-        this.defaultTargetOffset = defaultTargetOffset;
-    }
-
-    public int getLow() {
-        return low;
-    }
-
-    public void setLow(int low) {
-        this.low = low;
-    }
-
-    public int getHigh() {
-        return high;
-    }
-
-    public void setHigh(int high) {
-        this.high = high;
-    }
-
-    public List<Integer> getJumpTargetOffsetList() {
-        return jumpTargetOffsetList;
-    }
-
-    public void setJumpTargetOffsetList(List<Integer> jumpTargetOffsetList) {
-        this.jumpTargetOffsetList = jumpTargetOffsetList;
-    }
 }

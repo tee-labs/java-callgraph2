@@ -1,6 +1,7 @@
 package com.adrninistrator.javacg2.dto.method;
 
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
+import lombok.Getter;
 import org.apache.bcel.generic.Type;
 
 import java.util.Objects;
@@ -10,6 +11,7 @@ import java.util.Objects;
  * @date 2022/10/1
  * @description: 方法名、方法参数与返回类型
  */
+@Getter
 public class MethodArgReturnTypes {
     // 方法名
     private final String methodName;
@@ -46,17 +48,5 @@ public class MethodArgReturnTypes {
     @Override
     public int hashCode() {
         return Objects.hash(methodName, methodArgTypes, methodReturnType);
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public String getMethodArgTypes() {
-        return methodArgTypes;
-    }
-
-    public String getMethodReturnType() {
-        return methodReturnType;
     }
 }

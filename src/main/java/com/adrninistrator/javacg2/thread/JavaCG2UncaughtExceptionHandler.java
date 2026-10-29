@@ -1,16 +1,14 @@
 package com.adrninistrator.javacg2.thread;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author adrninistrator
  * @date 2024/3/23
  * @description:
  */
+@Slf4j
 public class JavaCG2UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2UncaughtExceptionHandler.class);
 
     private int exceptionCount;
 
@@ -18,7 +16,7 @@ public class JavaCG2UncaughtExceptionHandler implements Thread.UncaughtException
     public void uncaughtException(Thread t, Throwable e) {
         if (e != null) {
             exceptionCount++;
-            logger.error("线程池执行出现未捕获的异常 {} ", t.getName(), e);
+            log.error("线程池执行出现未捕获的异常 {} ", t.getName(), e);
         }
     }
 

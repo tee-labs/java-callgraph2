@@ -5,9 +5,8 @@ import com.adrninistrator.javacg2.conf.enums.JavaCG2ConfigKeyEnum;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseSetEnum;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import test.base.TestBase;
 
 /**
@@ -15,9 +14,8 @@ import test.base.TestBase;
  * @date 2023/7/16
  * @description:
  */
+@Slf4j
 public class TestAllConfig extends TestBase {
-
-    private static final Logger logger = LoggerFactory.getLogger(TestAllConfig.class);
 
     public static final String[] BOOLEAN_VALUES = new String[]{Boolean.TRUE.toString(), Boolean.FALSE.toString()};
 
@@ -34,7 +32,7 @@ public class TestAllConfig extends TestBase {
                             for (String logMethodSpendTime : BOOLEAN_VALUES) {
                                 for (int i = 1; i <= 2; i++) {
                                     times++;
-                                    logger.info("执行次数 {}", times);
+                                    log.info("执行次数 {}", times);
 
                                     // 开启日志打印只执行一次，太耗时
                                     if (Boolean.parseBoolean(debugPrintFlag)) {
@@ -73,6 +71,6 @@ public class TestAllConfig extends TestBase {
                 }
             }
         }
-        logger.info("执行耗时 {} ms", (System.currentTimeMillis() - startTime));
+        log.info("执行耗时 {} ms", (System.currentTimeMillis() - startTime));
     }
 }

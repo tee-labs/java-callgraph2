@@ -1,11 +1,16 @@
 package com.adrninistrator.javacg2.dto.counter;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * @author Adrninistrator
  * @date 2021/8/10
  * @description: 计数器
  */
+@Getter
 public class JavaCG2Counter {
+    @Setter
     private int count;
 
     public JavaCG2Counter() {
@@ -29,15 +34,6 @@ public class JavaCG2Counter {
     // 计数减 1后返回
     public int minusAndGet() {
         return --count;
-    }
-
-    //
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
     }
 
     @Override

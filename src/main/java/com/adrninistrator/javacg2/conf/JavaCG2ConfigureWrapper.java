@@ -11,9 +11,8 @@ import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
 import com.adrninistrator.javacg2.el.enums.interfaces.ElConfigInterface;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
 import com.adrninistrator.javacg2.markdown.writer.MarkdownWriter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -22,9 +21,8 @@ import java.io.IOException;
  * @date 2022/11/7
  * @description: 配置参数包装类
  */
+@Slf4j
 public class JavaCG2ConfigureWrapper extends BaseConfigureWrapper {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2ConfigureWrapper.class);
 
     public JavaCG2ConfigureWrapper() {
     }
@@ -61,7 +59,7 @@ public class JavaCG2ConfigureWrapper extends BaseConfigureWrapper {
         JavaCG2CalleeRawActualEnum calleeNewRawActual = JavaCG2CalleeRawActualEnum.getFromType(strValue);
         if (calleeNewRawActual == null) {
             String errorMsg = "参数值非法，允许使用的值为 " + JavaCG2CalleeRawActualEnum.getAllInfoOneLine() + " " + mainConfigInfo + " " + strValue;
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
         return strValue;
@@ -72,7 +70,7 @@ public class JavaCG2ConfigureWrapper extends BaseConfigureWrapper {
         JavaCG2CalleeRawActualEnum calleeRawActual = JavaCG2CalleeRawActualEnum.getFromType(strValue);
         if (calleeRawActual == null) {
             String errorMsg = "参数值非法，允许使用的值为 " + JavaCG2CalleeRawActualEnum.getAllInfoOneLine() + " " + mainConfigInfo + " " + strValue;
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
         return strValue;
@@ -82,7 +80,7 @@ public class JavaCG2ConfigureWrapper extends BaseConfigureWrapper {
     private String handleOutputFileExt(String strValue, String mainConfigInfo) throws JavaCG2ConfigException {
         if (StringUtils.isNotBlank(strValue) && !StringUtils.startsWith(strValue, JavaCG2Constants.FLAG_DOT)) {
             String errorMsg = "配置参数需要以 " + JavaCG2Constants.FLAG_DOT + " 开头 " + mainConfigInfo + " " + strValue;
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
         return strValue;

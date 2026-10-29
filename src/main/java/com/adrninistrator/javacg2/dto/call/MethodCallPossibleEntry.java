@@ -1,6 +1,7 @@
 package com.adrninistrator.javacg2.dto.call;
 
 import com.adrninistrator.javacg2.dto.field.ClassFieldTypeAndName;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
@@ -10,6 +11,7 @@ import java.util.Objects;
  * @date 2023/3/12
  * @description: 方法调用中被调用对象、参数的可能的信息
  */
+@Getter
 public class MethodCallPossibleEntry {
 
     // 可能的被调用静态字段

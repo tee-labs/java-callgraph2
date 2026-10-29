@@ -1,12 +1,14 @@
 package com.adrninistrator.javacg2.dto.instruction.parseresult;
 
 import com.adrninistrator.javacg2.dto.element.BaseElement;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2023/8/3
  * @description: PUTSTATIC指令解析结果
  */
+@Getter
 public class PutStaticParseResult extends BaseInstructionParseResult {
 
     // 类名
@@ -26,21 +28,5 @@ public class PutStaticParseResult extends BaseInstructionParseResult {
         this.fieldName = fieldName;
         this.fieldType = fieldType;
         this.value = value;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public String getFieldType() {
-        return fieldType;
-    }
-
-    public BaseElement getValue() {
-        return value;
     }
 }

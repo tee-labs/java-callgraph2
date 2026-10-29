@@ -14,10 +14,10 @@ import com.adrninistrator.javacg2.el.util.JavaCG2ElUtil;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2MarkDownUtil;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -31,13 +31,13 @@ import java.util.Set;
  * @date 2025/2/13
  * @description: 根据配置参数生成文件的基类
  */
+@Slf4j
 public abstract class BaseConfigWriter {
-
-    private static final Logger logger = LoggerFactory.getLogger(BaseConfigWriter.class);
 
     // 保存配置参数需要写到文件的根目录
     private final String rootDirPath;
 
+    @Setter
     protected BaseConfigureWrapper baseConfigureWrapper;
 
     public BaseConfigWriter(String rootDirPath) {
@@ -80,7 +80,7 @@ public abstract class BaseConfigWriter {
             }
             return true;
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             return false;
         }
     }
@@ -106,7 +106,7 @@ public abstract class BaseConfigWriter {
                     }
                 }
             } catch (Exception e) {
-                logger.error("error ", e);
+                log.error("error ", e);
                 return false;
             }
         }
@@ -185,7 +185,7 @@ public abstract class BaseConfigWriter {
                     writeNewLine(writer, elConfig.getDefaultValue());
                 }
             } catch (Exception e) {
-                logger.error("error ", e);
+                log.error("error ", e);
                 return false;
             }
         }
@@ -395,9 +395,5 @@ public abstract class BaseConfigWriter {
             }
         }
         throw new JavaCG2RuntimeException("未使用合法的配置文件目录 " + configFileName);
-    }
-
-    public void setBaseConfigureWrapper(BaseConfigureWrapper baseConfigureWrapper) {
-        this.baseConfigureWrapper = baseConfigureWrapper;
     }
 }

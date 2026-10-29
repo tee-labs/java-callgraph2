@@ -8,9 +8,8 @@ import com.adrninistrator.javacg2.el.util.JavaCG2ElUtil;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Collection;
@@ -42,9 +41,8 @@ import java.util.List;
  * 当前类的实例只能通过build方法生成一个JavaCG2Entry对象，假如需要生成多个，请创建当前类的多个实例
  * 生成的JavaCG2Entry对象只能执行一次run方法，假如需要再次执行，请通过当前类的新的实例生成新的JavaCG2Entry对象
  */
+@Slf4j
 public class JavaCG2EntryBuilder {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2EntryBuilder.class);
 
     private JavaCG2ConfigBuilder javaCG2ConfigBuilder;
 
@@ -252,7 +250,7 @@ public class JavaCG2EntryBuilder {
                 // 内置默认内容为空白时不设置，保持表达式不生效的现状
                 continue;
             }
-            logger.info("使用jar包中内置配置文件的默认表达式 {}", elConfig.getConfigPrintInfo());
+            log.info("使用jar包中内置配置文件的默认表达式 {}", elConfig.getConfigPrintInfo());
             javaCG2ConfigureWrapper.setElConfigText(elConfig, elText);
         }
     }

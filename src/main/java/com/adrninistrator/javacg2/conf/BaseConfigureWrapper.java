@@ -19,10 +19,9 @@ import com.adrninistrator.javacg2.markdown.writer.MarkdownWriter;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,8 +42,8 @@ import java.util.Set;
  * @date 2025/1/30
  * @description: 配置包装类基类
  */
+@Slf4j
 public abstract class BaseConfigureWrapper {
-    private static final Logger logger = LoggerFactory.getLogger(BaseConfigureWrapper.class);
 
     // 指定的配置文件根目录路径
     private final String inputRootPath;
@@ -135,11 +134,11 @@ public abstract class BaseConfigureWrapper {
         this.inputRootPath = inputRootPath;
         allowedConfigClassNameSet.addAll(Arrays.asList(chooseAllowedConfigClassNames()));
         if (onlyUseConfigInJavaCode) {
-            logger.info("仅使用代码中指定的参数，忽略配置文件中的参数");
+            log.info("仅使用代码中指定的参数，忽略配置文件中的参数");
             // 使用默认的空参数（忽略配置文件中的参数）
             useDefaultEmptyConfig();
         } else {
-            logger.info("使用配置文件中的参数");
+            log.info("使用配置文件中的参数");
         }
     }
 
@@ -197,7 +196,7 @@ public abstract class BaseConfigureWrapper {
     private void checkAllowedConfigClassName(Object object) {
         String className = object.getClass().getName();
         if (!allowedConfigClassNameSet.contains(className)) {
-            logger.error("当前使用的配置类名不允许使用 {}", className);
+            log.error("当前使用的配置类名不允许使用 {}", className);
             throw new JavaCG2RuntimeException("当前使用的配置类名不允许使用");
         }
     }
@@ -246,24 +245,24 @@ public abstract class BaseConfigureWrapper {
         String mainConfigInfo = mainConfig.getFileName() + " " + mainConfig.getConfigPrintInfo();
         if (strValue == null) {
             String errorMsg = "配置参数不允许为null " + mainConfigInfo;
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
         if (StringUtils.isEmpty(strValue)) {
             if (mainConfig.isNotBlank() && useConfig) {
                 String errorMsg = "配置参数不允许为空 " + mainConfigInfo;
-                logger.error(errorMsg);
+                log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }
         } else {
             if (Integer.class == mainConfig.getType() && !JavaCG2Util.isNumStr(strValue)) {
                 String errorMsg = "int类型参数值非法 " + mainConfigInfo + " " + strValue;
-                logger.error(errorMsg);
+                log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }
             if (Boolean.class == mainConfig.getType() && !StringUtils.equalsAnyIgnoreCase(strValue, Boolean.FALSE.toString(), Boolean.TRUE.toString())) {
                 String errorMsg = "bool类型参数值非法 " + mainConfigInfo + " " + strValue;
-                logger.error(errorMsg);
+                log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }
         }
@@ -277,23 +276,23 @@ public abstract class BaseConfigureWrapper {
             throw e;
         } catch (Exception e) {
             String errorMsg = "处理参数出现异常 " + mainConfigInfo + " " + mainConfig.getType().getName() + " " + strValue;
-            logger.error(errorMsg, e);
+            log.error(errorMsg, e);
             throw new JavaCG2ConfigException(errorMsg, e);
         }
 
         if (value == null) {
             String errorMsg = "配置参数非法 " + mainConfigInfo + " " + mainConfig.getType().getName() + " " + strValue;
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
 
         if (!mainConfig.getType().isAssignableFrom(value.getClass())) {
             String errorMsg = "生成的参数值类型与预期的不一致 " + mainConfigInfo + " " + value.getClass().getName() + " " + mainConfig.getType().getName();
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
         if (useConfig) {
-            logger.info("设置主要配置的参数 {} {} {}", mainConfig.getFileName(), mainConfig.getConfigPrintInfo(), value);
+            log.info("设置主要配置的参数 {} {} {}", mainConfig.getFileName(), mainConfig.getConfigPrintInfo(), value);
             // 缓存当前的参数值
             mainConfigMap.put(mainConfig.getKey(), value);
         }
@@ -319,16 +318,16 @@ public abstract class BaseConfigureWrapper {
     public void setOtherConfigSet(OtherConfigInterface otherConfig, Set<String> configSet) {
         if (!otherConfig.isSetOrList()) {
             String errorMsg = "仅支持Set类型的配置参数 " + otherConfig.getKey();
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
         checkAllowedConfigClassName(otherConfig);
         if (configSet == null) {
             String errorMsg = "不允许传入null，只能传入内容为空的Set " + otherConfig.getKey();
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
-        logger.info("设置不区分顺序配置的参数 {}", otherConfig.getConfigPrintInfo());
+        log.info("设置不区分顺序配置的参数 {}", otherConfig.getConfigPrintInfo());
         otherConfigSetMap.put(otherConfig.getKey(), configSet);
     }
 
@@ -352,10 +351,10 @@ public abstract class BaseConfigureWrapper {
         checkAllowedConfigClassName(otherConfig);
         if (configSet == null) {
             String errorMsg = "不允许传入null，只能传入内容为空的Set " + otherConfig.getKey();
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
-        logger.info("增加不区分顺序配置的参数 {}", otherConfig.getConfigPrintInfo());
+        log.info("增加不区分顺序配置的参数 {}", otherConfig.getConfigPrintInfo());
         Set<String> existedSet = otherConfigSetMap.get(otherConfig.getKey());
         if (existedSet == null) {
             otherConfigSetMap.put(otherConfig.getKey(), configSet);
@@ -384,15 +383,15 @@ public abstract class BaseConfigureWrapper {
         checkAllowedConfigClassName(otherConfig);
         if (otherConfig.isSetOrList()) {
             String errorMsg = "仅支持List类型的配置参数 " + otherConfig.getKey();
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
         if (configList == null) {
             String errorMsg = "不允许传入null，只能传入内容为空的List " + otherConfig.getKey();
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
-        logger.info("设置区分顺序配置的参数 {}", otherConfig.getConfigPrintInfo());
+        log.info("设置区分顺序配置的参数 {}", otherConfig.getConfigPrintInfo());
         otherConfigListMap.put(otherConfig.getKey(), configList);
     }
 
@@ -416,10 +415,10 @@ public abstract class BaseConfigureWrapper {
         checkAllowedConfigClassName(otherConfig);
         if (configList == null) {
             String errorMsg = "不允许传入null，只能传入内容为空的List " + otherConfig.getKey();
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
-        logger.info("增加区分顺序配置的参数 {}", otherConfig.getConfigPrintInfo());
+        log.info("增加区分顺序配置的参数 {}", otherConfig.getConfigPrintInfo());
         List<String> existedList = otherConfigListMap.get(otherConfig.getKey());
         if (existedList == null) {
             List<String> newList = new ArrayList<>();
@@ -427,7 +426,7 @@ public abstract class BaseConfigureWrapper {
             otherConfigListMap.put(otherConfig.getKey(), newList);
             return;
         } else {
-            logger.warn("已存在的参数，不再重复添加 {}", otherConfig.getKey());
+            log.warn("已存在的参数，不再重复添加 {}", otherConfig.getKey());
         }
         JavaCG2Util.addList2List(configList, existedList);
     }
@@ -440,7 +439,7 @@ public abstract class BaseConfigureWrapper {
     protected void clearOtherConfigUseSet(OtherConfigInterface[] otherConfigs) {
         for (OtherConfigInterface otherConfig : otherConfigs) {
             checkAllowedConfigClassName(otherConfig);
-            logger.info("区分顺序的配置优先使用代码中指定的参数，若代码中未指定则使用配置文件中的参数 {}", otherConfig.getConfigPrintInfo());
+            log.info("区分顺序的配置优先使用代码中指定的参数，若代码中未指定则使用配置文件中的参数 {}", otherConfig.getConfigPrintInfo());
         }
     }
 
@@ -452,7 +451,7 @@ public abstract class BaseConfigureWrapper {
     protected void clearOtherConfigUseList(OtherConfigInterface[] otherConfigs) {
         for (OtherConfigInterface otherConfig : otherConfigs) {
             checkAllowedConfigClassName(otherConfig);
-            logger.info("不区分顺序的配置优先使用代码中指定的参数，若代码中未指定则使用配置文件中的参数 {}", otherConfig.getConfigPrintInfo());
+            log.info("不区分顺序的配置优先使用代码中指定的参数，若代码中未指定则使用配置文件中的参数 {}", otherConfig.getConfigPrintInfo());
         }
     }
 
@@ -478,10 +477,10 @@ public abstract class BaseConfigureWrapper {
         checkAllowedConfigClassName(elConfig);
         if (elText == null) {
             String errorMsg = "不允许传入null，只能传入空字符串 " + elConfig.getKey();
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
-        logger.info("设置表达式配置 {} [{}]", elConfig.getConfigPrintInfo(), elText);
+        log.info("设置表达式配置 {} [{}]", elConfig.getConfigPrintInfo(), elText);
         elConfigMap.put(elConfig.getKey(), elText);
     }
 
@@ -524,12 +523,12 @@ public abstract class BaseConfigureWrapper {
             String arg = args[i];
             if (StringUtils.isBlank(arg)) {
                 String errorMsg = "需要比较的字符串值不允许为空 " + elConfig.getKey();
-                logger.error(errorMsg);
+                log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }
             if (arg.contains("'")) {
                 String errorMsg = "需要比较的字符串值不允许包含单引号 " + elConfig.getKey() + " " + arg;
-                logger.error(errorMsg);
+                log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }
             // 自动为字符串参数添加单引号，保证生成的表达式是合法的Aviator表达式
@@ -554,7 +553,7 @@ public abstract class BaseConfigureWrapper {
         }
         if (arg.contains("'")) {
             String errorMsg = "需要比较的字符串值不允许包含单引号 " + elConfig.getKey() + " " + arg;
-            logger.error(errorMsg);
+            log.error(errorMsg);
             throw new JavaCG2ConfigException(errorMsg);
         }
         // 检查表达式变量是否允许使用
@@ -571,7 +570,7 @@ public abstract class BaseConfigureWrapper {
                 return;
             }
         }
-        logger.error("当前表达式不允许使用该变量 {} {}", elConfig.getKey(), elVariable.getVariableName());
+        log.error("当前表达式不允许使用该变量 {} {}", elConfig.getKey(), elVariable.getVariableName());
         throw new JavaCG2RuntimeException("当前表达式不允许使用该变量");
     }
 
@@ -604,15 +603,15 @@ public abstract class BaseConfigureWrapper {
             if (useConfig) {
                 // 判断不允许为空的参数是否有指定值
                 if (mainConfig.isNotBlank() && value instanceof String && StringUtils.isBlank((String) value)) {
-                    logger.error("需要使用的配置参数未在代码中指定 {} {}", mainConfig.getFileName(), mainConfig.getConfigPrintInfo());
+                    log.error("需要使用的配置参数未在代码中指定 {} {}", mainConfig.getFileName(), mainConfig.getConfigPrintInfo());
                     throw new JavaCG2Error("需要使用的配置参数未在代码中指定: " + mainConfig.getFileName() + " " + mainConfig.getConfigPrintInfo());
                 }
 
                 // 记录有被使用的主要配置
                 recordUsedMainConfig(mainConfig);
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("获取到通过代码设置的参数 {} {}", key, value);
+            if (log.isDebugEnabled()) {
+                log.debug("获取到通过代码设置的参数 {} {}", key, value);
             }
             return (T) value;
         }
@@ -623,7 +622,7 @@ public abstract class BaseConfigureWrapper {
         if (properties == null) {
             if (!JavaCG2FileUtil.checkFileExistsInDiskOrClasspath(chooseInputRootPath() + configFileName)) {
                 // 配置文件不存在时使用代码中默认的参数
-                logger.info("配置文件不存在，使用代码中默认的参数 {} {}", configFileName, mainConfig.getConfigPrintInfo());
+                log.info("配置文件不存在，使用代码中默认的参数 {} {}", configFileName, mainConfig.getConfigPrintInfo());
                 if (useConfig) {
                     // 记录有被使用的主要配置
                     recordUsedMainConfig(mainConfig);
@@ -636,7 +635,7 @@ public abstract class BaseConfigureWrapper {
                 properties.load(reader);
                 propertiesMap.put(configFileName, properties);
             } catch (Exception e) {
-                logger.error("error ", e);
+                log.error("error ", e);
                 throw new JavaCG2Error("读取配置文件出错: " + configFileName);
             }
         }
@@ -645,7 +644,7 @@ public abstract class BaseConfigureWrapper {
         String strValue = properties.getProperty(key);
         if (useConfig) {
             if (mainConfig.isNotBlank() && StringUtils.isBlank(strValue)) {
-                logger.error("需要使用的配置参数未在配置文件中指定 {} {}", mainConfig.getFileName(), mainConfig.getConfigPrintInfo());
+                log.error("需要使用的配置参数未在配置文件中指定 {} {}", mainConfig.getFileName(), mainConfig.getConfigPrintInfo());
                 throw new JavaCG2Error("需要使用的配置参数未在配置文件中指定: " + mainConfig.getFileName() + " " + mainConfig.getConfigPrintInfo());
             }
             // 记录有被使用的主要配置
@@ -658,8 +657,8 @@ public abstract class BaseConfigureWrapper {
         }
         // 设置参数值，仅当useConfig为true时，才需要缓存参数值
         T value2 = (T) setMainConfig(mainConfig, strValue, useConfig);
-        if (logger.isDebugEnabled()) {
-            logger.debug("获取到配置文件中的参数 {} {}", key, value2);
+        if (log.isDebugEnabled()) {
+            log.debug("获取到配置文件中的参数 {} {}", key, value2);
         }
         return value2;
     }
@@ -701,7 +700,7 @@ public abstract class BaseConfigureWrapper {
             configSet = JavaCG2FileUtil.readFile2Set(chooseInputRootPath() + configFileName);
         } else {
             // 配置文件不存在时使用代码中默认的参数
-            logger.info("配置文件不存在，使用代码中默认的参数 {}", otherConfig.getConfigPrintInfo());
+            log.info("配置文件不存在，使用代码中默认的参数 {}", otherConfig.getConfigPrintInfo());
             String[] defaultValues = otherConfig.getDefaultValues();
             if (defaultValues == null) {
                 configSet = new HashSet<>();
@@ -755,7 +754,7 @@ public abstract class BaseConfigureWrapper {
             configList = JavaCG2FileUtil.readFile2List(chooseInputRootPath() + configFileName);
         } else {
             // 配置文件不存在时使用代码中默认的参数
-            logger.info("配置文件不存在，使用代码中默认的参数 {}", otherConfig.getConfigPrintInfo());
+            log.info("配置文件不存在，使用代码中默认的参数 {}", otherConfig.getConfigPrintInfo());
             String[] defaultValues = otherConfig.getDefaultValues();
             if (defaultValues == null) {
                 configList = new ArrayList<>();
@@ -791,7 +790,7 @@ public abstract class BaseConfigureWrapper {
         }
 
         // 不可能执行到这里
-        logger.error("未知情况 {} {}", mainConfig, strValue);
+        log.error("未知情况 {} {}", mainConfig, strValue);
         throw new JavaCG2RuntimeException("未知情况 " + mainConfig + " " + strValue);
     }
 
@@ -848,7 +847,7 @@ public abstract class BaseConfigureWrapper {
             }
         } else {
             // 配置文件不存在时使用代码中默认值
-            logger.info("配置文件不存在，使用代码中默认的参数 {}", elConfig.getConfigPrintInfo());
+            log.info("配置文件不存在，使用代码中默认的参数 {}", elConfig.getConfigPrintInfo());
             elText = elConfig.getDefaultValue();
         }
         // 将配置文件中的参数记录到内存中，用于后续使用
@@ -868,7 +867,7 @@ public abstract class BaseConfigureWrapper {
             Constructor<?> constructor = clazz.getConstructor(boolean.class);
             copied = (BaseConfigureWrapper) constructor.newInstance(false);
         } catch (Exception e) {
-            logger.error("创建拷贝数据的对象失败 {} ", this.getClass().getName(), e);
+            log.error("创建拷贝数据的对象失败 {} ", this.getClass().getName(), e);
             throw new JavaCG2RuntimeException("创建拷贝数据的对象失败");
         }
 
@@ -912,7 +911,7 @@ public abstract class BaseConfigureWrapper {
      */
     public boolean printUsedConfigInfo(String simpleClassName, String outputDirPath, String fileName) {
         String configMdFilePath = JavaCG2FileUtil.addSeparator4FilePath(outputDirPath) + fileName;
-        logger.info("{} 使用的配置参数保存到以下文件 {}", simpleClassName, configMdFilePath);
+        log.info("{} 使用的配置参数保存到以下文件 {}", simpleClassName, configMdFilePath);
         // 打印使用的配置参数
         return printConfigInfo(simpleClassName, configMdFilePath, false);
     }
@@ -926,7 +925,7 @@ public abstract class BaseConfigureWrapper {
      */
     public boolean printAllConfigInfo(String simpleClassName, String outputDirPath, String fileName) {
         String configMdFilePath = JavaCG2FileUtil.addSeparator4FilePath(outputDirPath) + fileName;
-        logger.info("{} 所有配置参数保存到以下文件 {}", simpleClassName, configMdFilePath);
+        log.info("{} 所有配置参数保存到以下文件 {}", simpleClassName, configMdFilePath);
         // 打印使用的配置参数
         return printConfigInfo(simpleClassName, configMdFilePath, true);
     }
@@ -960,7 +959,7 @@ public abstract class BaseConfigureWrapper {
 
             return true;
         } catch (Exception e) {
-            logger.error("{} error ", simpleClassName, e);
+            log.error("{} error ", simpleClassName, e);
             return false;
         }
     }
@@ -1320,7 +1319,7 @@ public abstract class BaseConfigureWrapper {
             }
             return true;
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             return false;
         }
     }
@@ -1338,7 +1337,7 @@ public abstract class BaseConfigureWrapper {
 
         String tmpInputRootPath;
         if (inputRootPath != null) {
-            logger.info("指定的配置文件根目录: {}", inputRootPath);
+            log.info("指定的配置文件根目录: {}", inputRootPath);
             tmpInputRootPath = inputRootPath;
         } else {
             tmpInputRootPath = JavaCG2Util.getInputRootPath();
@@ -1349,7 +1348,7 @@ public abstract class BaseConfigureWrapper {
         } else {
             usedInputRootPath = JavaCG2FileUtil.addSeparator4FilePath(JavaCG2FileUtil.getCanonicalPath(tmpInputRootPath));
         }
-        logger.info("使用的配置文件根目录: {}", usedInputRootPath);
+        log.info("使用的配置文件根目录: {}", usedInputRootPath);
         return usedInputRootPath;
     }
 

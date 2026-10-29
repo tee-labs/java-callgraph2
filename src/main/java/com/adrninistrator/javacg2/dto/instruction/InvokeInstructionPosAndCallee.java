@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.dto.instruction;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2023/8/4
  * @description: 方法调用指令位置及被调用方法
  */
+@Getter
 public class InvokeInstructionPosAndCallee {
 
     // 方法调用序号
@@ -20,17 +23,5 @@ public class InvokeInstructionPosAndCallee {
         this.invokeInstructionPosition = invokeInstructionPosition;
         this.calleeClassName = calleeClassName;
         this.calleeMethodName = calleeMethodName;
-    }
-
-    public int getInvokeInstructionPosition() {
-        return invokeInstructionPosition;
-    }
-
-    public String getCalleeClassName() {
-        return calleeClassName;
-    }
-
-    public String getCalleeMethodName() {
-        return calleeMethodName;
     }
 }

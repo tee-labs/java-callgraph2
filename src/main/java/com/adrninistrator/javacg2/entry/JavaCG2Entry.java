@@ -45,9 +45,9 @@ import com.adrninistrator.javacg2.writer.JavaCG2FileOutputAdapter;
 import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
 import com.adrninistrator.javacg2.writer.WriterSupportSkip;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,8 +65,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @date 2021/8/21
  * @description: 入口类
  */
+@Slf4j
 public class JavaCG2Entry {
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2Entry.class);
 
     public static final String SIMPLE_CLASS_NAME = JavaCG2Entry.class.getSimpleName();
 
@@ -88,17 +88,8 @@ public class JavaCG2Entry {
         输出适配器，用于生成每种结果文件对应的记录Sink
         未通过setOutputAdapter方法指定时，使用JavaCG2FileOutputAdapter将记录写入文件
      */
+    @Setter
     private JavaCG2OutputAdapter outputAdapter;
-
-    /**
-     * 设置输出适配器
-     * 需要在调用run()方法之前调用当前方法
-     *
-     * @param outputAdapter
-     */
-    public void setOutputAdapter(JavaCG2OutputAdapter outputAdapter) {
-        this.outputAdapter = outputAdapter;
-    }
 
     private JarEntryPreHandle1Parser jarEntryPreHandle1Parser;
     private JarEntryPreHandle2Parser jarEntryPreHandle2Parser;
@@ -127,7 +118,7 @@ public class JavaCG2Entry {
 
     public boolean run() {
         if (!runFlag.compareAndSet(false, true)) {
-            logger.error("当前类的实例在创建后只能使用一次，假如需要再次执行，请创建新的实例 {}", this.getClass().getSimpleName());
+            log.error("当前类的实例在创建后只能使用一次，假如需要再次执行，请创建新的实例 {}", this.getClass().getSimpleName());
             return false;
         }
 
@@ -157,7 +148,7 @@ public class JavaCG2Entry {
 
             try {
                 boolean success1 = parse(mergeJarResult, javaCG2ElManager, javaCG2ConfInfo);
-                logger.info("执行完毕，处理数量，类： {} 方法: {} 方法调用: {} 耗时: {} 秒", classNumCounter.getCount(), methodNumCounter.getCount(), callIdCounter.getCount(),
+                log.info("执行完毕，处理数量，类： {} 方法: {} 方法调用: {} 耗时: {} 秒", classNumCounter.getCount(), methodNumCounter.getCount(), callIdCounter.getCount(),
                         JavaCG2Util.getSpendSeconds(startTime));
                 // 打印所有的配置参数
                 boolean success2 = javaCG2ConfigureWrapper.printAllConfigInfo(SIMPLE_CLASS_NAME, outputDirPath, JavaCG2Constants.FILE_JAVACG2_ALL_CONFIG_MD);
@@ -165,7 +156,7 @@ public class JavaCG2Entry {
                 boolean success3 = javaCG2ConfigureWrapper.printUsedConfigInfo(SIMPLE_CLASS_NAME, outputDirPath, JavaCG2Constants.FILE_JAVACG2_USED_CONFIG_MD);
                 return success1 && success2 && success3;
             } catch (Exception e) {
-                logger.error("error ", e);
+                log.error("error ", e);
                 return false;
             }
         }
@@ -297,7 +288,7 @@ public class JavaCG2Entry {
             if (!handleJar(mergeJarFilePath, methodCallSink, springBeanSink, springScanPackageSink, springAopAspectSink, springAopPointcutSink, springAopAdviceSink,
                     javaCG2ElManager)
                     || failCounter.getCount() > 0) {
-                logger.error("处理失败，出错次数 {}", failCounter.getCount());
+                log.error("处理失败，出错次数 {}", failCounter.getCount());
                 return false;
             }
 
@@ -344,7 +335,7 @@ public class JavaCG2Entry {
             // 记录java-callgraph2组件使用的配置参数
             return recordJavaCG2Config(javaCG2ConfigSink);
         } catch (Exception e) {
-            logger.error("出现异常 ", e);
+            log.error("出现异常 ", e);
             return false;
         } finally {
             // 关闭扩展类管理类
@@ -357,7 +348,7 @@ public class JavaCG2Entry {
         MergeJarHandler mergeJarHandler = new MergeJarHandler(javaCG2ConfigureWrapper, null, null, null, true);
         MergeJarResult mergeJarResult = mergeJarHandler.mergeJar();
         if (mergeJarResult == null) {
-            logger.error("获取处理需要解析的jar文件/目录的输出文件路径失败");
+            log.error("获取处理需要解析的jar文件/目录的输出文件路径失败");
             return null;
         }
 
@@ -372,9 +363,9 @@ public class JavaCG2Entry {
             // 配置参数中有指定生成文件的根目录，生成在指定目录
             outputDirPath = JavaCG2FileUtil.addSeparator4FilePath(outputRootPath) + mergeJarFile.getName() + JavaCG2Constants.DIR_TAIL_OUTPUT + File.separator;
         }
-        logger.info("当前输出的根目录: {}", outputDirPath);
+        log.info("当前输出的根目录: {}", outputDirPath);
         if (!JavaCG2FileUtil.isDirectoryExists(outputDirPath, true)) {
-            logger.error("创建输出目录失败 {}", outputRootPath);
+            log.error("创建输出目录失败 {}", outputRootPath);
             return null;
         }
         return outputDirPath;
@@ -388,15 +379,15 @@ public class JavaCG2Entry {
         MergeJarHandler mergeJarHandler = new MergeJarHandler(javaCG2ConfigureWrapper, jarPathNumMap, jarNumCounter, javaCG2ElManager, false);
         MergeJarResult mergeJarResult = mergeJarHandler.mergeJar();
         if (mergeJarResult == null) {
-            logger.error("处理需要解析的jar文件/目录失败");
+            log.error("处理需要解析的jar文件/目录失败");
             return null;
         }
 
         String mergeJarFilePath = JavaCG2FileUtil.getCanonicalPath(mergeJarResult.getMergeJarFile());
-        logger.info("实际处理的jar文件路径: {}", mergeJarFilePath);
+        log.info("实际处理的jar文件路径: {}", mergeJarFilePath);
         if (mergeJarResult.getFatJarFile() != null) {
             String fatJarFilePath = JavaCG2FileUtil.getCanonicalPath(mergeJarResult.getFatJarFile());
-            logger.info("生成的fat jar文件路径: {}", fatJarFilePath);
+            log.info("生成的fat jar文件路径: {}", fatJarFilePath);
         }
         return mergeJarResult;
     }
@@ -584,17 +575,17 @@ public class JavaCG2Entry {
             if (javaCG2OutPutFileTypeEnum == JavaCG2OutPutFileTypeEnum.OPFTE_ILLEGAL) {
                 continue;
             }
-            logger.info("写入文件: {}", javaCG2OutputInfo.getMainFilePath(javaCG2OutPutFileTypeEnum));
+            log.info("写入文件: {}", javaCG2OutputInfo.getMainFilePath(javaCG2OutPutFileTypeEnum));
         }
 
         Set<String> otherFileNameSet = javaCG2OutputInfo.getOtherFileNameSet();
         if (otherFileNameSet.isEmpty()) {
-            logger.info("不写入其他类型的文件");
+            log.info("不写入其他类型的文件");
             return;
         }
 
         for (String otherFileName : otherFileNameSet) {
-            logger.info("写入其他类型的文件 {} {}", otherFileName, javaCG2OutputInfo.getOtherFilePath(otherFileName));
+            log.info("写入其他类型的文件 {} {}", otherFileName, javaCG2OutputInfo.getOtherFilePath(otherFileName));
         }
     }
 
@@ -631,7 +622,7 @@ public class JavaCG2Entry {
             recordSpringAop(springAopAspectSink, springAopPointcutSink, springAopAdviceSink);
             return true;
         } catch (Exception e) {
-            logger.error("处理jar文件出现异常 {} ", jarFilePath, e);
+            log.error("处理jar文件出现异常 {} ", jarFilePath, e);
             return false;
         }
     }

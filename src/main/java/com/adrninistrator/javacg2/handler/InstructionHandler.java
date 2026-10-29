@@ -40,6 +40,8 @@ import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ElementUtil;
 import com.adrninistrator.javacg2.util.JavaCG2InstructionUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.bcel.Const;
 import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.LocalVariableTable;
@@ -75,8 +77,6 @@ import org.apache.bcel.generic.SIPUSH;
 import org.apache.bcel.generic.StoreInstruction;
 import org.apache.bcel.generic.Type;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,8 +87,8 @@ import java.util.Map;
  * @date 2022/10/16
  * @description: 对指令进行处理
  */
+@Slf4j
 public class InstructionHandler {
-    private static final Logger logger = LoggerFactory.getLogger(InstructionHandler.class);
 
     private final Map<String, Map<String, Integer>> frEqConversionMethodMap;
 
@@ -102,33 +102,44 @@ public class InstructionHandler {
 
     private final LocalVariableTable localVariableTable;
 
+    @Setter
     private JavaCG2OperandStack stack;
 
+    @Setter
     private JavaCG2LocalVariables locals;
 
+    @Setter
     private FieldInformationMap nonStaticFieldInfoMap;
 
+    @Setter
     private FieldInformationMap staticFieldInfoMap;
 
     // 需要解析方法调用的可能的类型与值的开关
+    @Setter
     private boolean parseMethodCallTypeValueFlag;
 
     // 解析构造函数以获取非静态字段可能的类型的开关
+    @Setter
     private boolean recordFieldPossibleTypeFlag;
 
     // 当前处理的是否为枚举的构造函数
+    @Setter
     private boolean enumInitMethodFlag;
 
     // 使用已获取的构造函数非静态字段可能的类型的开关
+    @Setter
     private boolean useFieldPossibleTypeFlag;
 
     // 非静态字段字段所有可能的类型
+    @Setter
     private FieldPossibleTypes nonStaticFieldPossibleTypes;
 
     // 当前方法是否可能为set方法
+    @Setter
     private boolean maybeSetMethod;
 
     // 当前方法是否为静态代码块
+    @Setter
     private boolean inClinitMethod;
 
     // 以下两个字段不修改为本地变量
@@ -159,9 +170,9 @@ public class InstructionHandler {
 
     public BaseInstructionParseResult parse(InstructionHandle ih) {
         instructionPosition = ih.getPosition();
-        if (logger.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             sourceLineNumber = JavaCG2ByteCodeUtil.getSourceLine(instructionPosition, mg.getLineNumberTable(cpg));
-            logger.debug("当前解析的方法 {} {} 指令位置 {} 代码行号 {}", callerFullMethod, callerMethodReturnType, instructionPosition, sourceLineNumber);
+            log.debug("当前解析的方法 {} {} 指令位置 {} 代码行号 {}", callerFullMethod, callerMethodReturnType, instructionPosition, sourceLineNumber);
         }
 
         Instruction i = ih.getInstruction();
@@ -611,7 +622,7 @@ public class InstructionHandler {
                 handleJSR(ih);
                 break;
             default:
-                logger.error("未处理的指令 {} {}", opCode, i.getClass().getName());
+                log.error("未处理的指令 {} {}", opCode, i.getClass().getName());
                 break;
         }
 
@@ -637,7 +648,7 @@ public class InstructionHandler {
                 stack.push(new VariableElement(objectType.getClassName()));
             }
         } else {
-            logger.error("LDC 暂不支持的情况 {} {}", typeString, value);
+            log.error("LDC 暂不支持的情况 {} {}", typeString, value);
         }
     }
 
@@ -650,7 +661,7 @@ public class InstructionHandler {
         } else if (JavaCG2ConstantTypeEnum.CONSTTE_DOUBLE.getType().equals(typeString)) {
             stack.push(new ConstElementDouble(value));
         } else {
-            logger.error("LDC2_W 暂不支持的情况 {} {}", typeString, value);
+            log.error("LDC2_W 暂不支持的情况 {} {}", typeString, value);
         }
     }
 
@@ -754,7 +765,7 @@ public class InstructionHandler {
 
         if (!arrayVariable.checkArrayElement()) {
             if (!JavaCG2ConstantTypeEnum.CONSTTE_NULL.getType().equals(arrayVariable.getType())) {
-                logger.error("{} 数组操作指令操作的变量不是数组类型 {}", callerFullMethod, arrayVariable.getClass().getName());
+                log.error("{} 数组操作指令操作的变量不是数组类型 {}", callerFullMethod, arrayVariable.getClass().getName());
             }
             return;
         }
@@ -1086,7 +1097,7 @@ public class InstructionHandler {
                             return;
                         }
                         // 字段可能的类型数量大于1，无法使用
-                        logger.warn("{} 类的构造函数解析后 {} 非静态字段可能的类型数量大于1 {}", mg.getClassName(), fieldName, StringUtils.join(possibleTypeList, " "));
+                        log.warn("{} 类的构造函数解析后 {} 非静态字段可能的类型数量大于1 {}", mg.getClassName(), fieldName, StringUtils.join(possibleTypeList, " "));
                     }
                 }
             }
@@ -1244,50 +1255,5 @@ public class InstructionHandler {
         String arrayType = JavaCG2InstructionUtil.getTypeString(multianewarray, cpg);
         VariableElement arrayElement = new VariableElement(arrayType);
         stack.push(arrayElement);
-    }
-
-    //
-    public void setStack(JavaCG2OperandStack stack) {
-        this.stack = stack;
-    }
-
-    public void setLocals(JavaCG2LocalVariables locals) {
-        this.locals = locals;
-    }
-
-    public void setNonStaticFieldInfoMap(FieldInformationMap nonStaticFieldInfoMap) {
-        this.nonStaticFieldInfoMap = nonStaticFieldInfoMap;
-    }
-
-    public void setStaticFieldInfoMap(FieldInformationMap staticFieldInfoMap) {
-        this.staticFieldInfoMap = staticFieldInfoMap;
-    }
-
-    public void setParseMethodCallTypeValueFlag(boolean parseMethodCallTypeValueFlag) {
-        this.parseMethodCallTypeValueFlag = parseMethodCallTypeValueFlag;
-    }
-
-    public void setRecordFieldPossibleTypeFlag(boolean recordFieldPossibleTypeFlag) {
-        this.recordFieldPossibleTypeFlag = recordFieldPossibleTypeFlag;
-    }
-
-    public void setEnumInitMethodFlag(boolean enumInitMethodFlag) {
-        this.enumInitMethodFlag = enumInitMethodFlag;
-    }
-
-    public void setUseFieldPossibleTypeFlag(boolean useFieldPossibleTypeFlag) {
-        this.useFieldPossibleTypeFlag = useFieldPossibleTypeFlag;
-    }
-
-    public void setNonStaticFieldPossibleTypes(FieldPossibleTypes nonStaticFieldPossibleTypes) {
-        this.nonStaticFieldPossibleTypes = nonStaticFieldPossibleTypes;
-    }
-
-    public void setMaybeSetMethod(boolean maybeSetMethod) {
-        this.maybeSetMethod = maybeSetMethod;
-    }
-
-    public void setInClinitMethod(boolean inClinitMethod) {
-        this.inClinitMethod = inClinitMethod;
     }
 }

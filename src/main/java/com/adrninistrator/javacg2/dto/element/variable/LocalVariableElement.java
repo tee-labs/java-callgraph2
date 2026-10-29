@@ -1,12 +1,14 @@
 package com.adrninistrator.javacg2.dto.element.variable;
 
 import com.adrninistrator.javacg2.dto.element.BaseElement;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2022/10/5
  * @description: 本地变量
  */
+@Getter
 public class LocalVariableElement extends VariableElement {
 
     // 本地变量索引
@@ -40,10 +42,6 @@ public class LocalVariableElement extends VariableElement {
     // 判断是否为this
     public boolean isThis() {
         return index == 0;
-    }
-
-    public int getIndex() {
-        return index;
     }
 
     public String getName() {

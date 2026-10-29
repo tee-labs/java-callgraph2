@@ -5,6 +5,8 @@ import com.adrninistrator.javacg2.common.enums.JavaCG2CalleeObjTypeEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2YesNoEnum;
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.bcel.generic.Type;
 
 /**
@@ -12,60 +14,79 @@ import org.apache.bcel.generic.Type;
  * @date 2022/9/20
  * @description: 方法之间调用关系
  */
+@Getter
 public class MethodCall {
 
     // 方法调用序号
+    @Setter
     private int callId;
 
     // 方法调用是否启用
+    @Setter
     private boolean enabled;
 
     // 方法调用类型
+    @Setter
     private String methodCallType;
 
     // 调用者类名
+    @Setter
     private String callerClassName;
 
     // 调用者方法名
+    @Setter
     private String callerMethodName;
 
     // 调用者方法参数类型
+    @Setter
     private String callerMethodArgTypes;
 
     // 调用者源代码行号
+    @Setter
     private int callerSourceLine;
 
     // 调用者方法返回类型
+    @Setter
     private String callerReturnType;
 
     // 被调用者类名
+    @Setter
     private String calleeClassName;
 
     // 被调用者方法名
+    @Setter
     private String calleeMethodName;
 
     // 被调用者方法参数类型
+    @Setter
     private String calleeMethodArgTypes;
 
     // 被调用方法的参数类型数组，原始的
+    @Setter
     private Type[] rawCalleeArgTypes;
 
     // 被调用方法的参数类型数组，用于显示的
+    @Setter
     private Type[] displayCalleeArgTypes;
 
     // 被调用者类的数组维度，0代表非数组
+    @Setter
     private int calleeArrayDimensions;
 
     // 被调用类型
+    @Setter
     private JavaCG2CalleeObjTypeEnum calleeObjTypeEnum;
 
     // 原始返回类型
+    @Setter
     private String rawReturnType;
 
     // 实际返回类型
+    @Setter
     private String actualReturnType;
 
     // 描述
+    @Setter
     private String description;
 
     //
@@ -104,150 +125,5 @@ public class MethodCall {
                 calleeJarNum,
                 description == null ? "" : description
         );
-    }
-
-    //
-    public int getCallId() {
-        return callId;
-    }
-
-    public void setCallId(int callId) {
-        this.callId = callId;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getMethodCallType() {
-        return methodCallType;
-    }
-
-    public void setMethodCallType(String methodCallType) {
-        this.methodCallType = methodCallType;
-    }
-
-    public String getCallerClassName() {
-        return callerClassName;
-    }
-
-    public void setCallerClassName(String callerClassName) {
-        this.callerClassName = callerClassName;
-    }
-
-    public String getCallerMethodName() {
-        return callerMethodName;
-    }
-
-    public void setCallerMethodName(String callerMethodName) {
-        this.callerMethodName = callerMethodName;
-    }
-
-    public String getCallerMethodArgTypes() {
-        return callerMethodArgTypes;
-    }
-
-    public void setCallerMethodArgTypes(String callerMethodArgTypes) {
-        this.callerMethodArgTypes = callerMethodArgTypes;
-    }
-
-    public int getCallerSourceLine() {
-        return callerSourceLine;
-    }
-
-    public void setCallerSourceLine(int callerSourceLine) {
-        this.callerSourceLine = callerSourceLine;
-    }
-
-    public String getCallerReturnType() {
-        return callerReturnType;
-    }
-
-    public void setCallerReturnType(String callerReturnType) {
-        this.callerReturnType = callerReturnType;
-    }
-
-    public String getCalleeClassName() {
-        return calleeClassName;
-    }
-
-    public void setCalleeClassName(String calleeClassName) {
-        this.calleeClassName = calleeClassName;
-    }
-
-    public String getCalleeMethodName() {
-        return calleeMethodName;
-    }
-
-    public void setCalleeMethodName(String calleeMethodName) {
-        this.calleeMethodName = calleeMethodName;
-    }
-
-    public String getCalleeMethodArgTypes() {
-        return calleeMethodArgTypes;
-    }
-
-    public void setCalleeMethodArgTypes(String calleeMethodArgTypes) {
-        this.calleeMethodArgTypes = calleeMethodArgTypes;
-    }
-
-    public Type[] getRawCalleeArgTypes() {
-        return rawCalleeArgTypes;
-    }
-
-    public void setRawCalleeArgTypes(Type[] rawCalleeArgTypes) {
-        this.rawCalleeArgTypes = rawCalleeArgTypes;
-    }
-
-    public Type[] getDisplayCalleeArgTypes() {
-        return displayCalleeArgTypes;
-    }
-
-    public void setDisplayCalleeArgTypes(Type[] displayCalleeArgTypes) {
-        this.displayCalleeArgTypes = displayCalleeArgTypes;
-    }
-
-    public int getCalleeArrayDimensions() {
-        return calleeArrayDimensions;
-    }
-
-    public void setCalleeArrayDimensions(int calleeArrayDimensions) {
-        this.calleeArrayDimensions = calleeArrayDimensions;
-    }
-
-    public JavaCG2CalleeObjTypeEnum getCalleeObjTypeEnum() {
-        return calleeObjTypeEnum;
-    }
-
-    public void setCalleeObjTypeEnum(JavaCG2CalleeObjTypeEnum calleeObjTypeEnum) {
-        this.calleeObjTypeEnum = calleeObjTypeEnum;
-    }
-
-    public String getRawReturnType() {
-        return rawReturnType;
-    }
-
-    public void setRawReturnType(String rawReturnType) {
-        this.rawReturnType = rawReturnType;
-    }
-
-    public String getActualReturnType() {
-        return actualReturnType;
-    }
-
-    public void setActualReturnType(String actualReturnType) {
-        this.actualReturnType = actualReturnType;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 }

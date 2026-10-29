@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.common.enums;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2023/7/2
  * @description: 方法调用可能的信息类型枚举
  */
+@Getter
 public enum JavaCG2MethodCallInfoTypeEnum {
     MCIT_TYPE("t", "类型"),
     MCIT_VALUE("v", "值"),
@@ -36,13 +39,5 @@ public enum JavaCG2MethodCallInfoTypeEnum {
             }
         }
         return MCIT_ILLEGAL;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getDesc() {
-        return desc;
     }
 }

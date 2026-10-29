@@ -1,5 +1,7 @@
 package com.adrninistrator.javacg2.dto.stack;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +10,7 @@ import java.util.List;
  * @date 2022/12/1
  * @description: 当作栈使用的List
  */
+@Getter
 public class ListAsStack<E> {
     // 栈的当前位置，初始值-1
     private int head = -1;
@@ -83,14 +86,5 @@ public class ListAsStack<E> {
      */
     public boolean atBottom() {
         return head == 0;
-    }
-
-    /**
-     * 获取头的位置
-     *
-     * @return
-     */
-    public int getHead() {
-        return head;
     }
 }

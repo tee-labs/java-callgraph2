@@ -4,8 +4,7 @@ import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.dto.element.BaseElement;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
 import com.adrninistrator.javacg2.util.JavaCG2ElementUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
 
@@ -14,9 +13,8 @@ import java.util.Set;
  * @date 2022/5/13
  * @description: 操作数栈
  */
+@Slf4j
 public class JavaCG2OperandStack {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2OperandStack.class);
 
     private final BaseElement[] elements;
 
@@ -40,32 +38,32 @@ public class JavaCG2OperandStack {
 
     public void push(BaseElement element) {
         if (element == null) {
-            logger.error("push的元素为null {}", head);
+            log.error("push的元素为null {}", head);
             throw new JavaCG2RuntimeException("push的元素为null");
         }
 
         if (head >= capacity) {
-            logger.error("栈已满 {} {}", head, element);
+            log.error("栈已满 {} {}", head, element);
             throw new JavaCG2RuntimeException("栈已满");
         }
 
         elements[head++] = element;
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("入操作数栈后 size: {} {}", head, element);
+        if (log.isDebugEnabled()) {
+            log.debug("入操作数栈后 size: {} {}", head, element);
         }
     }
 
     public BaseElement pop() {
         if (head == 0) {
-            logger.error("栈为空，不支持pop");
+            log.error("栈为空，不支持pop");
             throw new JavaCG2RuntimeException("栈为空，不支持pop");
         }
 
         BaseElement element = elements[--head];
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("出操作数栈后 size: {} {}", head, element);
+        if (log.isDebugEnabled()) {
+            log.debug("出操作数栈后 size: {} {}", head, element);
         }
 
         elements[head] = null;
@@ -74,7 +72,7 @@ public class JavaCG2OperandStack {
 
     public BaseElement peek() {
         if (head == 0) {
-            logger.error("栈为空，不支持peek");
+            log.error("栈为空，不支持peek");
             throw new JavaCG2RuntimeException("栈为空，不支持peek");
         }
 

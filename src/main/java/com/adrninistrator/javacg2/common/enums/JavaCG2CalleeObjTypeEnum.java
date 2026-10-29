@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.common.enums;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2023/3/6
  * @description: 被调用类型枚举
  */
+@Getter
 public enum JavaCG2CalleeObjTypeEnum {
     COTE_THIS("t", "调用当前实例的方法"),
     COTE_STATIC_FIELD("sf", "调用静态字段的方法"),
@@ -18,13 +21,5 @@ public enum JavaCG2CalleeObjTypeEnum {
     JavaCG2CalleeObjTypeEnum(String type, String desc) {
         this.type = type;
         this.desc = desc;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getDesc() {
-        return desc;
     }
 }

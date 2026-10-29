@@ -14,14 +14,13 @@ import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2JarUtil;
 import com.adrninistrator.javacg2.util.JavaCG2RunProcessUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
+import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.io.inputstream.ZipInputStream;
 import net.lingala.zip4j.io.outputstream.ZipOutputStream;
 import net.lingala.zip4j.model.LocalFileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -42,9 +41,8 @@ import java.util.Set;
  * @date 2025/1/25
  * @description: 用于合并jar、war、jmod、class文件的处理类
  */
+@Slf4j
 public class MergeJarHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(MergeJarHandler.class);
 
     private static final String[] ALLOWED_FILE_TYPES = new String[]{
             JavaCG2Constants.EXT_JAR, JavaCG2Constants.EXT_WAR, JavaCG2Constants.EXT_JMOD,
@@ -94,7 +92,7 @@ public class MergeJarHandler {
         this.javaCG2ConfigureWrapper = javaCG2ConfigureWrapper;
         jarOrDirPathList = javaCG2ConfigureWrapper.getOtherConfigList(JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR);
         if (jarOrDirPathList.isEmpty()) {
-            logger.error("请在配置文件中指定需要解析的jar文件或目录列表 {}", JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR.genConfigUsage());
+            log.error("请在配置文件中指定需要解析的jar文件或目录列表 {}", JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR.genConfigUsage());
             throw new JavaCG2RuntimeException("未指定需要解析的jar文件或目录列表");
         }
         this.jarPathNumMap = jarPathNumMap;
@@ -107,7 +105,7 @@ public class MergeJarHandler {
         jdkRuntimeMajorVersion = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_JDK_RUNTIME_MAJOR_VERSION);
 
         if (!onlyForOutputFile) {
-            logger.info("需要解析的jar文件或目录:\n{}", StringUtils.join(jarOrDirPathList, "\n"));
+            log.info("需要解析的jar文件或目录:\n{}", StringUtils.join(jarOrDirPathList, "\n"));
         }
     }
 
@@ -130,13 +128,13 @@ public class MergeJarHandler {
             String oneFilePath = JavaCG2FileUtil.getCanonicalPath(mergeFile);
 
             if (!mergeFile.exists()) {
-                logger.error("指定了一个jar文件或目录，不存在: {}", oneFilePath);
+                log.error("指定了一个jar文件或目录，不存在: {}", oneFilePath);
                 return null;
             }
 
             if (mergeFile.isFile()) {
                 if (!JavaCG2FileUtil.checkJarWarJmodFile(oneFilePath)) {
-                    logger.error("处理单个文件时只支持指定 {} 格式，假如需要处理 {} 格式的文件，则需要指定其所在目录", ALLOWED_FILE_TYPE_STR, JavaCG2Constants.EXT_CLASS);
+                    log.error("处理单个文件时只支持指定 {} 格式，假如需要处理 {} 格式的文件，则需要指定其所在目录", ALLOWED_FILE_TYPE_STR, JavaCG2Constants.EXT_CLASS);
                     return null;
                 }
 
@@ -149,7 +147,7 @@ public class MergeJarHandler {
                         // 记录jar、war文件对应的序号
                         jarPathNumMap.put(oneFilePath, jarNum);
                     }
-                    logger.info("仅指定了一个jar、war文件，直接使用 {} {}", jarOrDirPath, oneFilePath);
+                    log.info("仅指定了一个jar、war文件，直接使用 {} {}", jarOrDirPath, oneFilePath);
                     onlyOneJar = true;
                 }
             }
@@ -171,7 +169,7 @@ public class MergeJarHandler {
         if (!mergeSeparateFatJar) {
             // 不需要合并fat jar
             String fileSizeDisplay = FileUtils.byteCountToDisplaySize(totalSize);
-            logger.info("合并jar文件完毕，耗时 {} 秒，（解压后）总大小约 {}", JavaCG2Util.getSpendSeconds(startTime), fileSizeDisplay);
+            log.info("合并jar文件完毕，耗时 {} 秒，（解压后）总大小约 {}", JavaCG2Util.getSpendSeconds(startTime), fileSizeDisplay);
             return MergeJarResult.genOne(mergeFile);
         }
         // 需要合并fat jar
@@ -190,22 +188,22 @@ public class MergeJarHandler {
      */
     private boolean checkOnlyHandleOneJarFile(String oneFilePath) {
         if (JavaCG2FileUtil.checkJmodFile(oneFilePath)) {
-            logger.info(".jmod文件，需要进行合并 {}", oneFilePath);
+            log.info(".jmod文件，需要进行合并 {}", oneFilePath);
             return false;
         }
         // 指定的是一个jar、war文件，判断其中是否有jar文件
         List<String> jarPathList = getJarPathListInJar(oneFilePath);
         if (!jarPathList.isEmpty()) {
-            logger.info("jar文件中有jar文件，需要进行合并 {}", oneFilePath);
+            log.info("jar文件中有jar文件，需要进行合并 {}", oneFilePath);
             return false;
         }
 
         // 检查是否为 multi-release JAR 文件
         if (checkMultiReleaseJarFile(oneFilePath)) {
-            logger.info("属于 multi-release JAR ，需要进行合并 {}", oneFilePath);
+            log.info("属于 multi-release JAR ，需要进行合并 {}", oneFilePath);
             return false;
         }
-        logger.info("仅指定了一个jar、war文件，不需要进行合并 {}", oneFilePath);
+        log.info("仅指定了一个jar、war文件，不需要进行合并 {}", oneFilePath);
         return true;
     }
 
@@ -230,7 +228,7 @@ public class MergeJarHandler {
             }
             return jarPathList;
         } catch (Exception e) {
-            logger.error("判断jar、war文件中是否存在jar文件异常 {} ", jarFilePath, e);
+            log.error("判断jar、war文件中是否存在jar文件异常 {} ", jarFilePath, e);
             return Collections.emptyList();
         }
     }
@@ -251,14 +249,14 @@ public class MergeJarHandler {
         if (newJarFile.exists()) {
             // 新的jar文件已存在
             if (newJarFile.isDirectory()) {
-                logger.error("新的jar文件已存在，但是是目录: {}", JavaCG2FileUtil.getCanonicalPath(newJarFile));
+                log.error("新的jar文件已存在，但是是目录: {}", JavaCG2FileUtil.getCanonicalPath(newJarFile));
                 return null;
             } else if (!JavaCG2FileUtil.deleteFile(newJarFile)) {
-                logger.error("新的jar文件已存在，删除失败: {}", JavaCG2FileUtil.getCanonicalPath(newJarFile));
+                log.error("新的jar文件已存在，删除失败: {}", JavaCG2FileUtil.getCanonicalPath(newJarFile));
                 return null;
             }
         } else if (!JavaCG2FileUtil.isDirectoryExists(newJarFile.getParentFile(), true)) {
-            logger.error("创建新的jar文件所在目录失败 {}", JavaCG2FileUtil.getCanonicalPath(newJarFile));
+            log.error("创建新的jar文件所在目录失败 {}", JavaCG2FileUtil.getCanonicalPath(newJarFile));
             return null;
         }
 
@@ -301,7 +299,7 @@ public class MergeJarHandler {
                 String jarCanonicalPath = JavaCG2FileUtil.getCanonicalPath(jarFileInDir);
                 if (jarPathNumMap.containsKey(jarCanonicalPath)) {
                     // 避免在jar_dir配置文件中指定了目录与jar文件时，目录中包含对应jar文件时重复处理对应jar文件
-                    logger.warn("目录中的jar、war文件在处理对应目录时已处理过，不再处理 {}", jarCanonicalPath);
+                    log.warn("目录中的jar、war文件在处理对应目录时已处理过，不再处理 {}", jarCanonicalPath);
                     continue;
                 }
 
@@ -315,7 +313,7 @@ public class MergeJarHandler {
                 // 获得生成的jar文件中的目录名称
                 String dirNameInJar = JavaCG2JarUtil.genDirNameInJar(jarNum, jarFileInDir.getName());
 
-                logger.info("处理目录中的jar、war文件: {}", jarCanonicalPath);
+                log.info("处理目录中的jar、war文件: {}", jarCanonicalPath);
                 // 处理jar、war文件，将其中的文件添加到目标jar文件中
                 if (!handleJarWarFile(jarFileInDir, jarCanonicalPath, dirNameInJar, zos)) {
                     return null;
@@ -332,7 +330,7 @@ public class MergeJarHandler {
 
             return newJarFile;
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             return null;
         }
     }
@@ -362,7 +360,7 @@ public class MergeJarHandler {
             File jarFileOrDir = new File(currentJarOrDirPath);
             String jarDirCanonicalPath = JavaCG2FileUtil.getCanonicalPath(jarFileOrDir);
             if (!jarFileOrDir.exists()) {
-                logger.error("配置文件中指定的需要解析的文件或目录不存在 {} {}", jarDirCanonicalPath, JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR.genConfigUsage());
+                log.error("配置文件中指定的需要解析的文件或目录不存在 {} {}", jarDirCanonicalPath, JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR.genConfigUsage());
                 return false;
             }
             if (jarFileOrDir.isFile()) {
@@ -383,7 +381,7 @@ public class MergeJarHandler {
     // 预处理需要解析的文件
     private boolean preHandleFile(String fileCanonicalPath) {
         if (javaCG2ElManager.checkIgnoreMergeFileInDir(fileCanonicalPath)) {
-            logger.info("合并jar文件时，通过表达式判断需要跳过指定的文件 {}", fileCanonicalPath);
+            log.info("合并jar文件时，通过表达式判断需要跳过指定的文件 {}", fileCanonicalPath);
             return true;
         }
 
@@ -395,7 +393,7 @@ public class MergeJarHandler {
         if (JavaCG2FileUtil.checkJarWarFile(fileCanonicalPath)) {
             if (ignoreJarByNamePath(fileCanonicalPath)) {
                 // 假如指定了合并产生的jar文件，且指定的jar文件数量大于1，则跳过
-                logger.info("指定了多个文件或目录，跳过合并产生的jar文件: {}", fileCanonicalPath);
+                log.info("指定了多个文件或目录，跳过合并产生的jar文件: {}", fileCanonicalPath);
                 return true;
             }
             if (!normalFileDirPathList.contains(fileCanonicalPath)) {
@@ -404,11 +402,11 @@ public class MergeJarHandler {
                 // 记录jar、war文件对应的序号
                 jarPathNumMap.put(fileCanonicalPath, jarNumCounter.addAndGet());
             } else {
-                logger.warn("跳过重复的jar、文件 {}", fileCanonicalPath);
+                log.warn("跳过重复的jar、文件 {}", fileCanonicalPath);
             }
             return true;
         }
-        logger.error("在配置文件中指定的需要解析的文件非法 {} 只允许指定 {} {}", fileCanonicalPath, ALLOWED_FILE_TYPES,
+        log.error("在配置文件中指定的需要解析的文件非法 {} 只允许指定 {} {}", fileCanonicalPath, ALLOWED_FILE_TYPES,
                 JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR.genConfigUsage());
         return false;
     }
@@ -417,7 +415,7 @@ public class MergeJarHandler {
     private boolean preHandleDir(String dirCanonicalPath) {
         if (normalFileDirPathList.contains(dirCanonicalPath)) {
             // 已记录过的目录，跳过
-            logger.warn("跳过重复的目录 {}", dirCanonicalPath);
+            log.warn("跳过重复的目录 {}", dirCanonicalPath);
             return true;
         }
         normalFileDirPathList.add(dirCanonicalPath);
@@ -431,7 +429,7 @@ public class MergeJarHandler {
         }
         for (String subFilePath : subFilePathList) {
             if (javaCG2ElManager.checkIgnoreMergeFileInDir(subFilePath)) {
-                logger.info("合并jar文件时，通过表达式判断需要跳过指定目录中的jmod文件 {}", subFilePath);
+                log.info("合并jar文件时，通过表达式判断需要跳过指定目录中的jmod文件 {}", subFilePath);
                 continue;
             }
             // 尝试添加需要解析的.jmod文件路径
@@ -445,12 +443,12 @@ public class MergeJarHandler {
     // 处理jmod文件
     private boolean handleJmodFiles() {
         if (jmodFilePathWithNameList.isEmpty()) {
-            logger.info("未找到jmod文件，不需要处理");
+            log.info("未找到jmod文件，不需要处理");
             return true;
         }
-        logger.info("找到 {} 个jmod文件，开始处理 {}", jmodFilePathWithNameList.size(), StringUtils.join(jmodFilePathWithNameList, " "));
+        log.info("找到 {} 个jmod文件，开始处理 {}", jmodFilePathWithNameList.size(), StringUtils.join(jmodFilePathWithNameList, " "));
         if (StringUtils.isBlank(outputRootPath)) {
-            logger.error("需要处理jmod文件，缺少配置参数 {} 假如不需要处理jmod文件，请从指定的需要解析的文件范围中去掉，或者删除对应目录中的jmod文件",
+            log.error("需要处理jmod文件，缺少配置参数 {} 假如不需要处理jmod文件，请从指定的需要解析的文件范围中去掉，或者删除对应目录中的jmod文件",
                     JavaCG2ConfigKeyEnum.CKE_OUTPUT_ROOT_PATH.genConfigUsage());
             return false;
         }
@@ -458,14 +456,14 @@ public class MergeJarHandler {
         String jmodProgramPath = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_JMOD_PROGRAM_PATH);
         if (StringUtils.isNotBlank(jmodProgramPath)) {
             if (!JavaCG2FileUtil.isFileExists(jmodProgramPath)) {
-                logger.error("配置参数指定的jmod程序不存在 {} {}", jmodProgramPath, JavaCG2ConfigKeyEnum.CKE_OUTPUT_ROOT_PATH.genConfigUsage());
+                log.error("配置参数指定的jmod程序不存在 {} {}", jmodProgramPath, JavaCG2ConfigKeyEnum.CKE_OUTPUT_ROOT_PATH.genConfigUsage());
                 return false;
             }
         } else {
             // 通过需要解析的jmod文件查找jmod程序
             jmodProgramPath = getJmodProgramPathFromJmodFile();
             if (jmodProgramPath == null) {
-                logger.error("通过需要解析的jmod文件未找到jmod程序，需要通过配置参数指定的jmod程序路径 {}", JavaCG2ConfigKeyEnum.CKE_OUTPUT_ROOT_PATH.genConfigUsage());
+                log.error("通过需要解析的jmod文件未找到jmod程序，需要通过配置参数指定的jmod程序路径 {}", JavaCG2ConfigKeyEnum.CKE_OUTPUT_ROOT_PATH.genConfigUsage());
                 return false;
             }
         }
@@ -478,28 +476,28 @@ public class MergeJarHandler {
     private boolean extractJmodFiles(String jmodProgramPath) {
         String jmodFileExtractRootDirPath = JavaCG2FileUtil.addSeparator4FilePath(outputRootPath) + JavaCG2Constants.DIR_NAME_JAVACG2_JMOD_EXTRACT;
         if (!JavaCG2FileUtil.isDirectoryExists(jmodFileExtractRootDirPath)) {
-            logger.error("创建解压.jmod文件的目录失败 {}", jmodFileExtractRootDirPath);
+            log.error("创建解压.jmod文件的目录失败 {}", jmodFileExtractRootDirPath);
             return false;
         }
 
         for (FilePathWithName jmodFilePathWithName : jmodFilePathWithNameList) {
             String jmodExtractDirPath = jmodFileExtractRootDirPath + File.separator + jmodFilePathWithName.getFileName();
             if (JavaCG2FileUtil.isFileExists(jmodExtractDirPath)) {
-                logger.error(".jmod文件需要解压的目录存在同名文件 {}", jmodExtractDirPath);
+                log.error(".jmod文件需要解压的目录存在同名文件 {}", jmodExtractDirPath);
                 return false;
             }
 
             if (JavaCG2FileUtil.isDirectoryExists(jmodExtractDirPath, false)) {
                 // 需要解压的目录已存在，删除
-                logger.info("删除已存在的.jmod文件需要解压的目录 {}", jmodExtractDirPath);
+                log.info("删除已存在的.jmod文件需要解压的目录 {}", jmodExtractDirPath);
                 try {
                     FileUtils.deleteDirectory(new File(jmodExtractDirPath));
                 } catch (Exception e) {
-                    logger.error("删除.jmod文件需要解压的已存在的目录失败 {}", jmodExtractDirPath);
+                    log.error("删除.jmod文件需要解压的已存在的目录失败 {}", jmodExtractDirPath);
                     return false;
                 }
             }
-            logger.info("使用jmod程序 [{}] 解压.jmod文件 [{}] 到目录 [{}]", jmodProgramPath, jmodFilePathWithName.getFilePath(), jmodExtractDirPath);
+            log.info("使用jmod程序 [{}] 解压.jmod文件 [{}] 到目录 [{}]", jmodProgramPath, jmodFilePathWithName.getFilePath(), jmodExtractDirPath);
             String[] args = new String[]{
                     JavaCG2RunProcessUtil.handleProcessArg(jmodProgramPath),
                     "extract",
@@ -508,14 +506,14 @@ public class MergeJarHandler {
                     JavaCG2RunProcessUtil.handleProcessArg(jmodFilePathWithName.getFilePath())
             };
             if (!JavaCG2RunProcessUtil.runProcess(args)) {
-                logger.error("解压.jmod文件失败 {}", jmodFilePathWithName.getFilePath());
+                log.error("解压.jmod文件失败 {}", jmodFilePathWithName.getFilePath());
                 return false;
             }
 
             // 检查解压后的classes目录
             String jmodExtractClassesDirPath = jmodExtractDirPath + File.separator + JavaCG2Constants.DIR_NAME_CLASSES;
             if (!JavaCG2FileUtil.isDirectoryExists(jmodExtractClassesDirPath, false)) {
-                logger.error("解压.jmod文件后的classes目录不存在 {} {}", jmodFilePathWithName.getFilePath(), jmodExtractClassesDirPath);
+                log.error("解压.jmod文件后的classes目录不存在 {} {}", jmodFilePathWithName.getFilePath(), jmodExtractClassesDirPath);
                 return false;
             }
             String jmodExtractClassesDirCanonicalPath = JavaCG2FileUtil.getCanonicalPath(jmodExtractClassesDirPath);
@@ -535,7 +533,7 @@ public class MergeJarHandler {
             File jmodFile = new File(jmodFilePathWithName.getFilePath());
             String jmodProgramPath = jmodFile.getParent() + (windowsOs ? "\\..\\bin\\jmod.exe" : "/../bin/jmod");
             if (JavaCG2FileUtil.isFileExists(jmodProgramPath)) {
-                logger.info("通过需要解析的jmod文件找到jmod程序 {} {}", jmodFilePathWithName.getFilePath(), jmodProgramPath);
+                log.info("通过需要解析的jmod文件找到jmod程序 {} {}", jmodFilePathWithName.getFilePath(), jmodProgramPath);
                 return JavaCG2FileUtil.getCanonicalPath(jmodProgramPath);
             }
         }
@@ -570,7 +568,7 @@ public class MergeJarHandler {
             // 通过class文件对应指定层级的目录路径判断是否跳过合并当前的jar、war文件
             try (ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(sourceJarFile)))) {
                 if (checkIgnoreJarWarByClassDirPrefix(zipInputStream)) {
-                    logger.info("忽略合并当前jar、war文件 {}", sourceJarFile.getAbsolutePath());
+                    log.info("忽略合并当前jar、war文件 {}", sourceJarFile.getAbsolutePath());
                     return true;
                 }
             }
@@ -616,8 +614,8 @@ public class MergeJarHandler {
                 if (JavaCG2FileUtil.checkJarFile(jarEntryPath) && handleJarInJar) {
                     // 跳过处理jar、war文件中的jar文件
                     ignoreJarInJarWar(jarWarCanonicalPath, jarEntryPath);
-                } else if (logger.isDebugEnabled() || javaCG2ElManager.isDebugMode()) {
-                    logger.info("合并jar文件时跳过jar、war文件中的文件 {} {}", jarWarCanonicalPath, jarEntryPath);
+                } else if (log.isDebugEnabled() || javaCG2ElManager.isDebugMode()) {
+                    log.info("合并jar文件时跳过jar、war文件中的文件 {} {}", jarWarCanonicalPath, jarEntryPath);
                 }
                 continue;
             }
@@ -627,7 +625,7 @@ public class MergeJarHandler {
                 // 将不可重复读的ZipInputStream缓存为可以重复读取的ByteArrayInputStream
                 InputStream cachedInputStream = JavaCG2Util.cacheInputStream(zipInputStream);
                 if (cachedInputStream == null) {
-                    logger.error("缓存jar文件内容失败 {}", jarEntryPath);
+                    log.error("缓存jar文件内容失败 {}", jarEntryPath);
                     throw new JavaCG2RuntimeException("缓存jar文件内容失败");
                 }
 
@@ -664,8 +662,8 @@ public class MergeJarHandler {
             }
             // 判断是否为.class文件，且是Multi-release JAR中不需要使用的类
             if (JavaCG2FileUtil.checkClassFile(jarEntryPath) && !loadClassFilePathWithPrefixSet.isEmpty() && !loadClassFilePathWithPrefixSet.contains(jarEntryPath)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("当前Multi-release JAR的.class文件不需要使用 {}", jarEntryPath);
+                if (log.isDebugEnabled()) {
+                    log.debug("当前Multi-release JAR的.class文件不需要使用 {}", jarEntryPath);
                 }
                 continue;
             }
@@ -697,7 +695,7 @@ public class MergeJarHandler {
                 }
             }
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             throw new JavaCG2RuntimeException("检查是否为 multi-release JAR 文件出现异常");
         }
         return false;
@@ -732,7 +730,7 @@ public class MergeJarHandler {
                 multiReleaseJar = JavaCG2JarUtil.checkMultiReleaseJar(zipInputStream);
                 if (!multiReleaseJar) {
                     // 假如不是Multi-release JAR，则返回需要加载的class文件路径为空，代表class文件全部都需要加载
-                    logger.info("有找到 {} 文件，jar文件需要按照 Multi-release JAR 方式处理 [{}] [{}]", JavaCG2Constants.META_INF_MANIFEST, jarPath, innerJarPath);
+                    log.info("有找到 {} 文件，jar文件需要按照 Multi-release JAR 方式处理 [{}] [{}]", JavaCG2Constants.META_INF_MANIFEST, jarPath, innerJarPath);
                     return Collections.emptySet();
                 }
                 continue;
@@ -760,11 +758,11 @@ public class MergeJarHandler {
 
         if (!multiReleaseJar) {
             // 假如不是Multi-release JAR，则返回需要加载的class文件路径为空，代表class文件全部都需要加载
-            logger.info("未找到 {} 文件，jar文件需要按照 Multi-release JAR 方式处理 [{}] [{}]", JavaCG2Constants.META_INF_MANIFEST, jarPath, innerJarPath);
+            log.info("未找到 {} 文件，jar文件需要按照 Multi-release JAR 方式处理 [{}] [{}]", JavaCG2Constants.META_INF_MANIFEST, jarPath, innerJarPath);
             return Collections.emptySet();
         }
 
-        logger.info("jar文件需要按照 Multi-release JAR 方式处理 [{}] [{}]", jarPath, innerJarPath);
+        log.info("jar文件需要按照 Multi-release JAR 方式处理 [{}] [{}]", jarPath, innerJarPath);
         // 根据类加载顺序，获取Multi-release JAR需要加载的.class文件路径
         return getMultiReleaseJarLoadClasses(classInJarRootPathSet, classInJarMetaInfVersionsPathMap);
     }
@@ -827,7 +825,7 @@ public class MergeJarHandler {
 
     // 跳过处理jar、war文件中的jar文件
     private void ignoreJarInJarWar(String jarWarCanonicalPath, String jarEntryPath) {
-        logger.info("合并jar文件时跳过jar、war文件中的jar文件 {} {}", jarWarCanonicalPath, jarEntryPath);
+        log.info("合并jar文件时跳过jar、war文件中的jar文件 {} {}", jarWarCanonicalPath, jarEntryPath);
         String jarMergedPath = JavaCG2JarUtil.mergeOuterInnerJarPath(jarWarCanonicalPath, jarEntryPath);
         // 当前jar、war文件中的jar文件不处理，需要从记录jar文件序号的Map中删除
         jarPathNumMap.remove(jarMergedPath);
@@ -904,11 +902,11 @@ public class MergeJarHandler {
         String jmodFileName = jmodFile.getName();
         for (FilePathWithName filePathWithName : jmodFilePathWithNameList) {
             if (filePathWithName.getFilePath().equals(jmodFilePath)) {
-                logger.warn("跳过重复的jmod文件 {}", jmodFilePath);
+                log.warn("跳过重复的jmod文件 {}", jmodFilePath);
                 return true;
             }
             if (filePathWithName.getFileName().equals(jmodFileName)) {
-                logger.error("指定了文件路径不同但文件名相同的.jmod文件，在解压时会被覆盖，需要修改其中的一个.jmod文件名 {} {}", filePathWithName.getFilePath(), jmodFilePath);
+                log.error("指定了文件路径不同但文件名相同的.jmod文件，在解压时会被覆盖，需要修改其中的一个.jmod文件名 {} {}", filePathWithName.getFilePath(), jmodFilePath);
                 return false;
             }
         }
@@ -956,14 +954,14 @@ public class MergeJarHandler {
                 // 目录中的当前文件后缀是jar、war
                 if (ignoreJarByNamePath(fileName)) {
                     // 忽略文件
-                    logger.info("合并jar文件时，忽略当前文件 {}", fileCanonicalPath);
+                    log.info("合并jar文件时，忽略当前文件 {}", fileCanonicalPath);
                     continue;
                 }
             }
 
             if (javaCG2ElManager.checkIgnoreMergeFileInDir(fileCanonicalPath)) {
-                if (logger.isDebugEnabled() || javaCG2ElManager.isDebugMode()) {
-                    logger.info("合并jar文件时，通过表达式判断需要跳过指定目录中的文件 {}", fileCanonicalPath);
+                if (log.isDebugEnabled() || javaCG2ElManager.isDebugMode()) {
+                    log.info("合并jar文件时，通过表达式判断需要跳过指定目录中的文件 {}", fileCanonicalPath);
                 }
                 continue;
             }
@@ -986,10 +984,10 @@ public class MergeJarHandler {
         if (fatJarFile.exists()) {
             // 新的jar文件已存在
             if (fatJarFile.isDirectory()) {
-                logger.error("fat jar文件已存在，但是是目录: {}", JavaCG2FileUtil.getCanonicalPath(fatJarFile));
+                log.error("fat jar文件已存在，但是是目录: {}", JavaCG2FileUtil.getCanonicalPath(fatJarFile));
                 return null;
             } else if (!JavaCG2FileUtil.deleteFile(fatJarFile)) {
-                logger.error("fat jar文件已存在，删除失败: {}", JavaCG2FileUtil.getCanonicalPath(fatJarFile));
+                log.error("fat jar文件已存在，删除失败: {}", JavaCG2FileUtil.getCanonicalPath(fatJarFile));
                 return null;
             }
         }
@@ -1017,7 +1015,7 @@ public class MergeJarHandler {
 
             return fatJarFile;
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             return null;
         }
     }

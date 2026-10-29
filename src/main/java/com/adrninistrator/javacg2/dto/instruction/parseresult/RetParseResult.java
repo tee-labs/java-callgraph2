@@ -1,5 +1,6 @@
 package com.adrninistrator.javacg2.dto.instruction.parseresult;
 
+import lombok.Getter;
 import org.apache.bcel.generic.InstructionHandle;
 
 /**
@@ -7,6 +8,7 @@ import org.apache.bcel.generic.InstructionHandle;
  * @date 2022/10/29
  * @description: RET指令的解析结果
  */
+@Getter
 public class RetParseResult extends BaseInstructionParseResult {
 
     // 对应的jsr指令的下一条指令
@@ -14,9 +16,5 @@ public class RetParseResult extends BaseInstructionParseResult {
 
     public RetParseResult(InstructionHandle jsrNextIh) {
         this.jsrNextIh = jsrNextIh;
-    }
-
-    public InstructionHandle getJsrNextIh() {
-        return jsrNextIh;
     }
 }

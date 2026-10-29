@@ -7,10 +7,9 @@ import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseSetEnum;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import test.base.TestBase;
 
 import java.util.Arrays;
@@ -21,9 +20,8 @@ import java.util.Set;
  * @date 2026/10/28
  * @description: JavaCG2FrEqConversionMethodBuilder的测试
  */
+@Slf4j
 public class TestFrEqConversionMethodBuilder extends TestBase {
-
-    private static final Logger logger = LoggerFactory.getLogger(TestFrEqConversionMethodBuilder.class);
 
     // jar包中内置fr_eq_conversion_method.properties的默认条目
     private static final String DEFAULT_ENTRY = "java.lang.Boolean:valueOf=1";
@@ -40,7 +38,7 @@ public class TestFrEqConversionMethodBuilder extends TestBase {
                 .addFrEqConversionMethod("test.callgraph.dto.TestDto2", "", 0)
                 .applyTo(javaCG2ConfigureWrapper);
         Set<String> frEqConversionMethodSet = javaCG2ConfigureWrapper.getOtherConfigSet(JavaCG2OtherConfigFileUseSetEnum.OCFUSE_FR_EQ_CONVERSION_METHOD);
-        logger.info("追加后的条目 {}", frEqConversionMethodSet);
+        log.info("追加后的条目 {}", frEqConversionMethodSet);
         Assert.assertTrue(frEqConversionMethodSet.contains(DEFAULT_ENTRY));
         Assert.assertTrue(frEqConversionMethodSet.contains(CUSTOM_ENTRY));
         Assert.assertTrue(frEqConversionMethodSet.contains("test.callgraph.dto.TestDto2:=0"));
@@ -65,7 +63,7 @@ public class TestFrEqConversionMethodBuilder extends TestBase {
                 .setFrEqConversionMethod(CUSTOM_ENTRY, "java.lang.String:trim=0")
                 .applyTo(javaCG2ConfigureWrapper);
         Set<String> frEqConversionMethodSet = javaCG2ConfigureWrapper.getOtherConfigSet(JavaCG2OtherConfigFileUseSetEnum.OCFUSE_FR_EQ_CONVERSION_METHOD);
-        logger.info("覆盖后的条目 {}", frEqConversionMethodSet);
+        log.info("覆盖后的条目 {}", frEqConversionMethodSet);
         Assert.assertEquals(2, frEqConversionMethodSet.size());
         Assert.assertTrue(frEqConversionMethodSet.contains(CUSTOM_ENTRY));
         Assert.assertTrue(frEqConversionMethodSet.contains("java.lang.String:trim=0"));
@@ -81,7 +79,7 @@ public class TestFrEqConversionMethodBuilder extends TestBase {
                 .setFrEqConversionMethod(Arrays.asList("java.lang.String:trim=0"))
                 .applyTo(javaCG2ConfigureWrapper);
         Set<String> frEqConversionMethodSet = javaCG2ConfigureWrapper.getOtherConfigSet(JavaCG2OtherConfigFileUseSetEnum.OCFUSE_FR_EQ_CONVERSION_METHOD);
-        logger.info("覆盖后的条目 {}", frEqConversionMethodSet);
+        log.info("覆盖后的条目 {}", frEqConversionMethodSet);
         Assert.assertEquals(1, frEqConversionMethodSet.size());
         Assert.assertTrue(frEqConversionMethodSet.contains("java.lang.String:trim=0"));
     }
@@ -105,13 +103,13 @@ public class TestFrEqConversionMethodBuilder extends TestBase {
             JavaCG2FrEqConversionMethodBuilder.builder().addFrEqConversionMethod("a.b.Class1", "method1", -1);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         try {
             JavaCG2FrEqConversionMethodBuilder.builder().setFrEqConversionMethod("a.b.Class1", "method1", -1);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 
@@ -131,7 +129,7 @@ public class TestFrEqConversionMethodBuilder extends TestBase {
                 JavaCG2FrEqConversionMethodBuilder.builder().addFrEqConversionMethod(invalidEntry);
                 Assert.fail();
             } catch (JavaCG2ConfigException e) {
-                logger.info("出现预期的异常 {}", e.getMessage());
+                log.info("出现预期的异常 {}", e.getMessage());
             }
         }
     }
@@ -143,25 +141,25 @@ public class TestFrEqConversionMethodBuilder extends TestBase {
             JavaCG2FrEqConversionMethodBuilder.builder().addFrEqConversionMethod(" ", "method1", 1);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         try {
             JavaCG2FrEqConversionMethodBuilder.builder().addFrEqConversionMethod((String[]) null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         try {
             JavaCG2FrEqConversionMethodBuilder.builder().addFrEqConversionMethod(new String[0]);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
         try {
             JavaCG2FrEqConversionMethodBuilder.builder().applyTo(null);
             Assert.fail();
         } catch (JavaCG2ConfigException e) {
-            logger.info("出现预期的异常 {}", e.getMessage());
+            log.info("出现预期的异常 {}", e.getMessage());
         }
     }
 }

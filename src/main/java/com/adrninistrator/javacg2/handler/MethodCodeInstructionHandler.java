@@ -6,6 +6,7 @@ import com.adrninistrator.javacg2.dto.methodcode.MethodCodeInstructionJump;
 import com.adrninistrator.javacg2.dto.methodcode.MethodCodeInstructionLookupSwitch;
 import com.adrninistrator.javacg2.dto.methodcode.MethodCodeInstructionLookupSwitchJump;
 import com.adrninistrator.javacg2.dto.methodcode.MethodCodeInstructionTableSwitch;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.bcel.Const;
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.Code;
@@ -15,8 +16,6 @@ import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.classfile.Utility;
 import org.apache.bcel.util.ByteSequence;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,9 +28,8 @@ import java.util.Map;
  * @date 2025/3/20
  * @description: 处理方法代码指令，生成格式化后的字符串
  */
+@Slf4j
 public class MethodCodeInstructionHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(MethodCodeInstructionHandler.class);
 
     /*
      * The 'WIDE' instruction is used in the byte code to allow 16-bit wide indices for local variables. This opcode
@@ -138,7 +136,7 @@ public class MethodCodeInstructionHandler {
             for (int i = 0; i < noPadBytes; i++) {
                 byte b;
                 if ((b = bytes.readByte()) != 0) {
-                    logger.warn("Warning: Padding byte != 0 in {}", Const.getOpcodeName(opcode) + ":" + b);
+                    log.warn("Warning: Padding byte != 0 in {}", Const.getOpcodeName(opcode) + ":" + b);
                 }
             }
             // Both cases have a field default_offset in common

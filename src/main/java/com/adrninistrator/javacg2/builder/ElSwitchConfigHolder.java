@@ -5,10 +5,9 @@ import com.adrninistrator.javacg2.el.enums.ElStringAnyFunctionEnum;
 import com.adrninistrator.javacg2.el.enums.interfaces.ElAllowedVariableInterface;
 import com.adrninistrator.javacg2.el.enums.interfaces.ElConfigInterface;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,9 +20,8 @@ import java.util.Set;
  * 记录待应用的表达式配置，生成合法的Aviator表达式文本（字符串参数自动以单引号包裹，不以分号结尾）
  * 同一个表达式配置枚举多次设置时，以后设置的为准（表达式文本整体替换）
  */
+@Slf4j
 class ElSwitchConfigHolder {
-
-    private static final Logger logger = LoggerFactory.getLogger(ElSwitchConfigHolder.class);
 
     // 待应用的表达式配置，key为表达式配置枚举，同一个枚举以后设置的为准
     private final Map<ElConfigInterface, PendingElText> pendingElTextMap = new LinkedHashMap<>();
@@ -72,7 +70,7 @@ class ElSwitchConfigHolder {
 
     // 记录待应用的表达式配置，同一个表达式配置枚举以后设置的为准
     private void putPendingElText(ElConfigInterface elConfig, PendingElText pendingElText) {
-        logger.info("设置表达式开关配置 {} {}", elConfig.getKey(), pendingElText.genPrintInfo());
+        log.info("设置表达式开关配置 {} {}", elConfig.getKey(), pendingElText.genPrintInfo());
         pendingElTextMap.put(elConfig, pendingElText);
     }
 

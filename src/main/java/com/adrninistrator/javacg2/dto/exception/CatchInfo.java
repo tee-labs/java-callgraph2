@@ -1,5 +1,7 @@
 package com.adrninistrator.javacg2.dto.exception;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +10,7 @@ import java.util.List;
  * @date 2023/12/28
  * @description: Exception table中的catch信息
  */
+@Getter
 public class CatchInfo extends FinallyInfo {
 
     private final List<String> catchExceptionTypeList;
@@ -20,9 +23,5 @@ public class CatchInfo extends FinallyInfo {
 
     public void addCatchExceptionType(String catchExceptionType) {
         catchExceptionTypeList.add(catchExceptionType);
-    }
-
-    public List<String> getCatchExceptionTypeList() {
-        return catchExceptionTypeList;
     }
 }

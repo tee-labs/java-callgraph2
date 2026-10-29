@@ -1,5 +1,8 @@
 package com.adrninistrator.javacg2.dto.jar;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.File;
 
 /**
@@ -7,12 +10,15 @@ import java.io.File;
  * @date 2025/7/6
  * @description: 合并jar文件的结果
  */
+@Getter
 public class MergeJarResult {
 
     // 合并后的jar文件
+    @Setter
     private File mergeJarFile;
 
     // 合并生成的fat jar文件
+    @Setter
     private File fatJarFile;
 
     public static MergeJarResult genOne(File mergeJarFile) {
@@ -26,21 +32,5 @@ public class MergeJarResult {
         mergeJarResult.setMergeJarFile(mergeJarFile);
         mergeJarResult.setFatJarFile(fatJarFile);
         return mergeJarResult;
-    }
-
-    public File getMergeJarFile() {
-        return mergeJarFile;
-    }
-
-    public void setMergeJarFile(File mergeJarFile) {
-        this.mergeJarFile = mergeJarFile;
-    }
-
-    public File getFatJarFile() {
-        return fatJarFile;
-    }
-
-    public void setFatJarFile(File fatJarFile) {
-        this.fatJarFile = fatJarFile;
     }
 }

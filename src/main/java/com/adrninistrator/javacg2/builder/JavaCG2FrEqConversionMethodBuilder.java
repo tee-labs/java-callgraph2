@@ -4,9 +4,8 @@ import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseSetEnum;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -21,9 +20,8 @@ import java.util.Set;
  * setFrEqConversionMethod方法为整体覆盖语义，不保留jar包中内置配置文件的默认条目
  * 当前类的实例只能通过applyTo方法应用到一个JavaCG2ConfigureWrapper对象，假如需要应用多个，请创建当前类的多个实例
  */
+@Slf4j
 public class JavaCG2FrEqConversionMethodBuilder {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2FrEqConversionMethodBuilder.class);
 
     // 通过addFrEqConversionMethod或setFrEqConversionMethod方法收集的等值转换方法条目
     private final Set<String> frEqConversionMethodSet = new LinkedHashSet<>();
@@ -148,13 +146,13 @@ public class JavaCG2FrEqConversionMethodBuilder {
         }
         if (override) {
             // 整体覆盖语义，直接替换已有的条目
-            logger.info("以整体覆盖方式设置等值转换方法，数量 {}", frEqConversionMethodSet.size());
+            log.info("以整体覆盖方式设置等值转换方法，数量 {}", frEqConversionMethodSet.size());
             javaCG2ConfigureWrapper.setOtherConfigSet(JavaCG2OtherConfigFileUseSetEnum.OCFUSE_FR_EQ_CONVERSION_METHOD, frEqConversionMethodSet);
             return;
         }
         // 追加语义，先读取jar包中内置配置文件的默认条目并缓存，再合并当前收集的条目
         Set<String> existedSet = javaCG2ConfigureWrapper.getOtherConfigSet(JavaCG2OtherConfigFileUseSetEnum.OCFUSE_FR_EQ_CONVERSION_METHOD, false);
-        logger.info("以追加方式设置等值转换方法，已有条目数量 {} 新增条目数量 {}", existedSet.size(), frEqConversionMethodSet.size());
+        log.info("以追加方式设置等值转换方法，已有条目数量 {} 新增条目数量 {}", existedSet.size(), frEqConversionMethodSet.size());
         javaCG2ConfigureWrapper.addOtherConfigSet(JavaCG2OtherConfigFileUseSetEnum.OCFUSE_FR_EQ_CONVERSION_METHOD, frEqConversionMethodSet);
     }
 

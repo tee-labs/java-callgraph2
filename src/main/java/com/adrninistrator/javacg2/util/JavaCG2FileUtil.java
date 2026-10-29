@@ -2,10 +2,9 @@ package com.adrninistrator.javacg2.util;
 
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
+import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.io.inputstream.ZipInputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -35,9 +34,8 @@ import java.util.Set;
  * @date 2022/2/13
  * @description:
  */
+@Slf4j
 public class JavaCG2FileUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaCG2FileUtil.class);
 
     /**
      * 获取规范的文件路径
@@ -59,7 +57,7 @@ public class JavaCG2FileUtil {
         try {
             return file.getCanonicalPath();
         } catch (IOException e) {
-            logger.error("获取文件路径失败 {} ", file.getAbsolutePath(), e);
+            log.error("获取文件路径失败 {} ", file.getAbsolutePath(), e);
             throw new JavaCG2RuntimeException("获取文件路径失败");
         }
     }
@@ -75,7 +73,7 @@ public class JavaCG2FileUtil {
             Files.delete(file.toPath());
             return true;
         } catch (IOException e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             return false;
         }
     }
@@ -153,28 +151,28 @@ public class JavaCG2FileUtil {
     public static boolean isDirectoryExists(File dirFile, boolean tryMake) {
         if (dirFile.exists()) {
             if (dirFile.isDirectory()) {
-                logger.debug("目录已存在: {}", dirFile.getAbsolutePath());
+                log.debug("目录已存在: {}", dirFile.getAbsolutePath());
                 return true;
             }
 
-            logger.error("已存在同名文件: {}", dirFile.getAbsolutePath());
+            log.error("已存在同名文件: {}", dirFile.getAbsolutePath());
             return false;
         }
 
         if (!tryMake) {
-            logger.info("目录不存在 {}", dirFile.getAbsolutePath());
+            log.info("目录不存在 {}", dirFile.getAbsolutePath());
             return false;
         }
 
         try {
             Files.createDirectories(dirFile.toPath());
-            logger.info("创建目录: {}", dirFile.getAbsolutePath());
+            log.info("创建目录: {}", dirFile.getAbsolutePath());
             return true;
         } catch (FileAlreadyExistsException e) {
-            logger.warn("尝试创建目录但已存在: {}", dirFile.getAbsolutePath());
+            log.warn("尝试创建目录但已存在: {}", dirFile.getAbsolutePath());
             return true;
         } catch (IOException e) {
-            logger.error("error {} ", dirFile.getAbsolutePath(), e);
+            log.error("error {} ", dirFile.getAbsolutePath(), e);
             return false;
         }
     }
@@ -209,11 +207,11 @@ public class JavaCG2FileUtil {
         // 尝试通过文件路径获取文件
         File file = new File(filePath);
         if (file.exists()) {
-            logger.info("通过文件路径获取文件 {}", filePath);
+            log.info("通过文件路径获取文件 {}", filePath);
             return file;
         }
 
-        logger.info("通过文件路径未获取到文件，尝试从classpath中获取 {}", filePath);
+        log.info("通过文件路径未获取到文件，尝试从classpath中获取 {}", filePath);
         // 尝试从classpath中获取文件，路径以/开头
         URL url = JavaCG2FileUtil.class.getResource(JavaCG2Constants.FLAG_SLASH + filePath);
         if (url != null && "file".equals(url.getProtocol())) {
@@ -221,11 +219,11 @@ public class JavaCG2FileUtil {
                 当URL中的protocol为"file"时，说明对应的资源为独立文件的形式
                 若为"jar"则说明对应的资源是jar包中的文件，不能通过以下方式处理
              */
-            logger.info("从classpath中获取文件 {}", url);
+            log.info("从classpath中获取文件 {}", url);
             try {
                 return new File(url.toURI());
             } catch (Exception e) {
-                logger.error("error ", e);
+                log.error("error ", e);
                 return null;
             }
         }
@@ -248,11 +246,11 @@ public class JavaCG2FileUtil {
          */
         InputStream inputStream = JavaCG2FileUtil.class.getResourceAsStream(JavaCG2Constants.FLAG_SLASH + filePath);
         if (inputStream == null) {
-            logger.error("未找到文件 {}", filePath);
+            log.error("未找到文件 {}", filePath);
             throw new JavaCG2RuntimeException("未找到文件 " + filePath);
         }
 
-        logger.info("从jar包中获取文件 {}", JavaCG2FileUtil.class.getResource(JavaCG2Constants.FLAG_SLASH + filePath));
+        log.info("从jar包中获取文件 {}", JavaCG2FileUtil.class.getResource(JavaCG2Constants.FLAG_SLASH + filePath));
         return inputStream;
     }
 
@@ -270,14 +268,14 @@ public class JavaCG2FileUtil {
         // 尝试从jar包中获取，路径需要以/开头，从根目录读取
         try (InputStream inputStream = JavaCG2FileUtil.class.getResourceAsStream(JavaCG2Constants.FLAG_SLASH + filePath)) {
             if (inputStream != null) {
-                logger.debug("从jar包中获取到文件 {}", filePath);
+                log.debug("从jar包中获取到文件 {}", filePath);
                 return true;
             }
         } catch (IOException e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             return false;
         }
-        logger.info("文件不存在 {}", filePath);
+        log.info("文件不存在 {}", filePath);
         return false;
     }
 
@@ -314,7 +312,7 @@ public class JavaCG2FileUtil {
             }
             return set;
         } catch (Exception e) {
-            logger.error("读取文件到Set出现异常 {} ", filePath, e);
+            log.error("读取文件到Set出现异常 {} ", filePath, e);
             throw new JavaCG2RuntimeException("读取文件到Set出现异常");
         }
     }
@@ -352,7 +350,7 @@ public class JavaCG2FileUtil {
             }
             return list;
         } catch (Exception e) {
-            logger.error("读取文件到List出现异常 {} ", filePath, e);
+            log.error("读取文件到List出现异常 {} ", filePath, e);
             throw new JavaCG2RuntimeException("读取文件到List出现异常");
         }
     }
@@ -411,7 +409,7 @@ public class JavaCG2FileUtil {
             }
             return true;
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             return false;
         }
     }
@@ -682,7 +680,7 @@ public class JavaCG2FileUtil {
             byte[] allBytes = baos.toByteArray();
             return new String(allBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            logger.error("error ", e);
+            log.error("error ", e);
             return null;
         }
     }

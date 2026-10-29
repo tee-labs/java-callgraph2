@@ -2,6 +2,7 @@ package com.adrninistrator.javacg2.dto.output;
 
 import com.adrninistrator.javacg2.common.enums.JavaCG2OutPutFileTypeEnum;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
+import lombok.Getter;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.Set;
  * @date 2022/11/5
  * @description: java-callgraph2处理结果信息
  */
+@Getter
 public class JavaCG2OutputInfo {
 
     // 保存当前的输出目录路径
@@ -70,15 +72,6 @@ public class JavaCG2OutputInfo {
     }
 
     /**
-     * 获取当前生成文件的目录
-     *
-     * @return
-     */
-    public String getOutputDirPath() {
-        return outputDirPath;
-    }
-
-    /**
      * 获取指定类型的生成文件的路径
      *
      * @param javaCG2OutPutFileTypeEnum
@@ -98,9 +91,5 @@ public class JavaCG2OutputInfo {
 
     public Set<String> getFrameSnapshotNumExceedMethodSetReadOnly() {
         return Collections.unmodifiableSet(frameSnapshotNumExceedMethodSet);
-    }
-
-    public String getOutputFileExt() {
-        return outputFileExt;
     }
 }

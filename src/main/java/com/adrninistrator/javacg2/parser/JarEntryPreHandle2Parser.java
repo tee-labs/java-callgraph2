@@ -8,12 +8,12 @@ import com.adrninistrator.javacg2.dto.method.MethodArgReturnTypes;
 import com.adrninistrator.javacg2.spring.UseSpringBeanByAnnotationHandler;
 import com.adrninistrator.javacg2.util.JavaCG2ByteCodeUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.io.inputstream.ZipInputStream;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,8 +29,8 @@ import java.util.Set;
  * @date 2022/9/14
  * @description: 解析jar包中的文件，第二次预处理
  */
+@Slf4j
 public class JarEntryPreHandle2Parser extends AbstractJarEntryParser {
-    private static final Logger logger = LoggerFactory.getLogger(JarEntryPreHandle2Parser.class);
 
     private final Set<String> classExtendsSet = new HashSet<>(JavaCG2Constants.SIZE_100);
 
@@ -39,14 +39,23 @@ public class JarEntryPreHandle2Parser extends AbstractJarEntryParser {
     private final boolean parseJarCompatibilityMode;
     private final boolean parseOnlyClassMode;
 
+    @Setter
     private Map<String, Map<MethodArgReturnTypes, Integer>> classExtendsImplMethodWithArgTypesMap;
+    @Setter
     private Map<String, Map<MethodArgReturnTypes, Integer>> interfaceMethodWithArgTypesMap;
+    @Setter
     private Map<String, String> classAndSuperMap;
+    @Setter
     private Map<String, ClassExtendsInfo> classExtendsInfoMap;
+    @Setter
     private Map<String, List<String>> childrenClassMap;
+    @Setter
     private Set<String> interfaceExtendsSet;
+    @Setter
     private Map<String, List<String>> interfaceExtendsInfoMap;
+    @Setter
     private Map<String, List<String>> childrenInterfaceMap;
+    @Setter
     private Set<String> allClassNameSet;
 
     public JarEntryPreHandle2Parser(JavaCG2InputAndOutput javaCG2InputAndOutput, boolean onlyOneJar, UseSpringBeanByAnnotationHandler useSpringBeanByAnnotationHandler) {
@@ -89,7 +98,7 @@ public class JarEntryPreHandle2Parser extends AbstractJarEntryParser {
     protected boolean handleClassEntry(JavaClass javaClass, String jarEntryPath) {
         String className = javaClass.getClassName();
         if (javaCG2ElManager.checkIgnoreParseClass(className)) {
-            logger.debug("跳过解析类 {}", className);
+            log.debug("跳过解析类 {}", className);
             return true;
         }
 
@@ -152,42 +161,5 @@ public class JarEntryPreHandle2Parser extends AbstractJarEntryParser {
         }
         interfaceExtendsInfoMap.put(interfaceName, Arrays.asList(superInterfaceNames));
         interfaceMethodWithArgTypesMap.put(interfaceName, methodAttributeMap);
-    }
-
-    //
-    public void setClassExtendsImplMethodWithArgTypesMap(Map<String, Map<MethodArgReturnTypes, Integer>> classExtendsImplMethodWithArgTypesMap) {
-        this.classExtendsImplMethodWithArgTypesMap = classExtendsImplMethodWithArgTypesMap;
-    }
-
-    public void setInterfaceMethodWithArgTypesMap(Map<String, Map<MethodArgReturnTypes, Integer>> interfaceMethodWithArgTypesMap) {
-        this.interfaceMethodWithArgTypesMap = interfaceMethodWithArgTypesMap;
-    }
-
-    public void setClassAndSuperMap(Map<String, String> classAndSuperMap) {
-        this.classAndSuperMap = classAndSuperMap;
-    }
-
-    public void setClassExtendsInfoMap(Map<String, ClassExtendsInfo> classExtendsInfoMap) {
-        this.classExtendsInfoMap = classExtendsInfoMap;
-    }
-
-    public void setChildrenClassMap(Map<String, List<String>> childrenClassMap) {
-        this.childrenClassMap = childrenClassMap;
-    }
-
-    public void setInterfaceExtendsSet(Set<String> interfaceExtendsSet) {
-        this.interfaceExtendsSet = interfaceExtendsSet;
-    }
-
-    public void setInterfaceExtendsInfoMap(Map<String, List<String>> interfaceExtendsInfoMap) {
-        this.interfaceExtendsInfoMap = interfaceExtendsInfoMap;
-    }
-
-    public void setChildrenInterfaceMap(Map<String, List<String>> childrenInterfaceMap) {
-        this.childrenInterfaceMap = childrenInterfaceMap;
-    }
-
-    public void setAllClassNameSet(Set<String> allClassNameSet) {
-        this.allClassNameSet = allClassNameSet;
     }
 }

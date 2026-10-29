@@ -47,6 +47,8 @@ import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2InstructionUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.bcel.Const;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.LocalVariableTable;
@@ -64,8 +66,6 @@ import org.apache.bcel.generic.ObjectType;
 import org.apache.bcel.generic.Select;
 import org.apache.bcel.generic.Type;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -81,9 +81,8 @@ import java.util.Set;
  * @date 2022/11/2
  * @description: 对方法进行处理，用于获取方法调用指令对应的类型与值
  */
+@Slf4j
 public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandler4TypeAndValue.class);
 
     // 栈桢信息快照数量超过允许的最大数量的方法Set
     private final Set<String> frameSnapshotNumExceedMethodSet = new HashSet<>();
@@ -143,15 +142,19 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
     private List<BaseElement> returnPossibleInfoList;
 
     // 解析构造函数以获取非静态字段可能的类型的开关
+    @Setter
     private boolean recordFieldPossibleTypeFlag;
 
     // 使用已获取的构造函数非静态字段可能的类型的开关
+    @Setter
     private boolean useFieldPossibleTypeFlag;
 
     // 需要分析dto的字段之间的关联关系的开关
+    @Setter
     private boolean analyseFieldRelationshipFlag;
 
     // 是否只需要获取可能的返回类型的开关
+    @Setter
     private boolean onlyAnalyseReturnTypeFlag;
 
     // 当前处理的是否为枚举的clinit方法
@@ -268,7 +271,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
             int exceptionTableEndPosition = codeExceptionGen.getEndPC().getPosition();
             if (exceptionTableEndPosition == codeExceptionGen.getHandlerPC().getPosition()) {
                 int exceptionTableBeforeEndPosition = codeExceptionGen.getEndPC().getPrev().getPosition();
-                logger.debug("修改使用的Exception table的结束位置 {} {}", exceptionTableEndPosition, exceptionTableBeforeEndPosition);
+                log.debug("修改使用的Exception table的结束位置 {} {}", exceptionTableEndPosition, exceptionTableBeforeEndPosition);
                 exceptionTableEndMap.put(exceptionTableEndPosition, exceptionTableBeforeEndPosition);
             }
         }
@@ -304,7 +307,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
     @Override
     protected boolean doHandleMethod() throws IOException {
         if (recordFieldPossibleTypeFlag) {
-            logger.debug("预处理构造函数 {}", callerFullMethod);
+            log.debug("预处理构造函数 {}", callerFullMethod);
         }
 
         // 处理正常指令
@@ -387,8 +390,8 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
     private void handleAllInstruction() throws IOException {
         while (true) {
             int position = ih.getPosition();
-            if (logger.isDebugEnabled()) {
-                logger.debug("处理指令 {} ({})", JavaCG2InstructionUtil.getInstructionHandlePrintInfo(ih), getSourceLine());
+            if (log.isDebugEnabled()) {
+                log.debug("处理指令 {} ({})", JavaCG2InstructionUtil.getInstructionHandlePrintInfo(ih), getSourceLine());
             }
 
             // 判断跳转目标指令是否跳过处理
@@ -399,8 +402,8 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
                     break;
                 }
                 // 分支未处理完毕
-                if (logger.isDebugEnabled()) {
-                    logger.debug("分支未处理完毕 {} ({})", JavaCG2InstructionUtil.getInstructionHandlePrintInfo(ih), getSourceLine());
+                if (log.isDebugEnabled()) {
+                    log.debug("分支未处理完毕 {} ({})", JavaCG2InstructionUtil.getInstructionHandlePrintInfo(ih), getSourceLine());
                 }
                 continue;
             }
@@ -413,8 +416,8 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
             // 判断当前处理的指令是否为Exception table的结束指令
             if (checkExceptionEnd(position)) {
                 // 当前指令有对应的异常处理，添加栈桢信息快照
-                if (logger.isDebugEnabled()) {
-                    logger.debug("异常处理，添加栈桢信息快照 {}", JavaCG2InstructionUtil.getInstructionHandlePrintInfo(ih));
+                if (log.isDebugEnabled()) {
+                    log.debug("异常处理，添加栈桢信息快照 {}", JavaCG2InstructionUtil.getInstructionHandlePrintInfo(ih));
                 }
                 frameSnapshotsOfIhs4Exceptions.addSnapshot(position, stack, locals, nonStaticFieldInfoMap, staticFieldInfoMap);
             }
@@ -526,7 +529,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
         Collections.sort(exceptionEndPositionList);
 
         for (int exceptionEndPosition : exceptionEndPositionList) {
-            logger.debug("处理异常处理指令 [{}]", exceptionEndPosition);
+            log.debug("处理异常处理指令 [{}]", exceptionEndPosition);
 
             // Exception table的target指令及异常类型列表
             List<ExceptionTargetInfo> exceptionTargetList = exceptionTargetMap.get(exceptionEndPosition);
@@ -590,8 +593,8 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
 
     private void setIh2Next(InstructionHandle nextIh, String type) {
         ih = nextIh;
-        if (logger.isDebugEnabled()) {
-            logger.debug("{} 下一条处理的指令 {}", type, ih.getPosition());
+        if (log.isDebugEnabled()) {
+            log.debug("{} 下一条处理的指令 {}", type, ih.getPosition());
         }
     }
 
@@ -609,11 +612,11 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
 
         // 添加栈桢信息快照，若有添加，则不跳过当前指令的处理；若未添加，则跳过当前指令的处理
         if (!frameSnapshotsOfIhs4JumpTargets.addSnapshot(position, stack, locals, nonStaticFieldInfoMap, staticFieldInfoMap)) {
-            logger.debug("跳转目标指令[跳过]处理 {}", position);
+            log.debug("跳转目标指令[跳过]处理 {}", position);
             return true;
         }
 
-        logger.debug("跳转目标指令[需要]处理 {}", position);
+        log.debug("跳转目标指令[需要]处理 {}", position);
         return false;
     }
 
@@ -752,7 +755,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
         List<InstructionHandle> targetIhList = branchStackEntry.getTargetIhList();
         if (targetIhIndex >= targetIhList.size()) {
             // 当前分支目标指令已处理完毕
-            logger.debug("分支指令 {} 的所有分支处理完毕", branchPosition);
+            log.debug("分支指令 {} 的所有分支处理完毕", branchPosition);
 
             // 用于遍历分支指令的栈删除栈顶元素
             branchStack.removeTop();
@@ -906,8 +909,8 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
         Type[] calleeArgTypes = calleeMethodInfo.getMethodArgumentTypes();
         String calleeFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(calleeClassName, calleeMethodName, calleeArgTypes);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("被调用方法: {}", calleeFullMethod);
+        if (log.isDebugEnabled()) {
+            log.debug("被调用方法: {}", calleeFullMethod);
         }
 
         BaseElement objectElement = methodCallParseResult.getObjectElement();
@@ -928,7 +931,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
         // 处理get/set方法关联的字段关系
         recordGetSetMethodFieldRelationship(invokeInstruction, calleeClassName, calleeMethodName, calleeArgTypes, argElementList);
 
-//        logger.debug("方法调用: " + JavaCG2InstructionUtil.getInstructionHandlePrintInfo(ih) + " (" + getSourceLine() + ")" +
+//        log.debug("方法调用: " + JavaCG2InstructionUtil.getInstructionHandlePrintInfo(ih) + " (" + getSourceLine() + ")" +
 //                "\n被调用对象与参数: " + methodCallParseResult);
     }
 
@@ -1273,7 +1276,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
             // 记录get方法
             JavaCG2Type javaCG2Type = nonStaticFieldNameTypeMap.get(getFieldFieldName);
             if (javaCG2Type == null) {
-                logger.warn("{} 类的get方法对应字段 {} 未找到，可能定义在父类中", callerClassName, getFieldFieldName);
+                log.warn("{} 类的get方法对应字段 {} 未找到，可能定义在父类中", callerClassName, getFieldFieldName);
                 continue;
             }
             // 判断非静态字段集合中涉及的泛型类型
@@ -1311,7 +1314,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
             // 记录set方法
             JavaCG2Type javaCG2Type = nonStaticFieldNameTypeMap.get(putFieldFieldName);
             if (javaCG2Type == null) {
-                logger.warn("{} 类的set方法对应字段 {} 未找到，可能定义在父类中", callerClassName, putFieldFieldName);
+                log.warn("{} 类的set方法对应字段 {} 未找到，可能定义在父类中", callerClassName, putFieldFieldName);
                 continue;
             }
             // 判断非静态字段集合中涉及的泛型类型
@@ -1395,22 +1398,5 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
                 }
             }
         }
-    }
-
-    //
-    public void setRecordFieldPossibleTypeFlag(boolean recordFieldPossibleTypeFlag) {
-        this.recordFieldPossibleTypeFlag = recordFieldPossibleTypeFlag;
-    }
-
-    public void setUseFieldPossibleTypeFlag(boolean useFieldPossibleTypeFlag) {
-        this.useFieldPossibleTypeFlag = useFieldPossibleTypeFlag;
-    }
-
-    public void setAnalyseFieldRelationshipFlag(boolean analyseFieldRelationshipFlag) {
-        this.analyseFieldRelationshipFlag = analyseFieldRelationshipFlag;
-    }
-
-    public void setOnlyAnalyseReturnTypeFlag(boolean onlyAnalyseReturnTypeFlag) {
-        this.onlyAnalyseReturnTypeFlag = onlyAnalyseReturnTypeFlag;
     }
 }

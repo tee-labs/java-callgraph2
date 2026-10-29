@@ -1,12 +1,14 @@
 package com.adrninistrator.javacg2.common.enums;
 
 import com.adrninistrator.javacg2.conf.enums.interfaces.DirInterface;
+import lombok.Getter;
 
 /**
  * @author adrninistrator
  * @date 2025/1/30
  * @description:
  */
+@Getter
 public enum JavaCG2DirEnum implements DirInterface {
 
     IDE_CONFIG("_javacg2_config", "java-callgraph2组件主要配置文件所在目录", true),
@@ -26,20 +28,6 @@ public enum JavaCG2DirEnum implements DirInterface {
         this.dirName = dirName;
         this.description = description;
         this.input = input;
-    }
-
-    @Override
-    public String getDirName() {
-        return dirName;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    public boolean isInput() {
-        return input;
     }
 
     @Override

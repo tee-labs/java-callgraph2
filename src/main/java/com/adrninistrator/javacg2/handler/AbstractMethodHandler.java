@@ -12,6 +12,8 @@ import com.adrninistrator.javacg2.dto.type.JavaCG2Type;
 import com.adrninistrator.javacg2.el.manager.JavaCG2ElManager;
 import com.adrninistrator.javacg2.util.JavaCG2ByteCodeUtil;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.LineNumberTable;
 import org.apache.bcel.classfile.Method;
@@ -19,8 +21,6 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -34,9 +34,8 @@ import java.util.Set;
  * @date 2022/11/2
  * @description: 对方法进行处理，基类
  */
+@Slf4j
 public abstract class AbstractMethodHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(AbstractMethodHandler.class);
 
     protected final String callerClassName;
 
@@ -67,24 +66,35 @@ public abstract class AbstractMethodHandler {
     protected InstructionHandle ih;
 
     // 需要解析方法调用的可能的类型与值的开关
+    @Setter
     protected boolean parseMethodCallTypeValueFlag;
 
     // 当前方法是否为静态代码块
+    @Setter
     protected boolean inClinitMethod;
 
     // 当前类已记录过的set方法名（get方法没有参数，只会有一个）
+    @Setter
     protected Set<String> recordedSetMethodSet;
 
+    @Setter
     protected JavaCG2Counter failCounter;
 
+    @Setter
     protected JavaCG2RecordSink enumInitArgFieldSink;
+    @Setter
     protected JavaCG2RecordSink enumInitAssignInfoSink;
+    @Setter
     protected JavaCG2RecordSink getMethodSink;
+    @Setter
     protected JavaCG2RecordSink setMethodSink;
+    @Setter
     protected JavaCG2RecordSink methodReturnConstValueSink;
+    @Setter
     protected JavaCG2RecordSink methodReturnFieldInfoSink;
 
     // 非静态字段字段所有可能的类型
+    @Setter
     protected FieldPossibleTypes nonStaticFieldPossibleTypes;
 
     /*
@@ -92,6 +102,7 @@ public abstract class AbstractMethodHandler {
         key     字段名称
         value   字段类型
      */
+    @Setter
     protected Map<String, JavaCG2Type> nonStaticFieldNameTypeMap;
 
     /*
@@ -99,6 +110,7 @@ public abstract class AbstractMethodHandler {
         key     字段名称
         value   集合类型中的泛型类型
      */
+    @Setter
     protected Map<String, List<JavaCG2GenericsType>> nonStaticFieldNameGenericsTypeMap;
 
     /*
@@ -106,29 +118,38 @@ public abstract class AbstractMethodHandler {
         key     当前类的static、final字段名称
         value   初始化方法指令位置列表
      */
+    @Setter
     protected Map<String, List<InvokeInstructionPosAndCallee>> sfFieldInvokeInstructionMap;
 
     // 保存作为当前方法返回的方法参数序号
+    @Setter
     protected List<Integer> methodReturnArgSeqList;
 
     // 保存作为当前方法返回的方法调用指令位置
+    @Setter
     protected List<Integer> methodReturnPositionList;
 
     // 保存等值转换前作为当前方法返回的方法参数序号
+    @Setter
     protected List<Integer> methodReturnArgSeqEQCList;
 
     // 保存等值转换前作为当前方法返回的方法调用指令位置
+    @Setter
     protected List<Integer> methodReturnPositionEQCList;
 
     // 记录通过get/set方法关联的字段关系信息
+    @Setter
     protected List<GetSetFieldRelationship> getSetFieldRelationshipList;
 
     // 存在get方法的字段名称Set
+    @Setter
     protected Set<String> fieldWithGetMethodNameSet = new HashSet<>();
 
     // 存在set方法的字段名称Set
+    @Setter
     protected Set<String> fieldWithSetMethodNameSet = new HashSet<>();
 
+    @Setter
     protected JavaCG2Counter fieldRelationshipCounter;
 
     // 当前方法的返回类型
@@ -192,7 +213,7 @@ public abstract class AbstractMethodHandler {
 ////                || callerArgTypes.length != 2
 ////                || !"xxx".equals(mg.getArgumentType(0).toString())
 //        ) {
-//            logger.info("跳过当前方法 {}:{}", callerClassName, callerMethodName);
+//            log.info("跳过当前方法 {}:{}", callerClassName, callerMethodName);
 //            return true;
 //        }
 
@@ -223,14 +244,14 @@ public abstract class AbstractMethodHandler {
             }
             return success;
         } catch (Exception e) {
-            logger.error("处理方法出现异常，需要分析原因 {} {} ", callerFullMethod, methodReturnType, e);
+            log.error("处理方法出现异常，需要分析原因 {} {} ", callerFullMethod, methodReturnType, e);
             // 增加失败次数
             failCounter.addAndGet();
 
             if (Boolean.TRUE.equals(continueWhenError)) {
                 return true;
             }
-            logger.info("假如在处理方法出现异常时需要继续执行，请配置参数值为 {} {}", Boolean.TRUE,
+            log.info("假如在处理方法出现异常时需要继续执行，请配置参数值为 {} {}", Boolean.TRUE,
                     JavaCG2ConfigKeyEnum.CKE_CONTINUE_WHEN_ERROR.genConfigUsage()
             );
             return false;
@@ -245,94 +266,5 @@ public abstract class AbstractMethodHandler {
     // 获取源代码行号
     protected int getSourceLine(int instructionPosition) {
         return JavaCG2ByteCodeUtil.getSourceLine(instructionPosition, lineNumberTable);
-    }
-
-    // 设置需要记录方法调用的可能的类型与值的开关
-    public void setParseMethodCallTypeValueFlag(boolean parseMethodCallTypeValueFlag) {
-        this.parseMethodCallTypeValueFlag = parseMethodCallTypeValueFlag;
-    }
-
-    public void setInClinitMethod(boolean inClinitMethod) {
-        this.inClinitMethod = inClinitMethod;
-    }
-
-    public void setRecordedSetMethodSet(Set<String> recordedSetMethodSet) {
-        this.recordedSetMethodSet = recordedSetMethodSet;
-    }
-
-    public void setFailCounter(JavaCG2Counter failCounter) {
-        this.failCounter = failCounter;
-    }
-
-    public void setEnumInitArgFieldSink(JavaCG2RecordSink enumInitArgFieldSink) {
-        this.enumInitArgFieldSink = enumInitArgFieldSink;
-    }
-
-    public void setEnumInitAssignInfoSink(JavaCG2RecordSink enumInitAssignInfoSink) {
-        this.enumInitAssignInfoSink = enumInitAssignInfoSink;
-    }
-
-    public void setGetMethodSink(JavaCG2RecordSink getMethodSink) {
-        this.getMethodSink = getMethodSink;
-    }
-
-    public void setSetMethodSink(JavaCG2RecordSink setMethodSink) {
-        this.setMethodSink = setMethodSink;
-    }
-
-    public void setMethodReturnConstValueSink(JavaCG2RecordSink methodReturnConstValueSink) {
-        this.methodReturnConstValueSink = methodReturnConstValueSink;
-    }
-
-    public void setMethodReturnFieldInfoSink(JavaCG2RecordSink methodReturnFieldInfoSink) {
-        this.methodReturnFieldInfoSink = methodReturnFieldInfoSink;
-    }
-
-    public void setNonStaticFieldPossibleTypes(FieldPossibleTypes nonStaticFieldPossibleTypes) {
-        this.nonStaticFieldPossibleTypes = nonStaticFieldPossibleTypes;
-    }
-
-    public void setNonStaticFieldNameTypeMap(Map<String, JavaCG2Type> nonStaticFieldNameTypeMap) {
-        this.nonStaticFieldNameTypeMap = nonStaticFieldNameTypeMap;
-    }
-
-    public void setNonStaticFieldNameGenericsTypeMap(Map<String, List<JavaCG2GenericsType>> nonStaticFieldNameGenericsTypeMap) {
-        this.nonStaticFieldNameGenericsTypeMap = nonStaticFieldNameGenericsTypeMap;
-    }
-
-    public void setSfFieldInvokeInstructionMap(Map<String, List<InvokeInstructionPosAndCallee>> sfFieldInvokeInstructionMap) {
-        this.sfFieldInvokeInstructionMap = sfFieldInvokeInstructionMap;
-    }
-
-    public void setMethodReturnArgSeqList(List<Integer> methodReturnArgSeqList) {
-        this.methodReturnArgSeqList = methodReturnArgSeqList;
-    }
-
-    public void setMethodReturnPositionList(List<Integer> methodReturnPositionList) {
-        this.methodReturnPositionList = methodReturnPositionList;
-    }
-
-    public void setMethodReturnArgSeqEQCList(List<Integer> methodReturnArgSeqEQCList) {
-        this.methodReturnArgSeqEQCList = methodReturnArgSeqEQCList;
-    }
-
-    public void setMethodReturnPositionEQCList(List<Integer> methodReturnPositionEQCList) {
-        this.methodReturnPositionEQCList = methodReturnPositionEQCList;
-    }
-
-    public void setGetSetFieldRelationshipList(List<GetSetFieldRelationship> getSetFieldRelationshipList) {
-        this.getSetFieldRelationshipList = getSetFieldRelationshipList;
-    }
-
-    public void setFieldRelationshipCounter(JavaCG2Counter fieldRelationshipCounter) {
-        this.fieldRelationshipCounter = fieldRelationshipCounter;
-    }
-
-    public void setFieldWithGetMethodNameSet(Set<String> fieldWithGetMethodNameSet) {
-        this.fieldWithGetMethodNameSet = fieldWithGetMethodNameSet;
-    }
-
-    public void setFieldWithSetMethodNameSet(Set<String> fieldWithSetMethodNameSet) {
-        this.fieldWithSetMethodNameSet = fieldWithSetMethodNameSet;
     }
 }

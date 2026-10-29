@@ -5,6 +5,8 @@ import com.adrninistrator.javacg2.dto.element.BaseElement;
 import com.adrninistrator.javacg2.dto.variabledatasource.AbstractVariableDataSource;
 import com.adrninistrator.javacg2.dto.variabledatasource.VariableDataSourceMethodCallReturn;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
@@ -14,15 +16,19 @@ import java.util.Map;
  * @date 2022/5/13
  * @description: 变量基类
  */
+@Getter
 public class VariableElement extends BaseElement {
 
     // 变量的数据来源
+    @Setter
     private AbstractVariableDataSource variableDataSource;
 
     // 等值转换前的变量的数据来源
+    @Setter
     private AbstractVariableDataSource variableDataSourceEQC;
 
     // catch代码块的开始指令偏移量，当前值非null时代表当前元素是catch的异常对象
+    @Setter
     private Integer catchExceptionStartPosition;
 
     private VariableElement() {
@@ -149,29 +155,5 @@ public class VariableElement extends BaseElement {
             return null;
         }
         return ((VariableElement) baseElement).variableDataSourceEQC;
-    }
-
-    public AbstractVariableDataSource getVariableDataSource() {
-        return variableDataSource;
-    }
-
-    public void setVariableDataSource(AbstractVariableDataSource variableDataSource) {
-        this.variableDataSource = variableDataSource;
-    }
-
-    public AbstractVariableDataSource getVariableDataSourceEQC() {
-        return variableDataSourceEQC;
-    }
-
-    public void setVariableDataSourceEQC(AbstractVariableDataSource variableDataSourceEQC) {
-        this.variableDataSourceEQC = variableDataSourceEQC;
-    }
-
-    public Integer getCatchExceptionStartPosition() {
-        return catchExceptionStartPosition;
-    }
-
-    public void setCatchExceptionStartPosition(Integer catchExceptionStartPosition) {
-        this.catchExceptionStartPosition = catchExceptionStartPosition;
     }
 }

@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.common.enums;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2023/4/12
  * @description: 生成文件类型枚举
  */
+@Getter
 public enum JavaCG2OutPutFileTypeEnum {
 
     OPFTE_CLASS_ANNOTATION("class_annotation", "类的注解"),
@@ -70,13 +73,5 @@ public enum JavaCG2OutPutFileTypeEnum {
     JavaCG2OutPutFileTypeEnum(String fileName, String desc) {
         this.fileName = fileName;
         this.desc = desc;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public String getDesc() {
-        return desc;
     }
 }

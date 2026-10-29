@@ -7,13 +7,12 @@ import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseListEnum;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.AssumptionViolatedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -38,9 +37,8 @@ import java.util.zip.ZipOutputStream;
  * 3 以上均未找到时，请求标准测试jar文件target/test.jar的测试回退使用当前工程生成的同名jar文件（mvn test时由maven-antrun-plugin自动生成）
  * 4 其他无法替代的文件（如Spring Boot jar），抛出AssumptionViolatedException跳过对应测试，而不是报错
  */
+@Slf4j
 public abstract class TestBase {
-
-    private static final Logger logger = LoggerFactory.getLogger(TestBase.class);
 
     public static final String JAR_OUTPUT_DIR = "jar_output_dir";
     public static final String JAR_OUTPUT_JAR = "target/jar_output.jar";
@@ -72,11 +70,11 @@ public abstract class TestBase {
         if (JAR_TEST_JAR.equals(jarPath)) {
             // 标准测试jar文件回退为当前工程生成的同名jar文件
             genLocalTestJarIfAbsent();
-            logger.warn("未找到java-all-call-graph项目中的jar文件 {}，回退使用当前工程生成的同名jar文件", jarPath);
+            log.warn("未找到java-all-call-graph项目中的jar文件 {}，回退使用当前工程生成的同名jar文件", jarPath);
             return jarPath;
         }
 
-        logger.error("未找到java-all-call-graph项目中的jar文件 {}，跳过对应测试。启用方式：在java-all-call-graph项目中生成对应的jar文件，" +
+        log.error("未找到java-all-call-graph项目中的jar文件 {}，跳过对应测试。启用方式：在java-all-call-graph项目中生成对应的jar文件，" +
                 "并通过系统属性 {} 指定该项目根目录，或将其克隆为当前工程的兄弟目录", jarPath, SYS_PROP_JACG_DIR);
         throw new AssumptionViolatedException("在java-all-call-graph项目中未找到指定的jar文件 " + jarPath);
     }
@@ -91,7 +89,7 @@ public abstract class TestBase {
             return;
         }
 
-        logger.error("当前测试依赖java-all-call-graph项目中的 {}，未找到，跳过。可通过系统属性 {} 指定该项目根目录", JAR_TEST_JAR, SYS_PROP_JACG_DIR);
+        log.error("当前测试依赖java-all-call-graph项目中的 {}，未找到，跳过。可通过系统属性 {} 指定该项目根目录", JAR_TEST_JAR, SYS_PROP_JACG_DIR);
         throw new AssumptionViolatedException("缺少java-all-call-graph项目中的jar文件 " + JAR_TEST_JAR);
     }
 
@@ -132,7 +130,7 @@ public abstract class TestBase {
         } catch (IOException e) {
             throw new JavaCG2RuntimeException("生成 " + JAR_TEST_JAR + " 失败 " + e.getMessage());
         }
-        logger.info("已将当前工程的测试类打包生成 {}", JAR_TEST_JAR);
+        log.info("已将当前工程的测试类打包生成 {}", JAR_TEST_JAR);
     }
 
     // 解析java-all-call-graph项目根目录：优先使用系统属性指定的目录，其次使用当前工程的兄弟目录，未找到时返回null
@@ -143,7 +141,7 @@ public abstract class TestBase {
             if (jacgDirFromSysPropFile.isDirectory()) {
                 return JavaCG2FileUtil.getCanonicalPath(jacgDirFromSysPropFile);
             }
-            logger.warn("系统属性 {} 指定的目录不存在 {}", SYS_PROP_JACG_DIR, jacgDirFromSysProp);
+            log.warn("系统属性 {} 指定的目录不存在 {}", SYS_PROP_JACG_DIR, jacgDirFromSysProp);
         }
 
         String parentDirPath = JavaCG2FileUtil.getCanonicalPath(new File("..")) + "/";
@@ -169,7 +167,7 @@ public abstract class TestBase {
         genLocalTestJarIfAbsent();
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         List<String> jarList = genJarList(findInJacgDir, inputFiles);
-        logger.info("需要解析的jar或目录 {}", StringUtils.join(jarList, " "));
+        log.info("需要解析的jar或目录 {}", StringUtils.join(jarList, " "));
         javaCG2ConfigureWrapper.setOtherConfigList(JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR, jarList);
 
         javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE, Boolean.TRUE.toString());

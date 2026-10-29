@@ -4,17 +4,15 @@ import com.adrninistrator.javacg2.el.enums.interfaces.ElConfigInterface;
 import com.adrninistrator.javacg2.el.manager.AbstractElManager;
 import com.adrninistrator.javacg2.el.util.JavaCG2ElUtil;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author adrninistrator
  * @date 2025/2/13
  * @description: 表达式检查抽象父类
  */
+@Slf4j
 public abstract class AbstractElChecker {
-
-    private static final Logger logger = LoggerFactory.getLogger(AbstractElChecker.class);
 
     /**
      * 执行检查表达式
@@ -37,7 +35,7 @@ public abstract class AbstractElChecker {
             JavaCG2ElUtil.setRunInCheckerFlag();
             doCheck(elManager, elConfig);
         } catch (Exception e) {
-            logger.error("执行表达式进行检查时失败，需要修改对应的表达式 {} ", elConfig.getKey(), e);
+            log.error("执行表达式进行检查时失败，需要修改对应的表达式 {} ", elConfig.getKey(), e);
             throw new JavaCG2RuntimeException("执行表达式进行检查时失败，需要修改对应的表达式");
         } finally {
             // 清理执行用于检测的表达式标志

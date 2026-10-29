@@ -6,10 +6,10 @@ import com.adrninistrator.javacg2.markdown.MarkdownConstants;
 import com.adrninistrator.javacg2.markdown.enums.MDCodeBlockTypeEnum;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2MarkDownUtil;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -22,8 +22,8 @@ import java.util.Map;
  * @date 2022/11/27
  * @description: markdown格式处理类
  */
+@Slf4j
 public class MarkdownWriter implements AutoCloseable {
-    private static final Logger logger = LoggerFactory.getLogger(MarkdownWriter.class);
 
     // 标题是否显示数字序号，如1. 2.3.
     private final boolean showTitleSeq;
@@ -40,6 +40,7 @@ public class MarkdownWriter implements AutoCloseable {
     private int codeBlockFlagNum = 0;
 
     // 是否有写入指定数据的标志
+    @Setter
     private boolean writeData = false;
 
     // 正在写入表格的列数
@@ -263,7 +264,7 @@ public class MarkdownWriter implements AutoCloseable {
             try {
                 writer.close();
             } catch (IOException e) {
-                logger.error("error ", e);
+                log.error("error ", e);
             }
         }
 
@@ -275,9 +276,5 @@ public class MarkdownWriter implements AutoCloseable {
     //
     public boolean isWriteData() {
         return writeData;
-    }
-
-    public void setWriteData(boolean writeData) {
-        this.writeData = writeData;
     }
 }

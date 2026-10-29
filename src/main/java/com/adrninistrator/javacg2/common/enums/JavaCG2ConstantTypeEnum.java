@@ -1,10 +1,13 @@
 package com.adrninistrator.javacg2.common.enums;
 
+import lombok.Getter;
+
 /**
  * @author adrninistrator
  * @date 2022/5/13
  * @description: 常量类型枚举
  */
+@Getter
 public enum JavaCG2ConstantTypeEnum {
     // 以下都使用实际的类型，用于进行比较
     CONSTTE_NULL("null", false),
@@ -26,14 +29,6 @@ public enum JavaCG2ConstantTypeEnum {
     JavaCG2ConstantTypeEnum(String type, boolean primitive) {
         this.type = type;
         this.primitive = primitive;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public boolean isPrimitive() {
-        return primitive;
     }
 
     /**

@@ -18,8 +18,8 @@ import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -36,24 +36,35 @@ import java.util.Set;
  * @date 2022/11/13
  * @description: 继承及实现相关的方法处理类
  */
+@Slf4j
 public class ExtendsImplHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ExtendsImplHandler.class);
 
     private final JavaCG2ElManager javaCG2ElManager;
 
+    @Setter
     private JavaCG2Counter callIdCounter;
 
+    @Setter
     private Map<String, Map<MethodArgReturnTypes, Integer>> interfaceMethodWithArgTypesMap;
+    @Setter
     private Map<String, Map<MethodArgReturnTypes, Integer>> classExtendsImplMethodWithArgTypesMap;
+    @Setter
     private Map<String, List<String>> childrenClassMap;
+    @Setter
     private Map<String, List<String>> interfaceExtendsInfoMap;
+    @Setter
     private Map<String, List<String>> childrenInterfaceMap;
+    @Setter
     private Map<String, List<String>> classImplementsInfoMap;
+    @Setter
     private Map<String, ClassExtendsInfo> classExtendsInfoMap;
+    @Setter
     private Set<String> allClassNameSet;
 
+    @Setter
     private ClassAndJarNum classAndJarNum;
 
+    @Setter
     private JavaCG2RecordSink methodCallSink;
 
     public ExtendsImplHandler(JavaCG2InputAndOutput javaCG2InputAndOutput) {
@@ -92,7 +103,7 @@ public class ExtendsImplHandler {
                     if (!topSuperInterfaceSet.add(superInterface)) {
                         continue;
                     }
-                    logger.debug("处理一个顶层父接口: {}", superInterface);
+                    log.debug("处理一个顶层父接口: {}", superInterface);
                 }
             }
         }
@@ -325,7 +336,7 @@ public class ExtendsImplHandler {
 
     // 处理一个顶层父类
     private void handleOneTopSuperClass(String topSuperClassName) throws IOException {
-        logger.debug("处理一个顶层父类: {}", topSuperClassName);
+        log.debug("处理一个顶层父类: {}", topSuperClassName);
         ListAsStack<Node4ClassExtendsMethod> nodeStack = new ListAsStack<>();
 
         // 初始化节点列表
@@ -336,7 +347,7 @@ public class ExtendsImplHandler {
             Node4ClassExtendsMethod currentNode = nodeStack.peek();
             List<String> childrenClassList = childrenClassMap.get(currentNode.getSuperClassName());
             if (childrenClassList == null) {
-                logger.debug("未找到顶层父类的子类: {}", currentNode.getSuperClassName());
+                log.debug("未找到顶层父类的子类: {}", currentNode.getSuperClassName());
                 return;
             }
 
@@ -500,50 +511,5 @@ public class ExtendsImplHandler {
         methodCall.setCalleeMethodArgTypes(calleeMethodArgTypes);
         methodCall.setRawReturnType(calleeMethodReturnType);
         methodCallSink.writeRow(methodCall.genMethodCallContent(callerClassJarNum, calleeClassJarNum));
-    }
-
-    //
-    public void setCallIdCounter(JavaCG2Counter callIdCounter) {
-        this.callIdCounter = callIdCounter;
-    }
-
-    public void setInterfaceMethodWithArgTypesMap(Map<String, Map<MethodArgReturnTypes, Integer>> interfaceMethodWithArgTypesMap) {
-        this.interfaceMethodWithArgTypesMap = interfaceMethodWithArgTypesMap;
-    }
-
-    public void setChildrenClassMap(Map<String, List<String>> childrenClassMap) {
-        this.childrenClassMap = childrenClassMap;
-    }
-
-    public void setChildrenInterfaceMap(Map<String, List<String>> childrenInterfaceMap) {
-        this.childrenInterfaceMap = childrenInterfaceMap;
-    }
-
-    public void setAllClassNameSet(Set<String> allClassNameSet) {
-        this.allClassNameSet = allClassNameSet;
-    }
-
-    public void setClassAndJarNum(ClassAndJarNum classAndJarNum) {
-        this.classAndJarNum = classAndJarNum;
-    }
-
-    public void setClassExtendsImplMethodWithArgTypesMap(Map<String, Map<MethodArgReturnTypes, Integer>> classExtendsImplMethodWithArgTypesMap) {
-        this.classExtendsImplMethodWithArgTypesMap = classExtendsImplMethodWithArgTypesMap;
-    }
-
-    public void setInterfaceExtendsInfoMap(Map<String, List<String>> interfaceExtendsInfoMap) {
-        this.interfaceExtendsInfoMap = interfaceExtendsInfoMap;
-    }
-
-    public void setClassImplementsInfoMap(Map<String, List<String>> classImplementsInfoMap) {
-        this.classImplementsInfoMap = classImplementsInfoMap;
-    }
-
-    public void setClassExtendsInfoMap(Map<String, ClassExtendsInfo> classExtendsInfoMap) {
-        this.classExtendsInfoMap = classExtendsInfoMap;
-    }
-
-    public void setMethodCallSink(JavaCG2RecordSink methodCallSink) {
-        this.methodCallSink = methodCallSink;
     }
 }

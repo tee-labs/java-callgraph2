@@ -18,9 +18,9 @@ import com.googlecode.aviator.AviatorEvaluator;
 import com.googlecode.aviator.AviatorEvaluatorInstance;
 import com.googlecode.aviator.Expression;
 import com.googlecode.aviator.utils.ArrayHashMap;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -35,9 +35,8 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @date 2025/1/27
  * @description: 表达式处理类
  */
+@Slf4j
 public class ElHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(ElHandler.class);
 
     // 表达式文本
     private final String expressionText;
@@ -81,6 +80,7 @@ public class ElHandler {
     private Expression expression;
 
     // 是否调试模式
+    @Setter
     private boolean debugMode = false;
 
     /**
@@ -112,7 +112,7 @@ public class ElHandler {
         // 创建 Aviator 实例
         AviatorEvaluatorInstance aviatorEvaluatorInstance = genAviatorEvaluatorInstance();
         // 根据表达式文本编译表达式对象
-        logger.info("表达式文本 {} [{}]", elConfigFile, expressionText);
+        log.info("表达式文本 {} [{}]", elConfigFile, expressionText);
         expression = aviatorEvaluatorInstance.compile(expressionText, true);
         // 检查表达式文本中使用的变量名称
         checkElVariableName();
@@ -151,7 +151,7 @@ public class ElHandler {
             boolean prefixWithNum = entry.getValue();
             if (!prefixWithNum) {
                 if (allowedVariableName.equals(variableName)) {
-                    logger.debug("使用完整的表达式变量名称 {}", variableName);
+                    log.debug("使用完整的表达式变量名称 {}", variableName);
                     elSpecifiedVariableNameSet.add(variableName);
                     return;
                 }
@@ -159,17 +159,17 @@ public class ElHandler {
             }
             if (variableName.startsWith(allowedVariableName)) {
                 if (variableName.equals(allowedVariableName)) {
-                    logger.error("当前使用的 ｛名称前缀}{数字} 形式表达式变量名称非法，需要在后面指定 {数字} {}", variableName);
+                    log.error("当前使用的 ｛名称前缀}{数字} 形式表达式变量名称非法，需要在后面指定 {数字} {}", variableName);
                     throw new JavaCG2RuntimeException("当前使用的 ｛名称前缀}{数字} 形式表达式变量名称非法，需要在后面指定 {数字}");
                 }
                 String numStr = StringUtils.substringAfter(variableName, allowedVariableName);
                 if (!JavaCG2Util.isNumStr(numStr)) {
-                    logger.error("当前使用的 ｛名称前缀}{数字} 形式表达式变量名称非法，后面指定的内容需要是 {数字} {}", variableName);
+                    log.error("当前使用的 ｛名称前缀}{数字} 形式表达式变量名称非法，后面指定的内容需要是 {数字} {}", variableName);
                     throw new JavaCG2RuntimeException("当前使用的 ｛名称前缀}{数字} 形式表达式变量名称非法，后面指定的内容需要是 {数字}");
                 }
                 int num = Integer.parseInt(numStr);
                 if (num < 0) {
-                    logger.error("当前使用的 ｛名称前缀}{数字} 形式表达式变量名称非法，后面指定的 {数字} 需要是正整数 {}", variableName);
+                    log.error("当前使用的 ｛名称前缀}{数字} 形式表达式变量名称非法，后面指定的 {数字} 需要是正整数 {}", variableName);
                     throw new JavaCG2RuntimeException("当前使用的 ｛名称前缀}{数字} 形式表达式变量名称非法，后面指定的 {数字} 需要是正整数");
                 }
                 // 记录 ｛名称前缀}{数字} 形式表达式变量
@@ -180,7 +180,7 @@ public class ElHandler {
             }
         }
 
-        logger.error("当前使用的表达式变量名称非法 {} 允许使用的变量查看表达式配置文件 {}", variableName, elConfigFile);
+        log.error("当前使用的表达式变量名称非法 {} 允许使用的变量查看表达式配置文件 {}", variableName, elConfigFile);
         throw new JavaCG2RuntimeException("当前使用的表达式变量名称非法 " + variableName);
     }
 
@@ -250,14 +250,14 @@ public class ElHandler {
         try {
             executeResult = expression.execute(usedVariableMap);
             if (debugMode) {
-                logger.info("执行表达式 配置文件 [{}] 文本 [{}] 执行结果 [{}] 变量信息： {}", elConfigFile, expressionText, executeResult, JavaCG2Util.getMapValueStr(displayMap));
+                log.info("执行表达式 配置文件 [{}] 文本 [{}] 执行结果 [{}] 变量信息： {}", elConfigFile, expressionText, executeResult, JavaCG2Util.getMapValueStr(displayMap));
             }
         } catch (Exception e) {
-            logger.error("表达式执行失败 配置文件 [{}] 文本 [{}] 变量信息： [{}] ", elConfigFile, expressionText, JavaCG2Util.getMapValueStr(displayMap), e);
+            log.error("表达式执行失败 配置文件 [{}] 文本 [{}] 变量信息： [{}] ", elConfigFile, expressionText, JavaCG2Util.getMapValueStr(displayMap), e);
             throw new JavaCG2RuntimeException("表达式执行失败");
         }
         if (!(executeResult instanceof Boolean)) {
-            logger.error("表达式 配置文件 [{}] 文本 [{}] 执行结果返回值类型非 {} [{}]", elConfigFile, expressionText, Boolean.class.getSimpleName(), executeResult);
+            log.error("表达式 配置文件 [{}] 文本 [{}] 执行结果返回值类型非 {} [{}]", elConfigFile, expressionText, Boolean.class.getSimpleName(), executeResult);
             throw new JavaCG2RuntimeException("表达式执行结果返回值非法");
         }
         boolean result = (boolean) executeResult;
@@ -274,7 +274,7 @@ public class ElHandler {
                 try {
                     elIgnoreDataWriter.write(data);
                 } catch (IOException e) {
-                    logger.error("写文件异常 ", e);
+                    log.error("写文件异常 ", e);
                 }
             });
         }
@@ -301,9 +301,5 @@ public class ElHandler {
      */
     public boolean checkExpressionTextFixedTrue() {
         return Boolean.parseBoolean(expressionText);
-    }
-
-    public void setDebugMode(boolean debugMode) {
-        this.debugMode = debugMode;
     }
 }

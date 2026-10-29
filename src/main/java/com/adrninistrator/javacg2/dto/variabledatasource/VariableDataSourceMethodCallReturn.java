@@ -1,6 +1,7 @@
 package com.adrninistrator.javacg2.dto.variabledatasource;
 
 import com.adrninistrator.javacg2.dto.element.BaseElement;
+import lombok.Getter;
 
 import java.util.List;
 
@@ -9,6 +10,7 @@ import java.util.List;
  * @date 2023/6/13
  * @description: 变量的数据来源，方法调用返回值
  */
+@Getter
 public class VariableDataSourceMethodCallReturn extends AbstractVariableDataSource {
 
     // 方法调用指令位置
@@ -56,39 +58,6 @@ public class VariableDataSourceMethodCallReturn extends AbstractVariableDataSour
     public boolean compare(VariableDataSourceMethodCallReturn added) {
         // 每次处理的方法调用在同一个调用方法内，只需要比较方法调用指令位置
         return this.invokeInstructionPosition == added.invokeInstructionPosition;
-    }
-
-    //
-    public int getInvokeInstructionPosition() {
-        return invokeInstructionPosition;
-    }
-
-    public String getInvokeInstructionType() {
-        return invokeInstructionType;
-    }
-
-    public String getCalleeClassName() {
-        return calleeClassName;
-    }
-
-    public String getCalleeMethodName() {
-        return calleeMethodName;
-    }
-
-    public String getCalleeArgTypeStr() {
-        return calleeArgTypeStr;
-    }
-
-    public String getReturnType() {
-        return returnType;
-    }
-
-    public BaseElement getObjectElement() {
-        return objectElement;
-    }
-
-    public List<BaseElement> getArgElementList() {
-        return argElementList;
     }
 
     @Override

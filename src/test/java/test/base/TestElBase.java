@@ -1,7 +1,6 @@
 package test.base;
 
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
-import com.adrninistrator.javacg2.conf.enums.JavaCG2ConfigKeyEnum;
 import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import org.apache.commons.lang3.StringUtils;
@@ -72,7 +71,6 @@ public abstract class TestElBase extends TestBase {
         } else {
             javaCG2ConfigureWrapper = genJavaCG2ConfigureWrapper4JACGTest();
         }
-        javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_EL_DEBUG_MODE, Boolean.TRUE.toString());
         setConfig4ElText(javaCG2ConfigureWrapper);
         JavaCG2Entry javaCG2Entry = new JavaCG2Entry(javaCG2ConfigureWrapper);
         Assert.assertTrue(javaCG2Entry.run());

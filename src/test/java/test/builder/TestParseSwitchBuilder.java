@@ -39,7 +39,7 @@ public class TestParseSwitchBuilder extends TestBase {
     // 语义化方法生成的表达式文本正确，同一个枚举多次设置以后设置的为准
     @Test
     public void testGenExpressionText() {
-        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper(true);
+        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         JavaCG2ParseSwitchBuilder.builder()
                 .ignoreClassByClassName("a.b.Class1", "a.b.Class2")
                 .ignoreMethodByFullMethodSuffix("hashCode()", "equals(java.lang.Object)")
@@ -54,7 +54,7 @@ public class TestParseSwitchBuilder extends TestBase {
                 .ECE_PARSE_IGNORE_METHOD_CALL_TYPE_VALUE_CALLER));
 
         // 同一个枚举多次设置以后设置的为准
-        JavaCG2ConfigureWrapper wrapper2 = new JavaCG2ConfigureWrapper(true);
+        JavaCG2ConfigureWrapper wrapper2 = new JavaCG2ConfigureWrapper();
         JavaCG2ParseSwitchBuilder.builder()
                 .ignoreClassByClassName("a.b.Class1")
                 .ignoreClassByPackageNamePrefix("a.b.")
@@ -62,7 +62,7 @@ public class TestParseSwitchBuilder extends TestBase {
         Assert.assertEquals("string.startsWithAny(package_name,'a.b.')", wrapper2.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS));
 
         // 原始表达式入口按原样设置，不以分号结尾
-        JavaCG2ConfigureWrapper wrapper3 = new JavaCG2ConfigureWrapper(true);
+        JavaCG2ConfigureWrapper wrapper3 = new JavaCG2ConfigureWrapper();
         JavaCG2ParseSwitchBuilder.builder()
                 .setIgnoreMethodExpression("method_arg_num != 4")
                 .setIgnoreMethodCallExpression("!string.containsIC(ee_class_name, 'test')")

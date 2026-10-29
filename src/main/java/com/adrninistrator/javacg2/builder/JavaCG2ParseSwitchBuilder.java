@@ -15,10 +15,10 @@ import java.util.Set;
 /**
  * @author adrninistrator
  * @date 2026/10/28
- * @description: _javacg2_parse_class_method_switch/与_javacg2_parse_method_call_switch/目录下表达式配置文件对应的Builder，通过代码以链式方式指定解析类、方法、方法调用时使用的忽略表达式，不依赖配置文件
+ * @description: 解析类、方法与方法调用相关开关对应的Builder，通过代码以链式方式指定解析类、方法、方法调用时使用的忽略表达式
  * 语义化方法内部生成合法的Aviator表达式文本（字符串参数自动以单引号包裹，不以分号结尾），表达式执行结果为true时跳过解析对应的类、方法或方法调用
  * 同一个表达式配置枚举对应的方法多次调用时，以后调用的为准（表达式文本整体替换）
- * 未通过当前类设置的表达式配置使用jar包中内置配置文件的默认内容（parse_ignore_method.av内置默认表达式忽略hashCode与equals方法，其余内置默认为空白，即不生效）
+ * 未通过当前类设置的表达式配置使用枚举中定义的默认值（parse_ignore_method.av枚举中默认表达式忽略hashCode与equals方法，其余默认为空白，即不生效）
  * 当前类的实例只能通过applyTo方法应用到一个JavaCG2ConfigureWrapper对象，假如需要应用多个，请创建当前类的多个实例
  */
 @Slf4j
@@ -88,7 +88,7 @@ public class JavaCG2ParseSwitchBuilder {
 
     /**
      * 按完整方法后缀跳过解析方法，使用string.endsWithAny函数判断完整方法是否以指定的一个或多个后缀结尾
-     * 与jar包中内置默认表达式使用的判断方式相同，如"hashCode()"、"equals(java.lang.Object)"
+     * 与枚举中默认表达式使用的判断方式相同，如"hashCode()"、"equals(java.lang.Object)"
      *
      * @param fullMethodSuffixes 一个或多个完整方法后缀，如"hashCode()"
      * @return

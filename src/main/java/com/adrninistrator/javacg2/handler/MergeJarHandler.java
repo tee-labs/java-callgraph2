@@ -92,7 +92,7 @@ public class MergeJarHandler {
         this.javaCG2ConfigureWrapper = javaCG2ConfigureWrapper;
         jarOrDirPathList = javaCG2ConfigureWrapper.getOtherConfigList(JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR);
         if (jarOrDirPathList.isEmpty()) {
-            log.error("请在配置文件中指定需要解析的jar文件或目录列表 {}", JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR.genConfigUsage());
+            log.error("未指定需要解析的jar文件或目录列表 {}", JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR.genConfigUsage());
             throw new JavaCG2RuntimeException("未指定需要解析的jar文件或目录列表");
         }
         this.jarPathNumMap = jarPathNumMap;
@@ -300,7 +300,7 @@ public class MergeJarHandler {
             for (File jarFileInDir : jarFileInDirList) {
                 String jarCanonicalPath = JavaCG2FileUtil.getCanonicalPath(jarFileInDir);
                 if (jarPathNumMap.containsKey(jarCanonicalPath)) {
-                    // 避免在jar_dir配置文件中指定了目录与jar文件时，目录中包含对应jar文件时重复处理对应jar文件
+                    // 避免在需要解析的文件与目录列表中指定了目录与jar文件时，目录中包含对应jar文件时重复处理对应jar文件
                     log.warn("目录中的jar、war文件在处理对应目录时已处理过，不再处理 {}", jarCanonicalPath);
                     continue;
                 }
@@ -362,7 +362,7 @@ public class MergeJarHandler {
             File jarFileOrDir = new File(currentJarOrDirPath);
             String jarDirCanonicalPath = JavaCG2FileUtil.getCanonicalPath(jarFileOrDir);
             if (!jarFileOrDir.exists()) {
-                log.error("配置文件中指定的需要解析的文件或目录不存在 {} {}", jarDirCanonicalPath, JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR.genConfigUsage());
+                log.error("指定的需要解析的文件或目录不存在 {} {}", jarDirCanonicalPath, JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR.genConfigUsage());
                 return false;
             }
             if (jarFileOrDir.isFile()) {
@@ -408,7 +408,7 @@ public class MergeJarHandler {
             }
             return true;
         }
-        log.error("在配置文件中指定的需要解析的文件非法 {} 只允许指定 {} {}", fileCanonicalPath, ALLOWED_FILE_TYPES,
+        log.error("指定的需要解析的文件非法 {} 只允许指定 {} {}", fileCanonicalPath, ALLOWED_FILE_TYPES,
                 JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR.genConfigUsage());
         return false;
     }

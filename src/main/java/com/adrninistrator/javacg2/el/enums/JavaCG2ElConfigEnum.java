@@ -2,7 +2,7 @@ package com.adrninistrator.javacg2.el.enums;
 
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.common.enums.JavaCG2DirEnum;
-import com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter;
+import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.el.checker.AbstractElChecker;
 import com.adrninistrator.javacg2.el.checker.JavaCG2ElChecker4HandleSpringBean;
 import com.adrninistrator.javacg2.el.checker.JavaCG2ElChecker4MergeFileInDir;
@@ -17,7 +17,7 @@ import lombok.Getter;
 /**
  * @author adrninistrator
  * @date 2025/1/28
- * @description: 使用表达式的配置文件枚举
+ * @description: 使用表达式的配置参数枚举
  */
 @Getter
 public enum JavaCG2ElConfigEnum implements ElConfigInterface {
@@ -140,13 +140,13 @@ public enum JavaCG2ElConfigEnum implements ElConfigInterface {
             }, JavaCG2ElChecker4HandleSpringBean.class, true, ""),
     ;
 
-    // 配置文件名称
+    // 配置参数标识名
     private final String fileName;
 
-    // 配置文件描述
+    // 配置参数描述
     private final String[] descriptions;
 
-    // 配置文件允许使用的表达式变量枚举
+    // 当前配置参数允许使用的表达式变量枚举
     private final ElAllowedVariableInterface[] elAllowedVariableEnums;
 
     // 用于提前执行表达式进行检查的类
@@ -185,6 +185,6 @@ public enum JavaCG2ElConfigEnum implements ElConfigInterface {
 
     @Override
     public String genConfigUsage() {
-        return doGenConfigUsage(JavaCG2ConfigWriter.class);
+        return doGenConfigUsage(JavaCG2ConfigureWrapper.class);
     }
 }

@@ -3,8 +3,8 @@ package com.adrninistrator.javacg2.conf.enums;
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.common.enums.JavaCG2CalleeRawActualEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2DirEnum;
+import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.interfaces.MainConfigInterface;
-import com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter;
 import lombok.Getter;
 
 /**
@@ -113,7 +113,7 @@ public enum JavaCG2ConfigKeyEnum implements MainConfigInterface {
 
     @Override
     public String genConfigUsage() {
-        return doGenConfigUsage(JavaCG2ConfigWriter.class);
+        return doGenConfigUsage(JavaCG2ConfigureWrapper.class);
     }
 
     @Override

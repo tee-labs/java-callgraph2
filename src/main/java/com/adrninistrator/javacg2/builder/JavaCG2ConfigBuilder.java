@@ -7,13 +7,13 @@ import com.adrninistrator.javacg2.conf.enums.JavaCG2ConfigKeyEnum;
 /**
  * @author adrninistrator
  * @date 2026/10/28
- * @description: config.properties对应的Builder，通过代码以链式方式设置主要配置参数，不依赖配置文件
+ * @description: 主要配置参数对应的Builder，通过代码以链式方式设置主要配置参数
  * 未设置参数的配置参数使用默认值
  * 当前类的实例只能构建一个JavaCG2ConfigureWrapper对象，假如需要构建多个，请创建当前类的多个实例
  */
 public class JavaCG2ConfigBuilder {
 
-    private final JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper(true);
+    private final JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
 
     public static JavaCG2ConfigBuilder builder() {
         return new JavaCG2ConfigBuilder();

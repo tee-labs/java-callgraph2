@@ -2,14 +2,8 @@ package com.adrninistrator.javacg2.builder;
 
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseListEnum;
-import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
-import com.adrninistrator.javacg2.el.enums.interfaces.ElConfigInterface;
-import com.adrninistrator.javacg2.el.util.JavaCG2ElUtil;
 import com.adrninistrator.javacg2.entry.JavaCG2Entry;
 import com.adrninistrator.javacg2.exceptions.JavaCG2ConfigException;
-import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.Collection;
@@ -18,7 +12,7 @@ import java.util.List;
 /**
  * @author adrninistrator
  * @date 2026/10/28
- * @description: JavaCG2Entry对应的Builder，通过代码指定配置参数生成入口类实例，不依赖磁盘上的配置文件
+ * @description: JavaCG2Entry对应的Builder，通过代码指定配置参数生成入口类实例，不依赖配置文件
  * 使用示例：
  *     JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
  *             .setConfig(JavaCG2ConfigBuilder.builder()
@@ -36,12 +30,10 @@ import java.util.List;
  *             .build();
  *     boolean success = javaCG2Entry.run();
  * config与jar_dir对应的Builder均可不设置，config未设置时主要配置参数使用默认值
- * 未通过Builder设置的其他类型配置参数（如fr_eq_conversion_method.properties）使用jar包中内置配置文件的默认内容
- * 未通过Builder设置的表达式配置使用jar包中内置配置文件的默认内容（parse_ignore_method.av内置默认表达式忽略hashCode与equals方法，其余内置默认为空白，即不生效）
+ * 未通过Builder设置的配置参数均使用枚举中定义的默认值（parse_ignore_method.av枚举中默认表达式忽略hashCode与equals方法，其余表达式默认为空白，即不生效）
  * 当前类的实例只能通过build方法生成一个JavaCG2Entry对象，假如需要生成多个，请创建当前类的多个实例
  * 生成的JavaCG2Entry对象只能执行一次run方法，假如需要再次执行，请通过当前类的新的实例生成新的JavaCG2Entry对象
  */
-@Slf4j
 public class JavaCG2EntryBuilder {
 
     private JavaCG2ConfigBuilder javaCG2ConfigBuilder;
@@ -64,7 +56,7 @@ public class JavaCG2EntryBuilder {
     }
 
     /**
-     * 设置config.properties对应的Builder，未设置时主要配置参数使用默认值
+     * 设置config.properties对应的Builder，未设置时主要配置参数使用枚举中定义的默认值
      *
      * @param javaCG2ConfigBuilder
      * @return
@@ -114,7 +106,7 @@ public class JavaCG2EntryBuilder {
     }
 
     /**
-     * 设置fr_eq_conversion_method.properties对应的Builder，未设置时等值转换方法使用jar包中内置配置文件的默认内容
+     * 设置等值转换方法对应的Builder，未设置时等值转换方法使用枚举中定义的默认值
      *
      * @param javaCG2FrEqConversionMethodBuilder
      * @return
@@ -128,7 +120,7 @@ public class JavaCG2EntryBuilder {
     }
 
     /**
-     * 设置_javacg2_merge_file_switch/目录下表达式配置文件对应的Builder，未设置时表达式使用jar包中内置配置文件的默认内容（默认为空白，即不生效）
+     * 设置合并jar/war文件、目录相关开关对应的Builder，未设置时相关表达式使用枚举中定义的默认值（默认为空白，即不生效）
      *
      * @param javaCG2MergeFileSwitchBuilder
      * @return
@@ -142,8 +134,8 @@ public class JavaCG2EntryBuilder {
     }
 
     /**
-     * 设置_javacg2_parse_class_method_switch/与_javacg2_parse_method_call_switch/目录下表达式配置文件对应的Builder，未设置时表达式使用jar包中内置配置文件的默认内容
-     * （parse_ignore_method.av内置默认表达式忽略hashCode与equals方法，其余内置默认为空白，即不生效）
+     * 设置解析类、方法与方法调用相关开关对应的Builder，未设置时相关表达式使用枚举中定义的默认值
+     * （parse_ignore_method.av枚举中默认表达式忽略hashCode与equals方法，其余默认为空白，即不生效）
      *
      * @param javaCG2ParseSwitchBuilder
      * @return
@@ -157,7 +149,7 @@ public class JavaCG2EntryBuilder {
     }
 
     /**
-     * 设置_javacg2_handle_xml_switch/目录下表达式配置文件对应的Builder，未设置时表达式使用jar包中内置配置文件的默认内容（默认为空白，即不生效）
+     * 设置处理XML文件中定义的Spring Bean的忽略表达式对应的Builder，未设置时表达式使用枚举中定义的默认值（默认为空白，即不生效）
      *
      * @param javaCG2XmlSwitchBuilder
      * @return
@@ -206,7 +198,7 @@ public class JavaCG2EntryBuilder {
         }
 
         if (javaCG2FrEqConversionMethodBuilder != null) {
-            // 追加语义时，需要在生成的wrapper对象上执行先读取jar包中内置默认条目再合并的逻辑
+            // 追加语义时，需要在生成的wrapper对象上执行先读取枚举中定义的默认条目再合并的逻辑
             javaCG2FrEqConversionMethodBuilder.applyTo(javaCG2ConfigureWrapper);
         }
 
@@ -222,47 +214,7 @@ public class JavaCG2EntryBuilder {
             javaCG2XmlSwitchBuilder.applyTo(javaCG2ConfigureWrapper);
         }
 
-        // 对未被任何Builder设置过的表达式配置，使用jar包中内置配置文件的默认内容，保持与通过配置文件指定参数时的行为一致
-        applyElDefaultText(javaCG2ConfigureWrapper);
-
         javaCG2ConfigureWrapper.setOtherConfigList(JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR, jarOrDirPathList);
         return new JavaCG2Entry(javaCG2ConfigureWrapper);
-    }
-
-    // 对未被任何Builder设置过的表达式配置，读取jar包中内置配置文件的默认内容并通过setElConfigText方法应用，读取方式参照BaseConfigureWrapper.getElConfigText方法
-    private void applyElDefaultText(JavaCG2ConfigureWrapper javaCG2ConfigureWrapper) {
-        for (JavaCG2ElConfigEnum elConfig : JavaCG2ElConfigEnum.values()) {
-            if (JavaCG2ElUtil.checkElExample(elConfig)) {
-                // 跳过示例表达式配置文件
-                continue;
-            }
-            if (checkElConfigSetByBuilder(elConfig)) {
-                // 已通过Builder设置的表达式配置使用设置的值
-                continue;
-            }
-            if (!JavaCG2FileUtil.checkFileExistsInDiskOrClasspath(elConfig.getKey())) {
-                // 内置配置文件不存在时跳过，wrapper对象中已使用枚举中定义的默认值
-                continue;
-            }
-            // 读取jar包中内置配置文件的默认内容
-            String elText = StringUtils.join(JavaCG2FileUtil.readFile2List(elConfig.getKey(), "##"), "");
-            if (StringUtils.isBlank(elText)) {
-                // 内置默认内容为空白时不设置，保持表达式不生效的现状
-                continue;
-            }
-            log.info("使用jar包中内置配置文件的默认表达式 {}", elConfig.getConfigPrintInfo());
-            javaCG2ConfigureWrapper.setElConfigText(elConfig, elText);
-        }
-    }
-
-    // 检查表达式配置是否已通过Builder设置
-    private boolean checkElConfigSetByBuilder(ElConfigInterface elConfig) {
-        if (javaCG2ParseSwitchBuilder != null && javaCG2ParseSwitchBuilder.getSetElConfigSet().contains(elConfig)) {
-            return true;
-        }
-        if (javaCG2MergeFileSwitchBuilder != null && javaCG2MergeFileSwitchBuilder.getSetElConfigSet().contains(elConfig)) {
-            return true;
-        }
-        return javaCG2XmlSwitchBuilder != null && javaCG2XmlSwitchBuilder.getSetElConfigSet().contains(elConfig);
     }
 }

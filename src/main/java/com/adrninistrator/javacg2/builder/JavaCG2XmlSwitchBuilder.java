@@ -14,10 +14,10 @@ import java.util.Set;
 /**
  * @author adrninistrator
  * @date 2026/10/28
- * @description: _javacg2_handle_xml_switch/handle_ignore_spring_bean_in_xml.av表达式配置文件对应的Builder，通过代码以链式方式指定处理XML文件中定义的Spring Bean时使用的忽略表达式，不依赖配置文件
+ * @description: 处理XML文件中定义的Spring Bean的忽略表达式对应的Builder，通过代码以链式方式指定处理XML文件中定义的Spring Bean时使用的忽略表达式
  * 语义化方法内部生成合法的Aviator表达式文本（字符串参数自动以单引号包裹，不以分号结尾），表达式执行结果为true时跳过处理对应的Spring Bean
  * 同一个表达式配置枚举对应的方法多次调用时，以后调用的为准（表达式文本整体替换）
- * 未通过当前类设置的表达式配置使用jar包中内置配置文件的默认内容（内置默认为空白，即不生效）
+ * 未通过当前类设置的表达式配置使用枚举中定义的默认值（默认为空白，即不生效）
  * 该开关仅当待分析工程通过XML文件定义Spring Bean时相关
  * 当前类的实例只能通过applyTo方法应用到一个JavaCG2ConfigureWrapper对象，假如需要应用多个，请创建当前类的多个实例
  */

@@ -14,10 +14,10 @@ import java.util.Set;
 /**
  * @author adrninistrator
  * @date 2026/10/28
- * @description: _javacg2_merge_file_switch/目录下表达式配置文件对应的Builder，通过代码以链式方式指定合并jar、war文件时使用的忽略表达式，不依赖配置文件
+ * @description: 合并jar、war文件、目录相关开关对应的Builder，通过代码以链式方式指定合并jar、war文件时使用的忽略表达式
  * 语义化方法内部生成合法的Aviator表达式文本（字符串参数自动以单引号包裹，不以分号结尾），表达式执行结果为true时跳过合并（及解析）对应的文件
  * 同一个表达式配置枚举对应的方法多次调用时，以后调用的为准（表达式文本整体替换）
- * 未通过当前类设置的表达式配置使用jar包中内置配置文件的默认内容（默认为空白，即不生效）
+ * 未通过当前类设置的表达式配置使用枚举中定义的默认值（默认为空白，即不生效）
  * 当前类的实例只能通过applyTo方法应用到一个JavaCG2ConfigureWrapper对象，假如需要应用多个，请创建当前类的多个实例
  */
 public class JavaCG2MergeFileSwitchBuilder {

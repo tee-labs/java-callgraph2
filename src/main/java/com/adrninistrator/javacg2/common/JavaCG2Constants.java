@@ -8,9 +8,6 @@ package com.adrninistrator.javacg2.common;
  */
 
 public class JavaCG2Constants {
-    // JVM参数，保存配置文件的根目录
-    public static final String JVM_PROP_KEY_INPUT_ROOT_PATH = "input.root.path";
-
     // 输出文件中的常量
     // jar/war文件
     public static final String FILE_KEY_JAR = "J";

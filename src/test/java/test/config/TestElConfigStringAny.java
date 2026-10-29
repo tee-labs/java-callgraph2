@@ -23,7 +23,7 @@ public class TestElConfigStringAny extends TestBase {
     // ElStringAnyFunctionEnum版本生成的表达式文本正确：不以分号结尾，字符串参数自动以单引号包裹
     @Test
     public void testStringAnyElText() {
-        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper(true);
+        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         javaCG2ConfigureWrapper.setElConfigStringAny(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML, ElStringAnyFunctionEnum.EQUALS_ANY,
                 JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME, "testService1", "testService2");
         String elText = javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML);
@@ -39,7 +39,7 @@ public class TestElConfigStringAny extends TestBase {
     // ElStringFunctionTwoArgsEnum版本生成的表达式文本正确：不以分号结尾，字符串参数自动以单引号包裹
     @Test
     public void testTwoArgsElText() {
-        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper(true);
+        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         javaCG2ConfigureWrapper.setElConfigStringAny(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS, ElStringFunctionTwoArgsEnum.EQUALS_IGNORE_CASE,
                 JavaCG2ElAllowedVariableEnum.EAVE_PARSE_CLASS_NAME, "a.b.Class1");
         String elText = javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS);
@@ -56,7 +56,7 @@ public class TestElConfigStringAny extends TestBase {
     public void testInvalidVariable() {
         try {
             // bean_name变量不允许在跳过解析类的表达式中使用
-            new JavaCG2ConfigureWrapper(true).setElConfigStringAny(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS, ElStringAnyFunctionEnum.EQUALS_ANY,
+            new JavaCG2ConfigureWrapper().setElConfigStringAny(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS, ElStringAnyFunctionEnum.EQUALS_ANY,
                     JavaCG2ElAllowedVariableEnum.EAVE_SPB_BEAN_NAME, "a.b.Class1");
             Assert.fail();
         } catch (JavaCG2RuntimeException e) {
@@ -67,7 +67,7 @@ public class TestElConfigStringAny extends TestBase {
     // 非法参数抛出异常
     @Test
     public void testInvalidArgs() {
-        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper(true);
+        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
 
         // 未指定需要比较的字符串值
         try {

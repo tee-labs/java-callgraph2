@@ -7,11 +7,11 @@ package com.adrninistrator.javacg2.common;
  */
 public class JavaCG2ConfigPrintConstants {
 
-    public static final String CONFIG_FLAG_FILE_KEY = "配置文件名称";
-    public static final String CONFIG_FLAG_FILE_ENUM_CLASS_NAME = "配置文件枚举类名";
-    public static final String CONFIG_FLAG_FILE_ENUM_CONSTANT_NAME = "配置文件枚举常量名";
-    public static final String CONFIG_FLAG_FILE_ENUM_CLASS_CONSTANT_NAME = "配置文件枚举类名与常量名";
-    public static final String CONFIG_FLAG_FILE_DESC = "配置文件说明";
+    public static final String CONFIG_FLAG_FILE_KEY = "配置参数名称";
+    public static final String CONFIG_FLAG_FILE_ENUM_CLASS_NAME = "配置参数枚举类名";
+    public static final String CONFIG_FLAG_FILE_ENUM_CONSTANT_NAME = "配置参数枚举常量名";
+    public static final String CONFIG_FLAG_FILE_ENUM_CLASS_CONSTANT_NAME = "配置参数枚举类名与常量名";
+    public static final String CONFIG_FLAG_FILE_DESC = "配置参数说明";
     public static final String CONFIG_FLAG_CONF_KEY = "参数名称";
     public static final String CONFIG_FLAG_CONF_DESC = "参数说明";
     public static final String CONFIG_FLAG_CONF_TYPE = "参数类型";
@@ -20,7 +20,7 @@ public class JavaCG2ConfigPrintConstants {
     public static final String CONFIG_FLAG_CONF_DEFAULT_VALUE = "参数默认值";
     public static final String CONFIG_FLAG_CONF_VALUE = "当前使用参数值";
     public static final String CONFIG_FLAG_CONF_USED = "当前有使用的";
-    public static final String CONFIG_FLAG_CONF_MAIN = "主要的配置文件参数";
+    public static final String CONFIG_FLAG_CONF_MAIN = "主要配置参数";
     public static final String CONFIG_FLAG_CONF_LIST = "区分顺序的其他配置参数";
     public static final String CONFIG_FLAG_CONF_SET = "不区分顺序的其他配置参数";
     public static final String CONFIG_FLAG_CONF_EL = "表达式配置参数";

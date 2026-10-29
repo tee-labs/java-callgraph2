@@ -27,14 +27,6 @@ public class JavaCG2ConfigureWrapper extends BaseConfigureWrapper {
     public JavaCG2ConfigureWrapper() {
     }
 
-    public JavaCG2ConfigureWrapper(boolean onlyUseConfigInJavaCode, String inputRootPath) {
-        super(onlyUseConfigInJavaCode, inputRootPath);
-    }
-
-    public JavaCG2ConfigureWrapper(boolean onlyUseConfigInJavaCode) {
-        super(onlyUseConfigInJavaCode, null);
-    }
-
     @Override
     protected Object customGenMainConfigValue(MainConfigInterface mainConfig, String strValue) throws JavaCG2ConfigException {
         String mainConfigInfo = mainConfig.getFileName() + " " + mainConfig.getConfigPrintInfo();
@@ -87,21 +79,8 @@ public class JavaCG2ConfigureWrapper extends BaseConfigureWrapper {
     }
 
     @Override
-    protected void useDefaultEmptyConfig() {
-        clearMainConfigs(JavaCG2ConfigKeyEnum.values());
-        clearOtherConfigUseSet(JavaCG2OtherConfigFileUseSetEnum.values());
-        clearOtherConfigUseList(JavaCG2OtherConfigFileUseListEnum.values());
-        clearElConfigText(JavaCG2ElConfigEnum.values());
-    }
-
-    @Override
-    protected Object customGetDefaultConfig(MainConfigInterface mainConfig) {
-        return null;
-    }
-
-    @Override
     protected void customPrintConfigInfo(MarkdownWriter markdownWriter, boolean printAllConfigInfo) throws IOException {
-        // 打印主要的配置文件
+        // 打印主要配置参数
         printMainConfigInfo(markdownWriter, JavaCG2ConfigKeyEnum.values(), printAllConfigInfo);
 
         // 打印Set格式的其他配置参数

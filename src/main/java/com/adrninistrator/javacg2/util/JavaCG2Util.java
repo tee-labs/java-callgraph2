@@ -98,23 +98,6 @@ public class JavaCG2Util {
     }
 
     /**
-     * 获取JVM参数中指定的目录路径
-     *
-     * @param jvmOptionKey
-     * @return
-     */
-    public static String getDirPathInJvmOptions(String jvmOptionKey) {
-        String dirPath = System.getProperty(jvmOptionKey);
-        if (dirPath == null) {
-            return "";
-        }
-
-        String newDirPath = JavaCG2FileUtil.addSeparator4FilePath(dirPath);
-        log.info("获取到JVM参数 {} {} 在路径结尾增加分隔符为 {}", jvmOptionKey, dirPath, newDirPath);
-        return newDirPath;
-    }
-
-    /**
      * 判断字符串是否需要base64编码
      *
      * @param data
@@ -297,15 +280,6 @@ public class JavaCG2Util {
             }
             destList.add(src);
         }
-    }
-
-    /**
-     * 获取配置文件的根目录
-     *
-     * @return
-     */
-    public static String getInputRootPath() {
-        return getDirPathInJvmOptions(JavaCG2Constants.JVM_PROP_KEY_INPUT_ROOT_PATH);
     }
 
     /**

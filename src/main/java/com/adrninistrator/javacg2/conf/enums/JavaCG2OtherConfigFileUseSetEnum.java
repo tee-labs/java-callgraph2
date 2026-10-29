@@ -2,8 +2,8 @@ package com.adrninistrator.javacg2.conf.enums;
 
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.common.enums.JavaCG2DirEnum;
+import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.interfaces.OtherConfigInterface;
-import com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
 import lombok.Getter;
 
@@ -25,7 +25,7 @@ public enum JavaCG2OtherConfigFileUseSetEnum implements OtherConfigInterface {
     ),
     ;
 
-    // 参数配置文件名
+    // 配置参数名称
     private final String fileName;
     // 参数配置描述
     private final String[] descriptions;
@@ -55,7 +55,7 @@ public enum JavaCG2OtherConfigFileUseSetEnum implements OtherConfigInterface {
 
     @Override
     public String genConfigUsage() {
-        return doGenConfigUsage(JavaCG2ConfigWriter.class);
+        return doGenConfigUsage(JavaCG2ConfigureWrapper.class);
     }
 
     @Override

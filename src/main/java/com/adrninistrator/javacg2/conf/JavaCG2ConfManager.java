@@ -32,14 +32,14 @@ public class JavaCG2ConfManager {
 
         if (!parseMethodCallTypeValue) {
             if (firstParseInitMethodType) {
-                String logContent = String.format("配置文件 %s 中的 %s 参数值为false时， %s 参数值不会生效-1", JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE.getFileName(),
-                        JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE.getKey(), JavaCG2ConfigKeyEnum.CKE_FIRST_PARSE_INIT_METHOD_TYPE.getKey());
+                String logContent = String.format("配置参数 %s 值为false时， %s 参数值不会生效-1", JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE.getKey(),
+                        JavaCG2ConfigKeyEnum.CKE_FIRST_PARSE_INIT_METHOD_TYPE.getKey());
                 log.warn("{}", logContent);
                 firstParseInitMethodType = false;
             }
             if (analyseFieldRelationship) {
-                String logContent = String.format("配置文件 %s 中的 %s 参数值为false时， %s 参数值不会生效-2", JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE.getFileName(),
-                        JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE.getKey(), JavaCG2ConfigKeyEnum.CKE_ANALYSE_FIELD_RELATIONSHIP.getKey());
+                String logContent = String.format("配置参数 %s 值为false时， %s 参数值不会生效-2", JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE.getKey(),
+                        JavaCG2ConfigKeyEnum.CKE_ANALYSE_FIELD_RELATIONSHIP.getKey());
                 log.warn("{}", logContent);
                 analyseFieldRelationship = false;
             }
@@ -54,7 +54,7 @@ public class JavaCG2ConfManager {
         // 处理解析方法调用时，被调用对象为Spring Bean，类型使用原始类型还是实际类型（支持字段注入）
         handleCalleeSpringBeanRawActual(javaCG2ConfigureWrapper, javaCG2ConfInfo);
 
-        // 处理 fr_eq_conversion_method.properties 中的配置参数
+        // 处理等值转换方法配置参数
         handleFrEqConversionMethod(javaCG2ConfigureWrapper, javaCG2ConfInfo);
 
         boolean parseJarCompatibilityMode = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_PARSE_JAR_COMPATIBILITY_MODE);
@@ -72,7 +72,7 @@ public class JavaCG2ConfManager {
         return javaCG2ConfInfo;
     }
 
-    // 处理 fr_eq_conversion_method.properties 中的配置参数
+    // 处理等值转换方法配置参数
     private static void handleFrEqConversionMethod(JavaCG2ConfigureWrapper javaCG2ConfigureWrapper, JavaCG2ConfInfo javaCG2ConfInfo) throws JavaCG2ConfigException {
         Map<String, Map<String, Integer>> frEqConversionMethodMap = new HashMap<>();
         javaCG2ConfInfo.setFrEqConversionMethodMap(frEqConversionMethodMap);
@@ -84,20 +84,20 @@ public class JavaCG2ConfManager {
         for (String frEqConversionMethod : frEqConversionMethodSet) {
             String[] data1 = StringUtils.splitPreserveAllTokens(frEqConversionMethod, JavaCG2Constants.FLAG_EQUAL);
             if (data1.length != 2) {
-                String errorMsg = "配置文件内容不是合法的properties参数 " + configKey + " " + frEqConversionMethod;
+                String errorMsg = "配置参数内容不是合法的等值转换方法条目 " + configKey + " " + frEqConversionMethod;
                 log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }
             String classAndMethod = data1[0];
             int argObjSeq = Integer.parseInt(data1[1]);
             if (argObjSeq < 0) {
-                String errorMsg = "配置文件被调用对象（使用0表示）或方法参数（从1开始）序号非法 " + configKey + " " + frEqConversionMethod;
+                String errorMsg = "配置参数中被调用对象（使用0表示）或方法参数（从1开始）序号非法 " + configKey + " " + frEqConversionMethod;
                 log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }
             String[] data2 = StringUtils.splitPreserveAllTokens(classAndMethod, JavaCG2Constants.FLAG_COLON);
             if (data2.length != 2) {
-                String errorMsg = "配置文件内容不是合法的类名与方法名 " + configKey + " " + frEqConversionMethod;
+                String errorMsg = "配置参数内容不是合法的类名与方法名 " + configKey + " " + frEqConversionMethod;
                 log.error(errorMsg);
                 throw new JavaCG2ConfigException(errorMsg);
             }

@@ -1204,7 +1204,7 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 
 ### 6.3.4. multi-release JAR 文件处理
 
-假如需要解析的 jar 文件包含 multi-release JAR，则需要指定配置参数 jdk.runtime.major.version（可通过 Builder 方式指定，或通过 JavaCG2ConfigWriter 生成配置文件后指定），在合并 multi-release JAR 时使用指定版本的 class 文件，即“META-INF/versions/{JDK 主版本号}”目录中的 class 文件
+假如需要解析的 jar 文件包含 multi-release JAR，则需要指定配置参数 jdk.runtime.major.version（可通过 Builder 方式指定），在合并 multi-release JAR 时使用指定版本的 class 文件，即“META-INF/versions/{JDK 主版本号}”目录中的 class 文件
 
 # 7. 使用说明
 
@@ -1216,22 +1216,19 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 
 ## 7.2. 配置参数
 
-说明：配置文件已不再内置于发布物中（项目 src/main/resources 目录及 jar 包中均不再提供），所有配置参数的默认值由代码中的枚举提供（JavaCG2ConfigKeyEnum、JavaCG2OtherConfigFileUseListEnum、JavaCG2OtherConfigFileUseSetEnum、JavaCG2ElConfigEnum）
+说明：配置参数仅支持通过代码指定，所有配置参数的默认值由代码中的枚举提供（JavaCG2ConfigKeyEnum、JavaCG2OtherConfigFileUseListEnum、JavaCG2OtherConfigFileUseSetEnum、JavaCG2ElConfigEnum）
 
-将 java-callgraph2 作为库集成时，推荐通过 Builder 方式指定配置参数（参考 7.4.3 及之后小节）
+将 java-callgraph2 作为库集成时，推荐通过 Builder 方式指定配置参数（参考 7.4.2 及之后小节）
 
-假如确需使用配置文件，可通过 com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter 生成全套默认配置文件后按需修改
-
-以下小节中对各配置参数及其对应配置文件的说明，仍是参数语义的权威描述
+以下小节中对各配置参数的说明，是参数语义的权威描述
 
 ### 7.2.1. 支持的参数配置方式
 
 ```
-通过配置文件指定
 通过代码指定
 ```
 
-以上两种方式的效果是相同的，每个配置文件及配置参数在代码中都存在对应项
+配置参数仅支持通过代码指定，未指定的参数使用枚举中定义的默认值
 
 ### 7.2.2. 支持的配置参数格式
 
@@ -1241,7 +1238,7 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 
 当前项目中各个参数的对应枚举为 com.adrninistrator.javacg2.conf.enums.JavaCG2ConfigKeyEnum
 
-每个枚举常量代表一个参数，对应的配置文件都是 _javacg2_config/config.properties
+每个枚举常量代表一个参数
 
 参数为键值对形式，每个参数指定唯一的值
 
@@ -1249,7 +1246,7 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 
 当前项目中的对应枚举为 com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseListEnum
 
-每个枚举常量代表一个参数，对应一个配置文件
+每个枚举常量代表一个参数
 
 参数值区分顺序，可指定多个值
 
@@ -1257,7 +1254,7 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 
 当前项目中的对应枚举为 com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseSetEnum
 
-每个枚举常量代表一个参数，对应一个配置文件
+每个枚举常量代表一个参数
 
 参数值不区分顺序，可指定多个值
 
@@ -1265,17 +1262,17 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 
 当前项目中的对应枚举为 com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum
 
-每个枚举常量代表一个参数，对应一个配置文件
+每个枚举常量代表一个参数
 
 参数值需要指定 EL 表达式，整个参数值是一个表达式
 
 ### 7.2.3. 配置参数使用说明
 
-通过代码或配置文件配置参数的方式，参考 [配置参数使用说明](docs/_javacg2_all_config.md)
+配置参数的说明参考 [配置参数使用说明](docs/_javacg2_all_config.md)
 
 ### 7.2.4. 重要配置参数
 
-java-callgraph2 需要使用的重要配置参数对应配置文件 _javacg2_config/jar_dir.properties（该文件已不再内置，可通过 Builder 方式的 JavaCG2JarDirBuilder 指定对应参数，或通过 JavaCG2ConfigWriter 生成）
+java-callgraph2 需要使用的重要配置参数是需要解析的文件与目录列表（可通过 Builder 方式的 JavaCG2JarDirBuilder 指定，参考 7.4.2）
 
 用于指定需要解析的 jar、war、jmod 文件路径，或保存 class、jar、war、jmod 文件的目录路径
 
@@ -1331,9 +1328,9 @@ com.adrninistrator.javacg2.entry.JavaCG2Entry
 
 |运行方式|支持的参数配置方式|
 |---|---|
-|通过 IDE 打开项目源码运行|通过配置文件指定<br>通过代码指定|
-|在其他项目中引用当前项目的库运行|通过配置文件指定<br>通过代码指定|
-|使用项目源码构建后运行|通过配置文件指定|
+|通过 IDE 打开项目源码运行|通过代码指定|
+|在其他项目中引用当前项目的库运行|通过代码指定|
+|使用项目源码构建后运行|通过代码指定|
 
 ### 7.3.4. 通过 IDE 打开项目源码运行
 
@@ -1363,15 +1360,9 @@ implementation("com.github.adrninistrator:java-callgraph2:{版本号}")
 
 最新版本号可查看 [https://central.sonatype.com/artifact/com.github.adrninistrator/java-callgraph2/versions](https://central.sonatype.com/artifact/com.github.adrninistrator/java-callgraph2/versions)
 
-#### 7.3.5.2. 通过配置文件指定参数运行
+#### 7.3.5.2. 通过代码指定参数运行
 
-java-callgraph2 的配置文件已不再内置，假如需要通过配置文件指定参数，可通过 com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter 生成全套默认配置文件，再指定配置文件根目录路径（参考 7.4.1）
-
-修改配置文件相关参数后，可运行入口类；也可不使用配置文件，直接通过 Builder 方式指定参数（参考 7.4.3）
-
-#### 7.3.5.3. 通过代码指定参数运行
-
-与“通过 IDE 打开项目源码运行”的说明相同
+与“通过 IDE 打开项目源码运行”的说明相同，配置参数通过代码指定（参考 7.4）
 
 ### 7.3.6. 使用项目源码构建后运行
 
@@ -1398,89 +1389,11 @@ mvn package -Pgen_run_jar -DskipTests
 
 ## 7.4. 配置参数指定方式
 
-### 7.4.1. 通过配置文件指定配置参数
-
-#### 7.4.1.1. 配置文件信息
-
-配置文件及对应的目录信息如下。以下目录与文件均已不再内置，不会随发布物提供；如确需使用，可通过 com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter 生成全套默认配置文件后按需修改（各目录与文件的作用说明不变）
-
-|目录或文件类型|目录或文件名称|作用|
-|---|---|---|
-|目录|_javacg2_config|java-callgraph2 组件主要配置文件所在目录|
-|文件|parse.method.call.type.value|处理方法调用时是否解析被调用对象和参数可能的类型与值|
-|文件|_javacg2_config/jar_dir.properties|（作用） 指定需要解析的 jar、war、jmod 文件路径，或保存 class、jar、war、jmod 文件的目录路径（每行代表一条记录，支持多行）|
-|文件|_javacg2_config/fr_eq_conversion_method.properties|（作用） 在分析 dto 的字段之间通过 get/set 方法的关联关系时使用，指定方法返回值与被调用对象或参数认为是等值转换的方法（每行代表一条记录，支持多行）|
-|目录|_el_example|el 表达式示例配置文件所在目录|
-|文件|_el_example/el_usage.md|表达式示例文件|
-|目录|_javacg2_merge_file_switch|合并 jar/war 文件、目录相关开关配置文件目录|
-|文件|_javacg2_merge_file_switch/ignore_jar_in_dir.av|指定是否跳过合并目录中的 jar 文件|
-|文件|_javacg2_merge_file_switch/ignore_war_in_dir.av|指定是否跳过合并目录中的 war 文件|
-|文件|_javacg2_merge_file_switch/ignore_class_in_dir.av|指定是否跳过合并目录中的 class 文件|
-|文件|_javacg2_merge_file_switch/ignore_other_in_dir.av|指定是否跳过合并目录中的非 jar、war、class 文件|
-|文件|_javacg2_merge_file_switch/ignore_jar_in_jar_war.av|指定是否跳过合并 jar、war 中的 jar 文件|
-|文件|_javacg2_merge_file_switch/ignore_class_in_jar_war.av|指定是否跳过合并 jar、war 中的 class 文件|
-|文件|_javacg2_merge_file_switch/ignore_other_in_jar_war.av|指定是否跳过合并 jar、war 中的非 jar、war、class 文件|
-|文件|_javacg2_merge_file_switch/ignore_jar_war_by_class_dir_prefix.av|通过 class 文件对应指定层级的目录路径判断是否跳过合并当前 jar、war 文件|
-|目录|_javacg2_parse_class_method_switch|解析类、方法相关开关配置文件所在目录|
-|文件|_javacg2_parse_class_method_switch/parse_ignore_class.av|指定是否跳过解析类|
-|文件|_javacg2_parse_class_method_switch/parse_ignore_method.av|指定是否跳过解析方法|
-|目录|_javacg2_parse_method_call_switch|解析方法调用相关开关配置文件所在目录|
-|文件|_javacg2_parse_method_call_switch/parse_ignore_method_call.av|指定是否跳过解析方法调用，支持通过方法调用类型、调用方法或被调用方法等判断|
-|文件|_javacg2_parse_method_call_switch/parse_ignore_method_call_type_value_caller.av|指定解析方法调用被调用对象和参数可能的类型与值需要跳过哪些方法，通过调用方法判断|
-|目录|_javacg2_handle_xml_switch|处理 XML 文件开关配置文件所在目录|
-|文件|_javacg2_handle_xml_switch/handle_ignore_spring_bean_in_xml.av|指定处理 XML 文件中定义的 Spring Bean 需要跳过哪些 Bean|
-
-#### 7.4.1.2. 使用默认配置文件根目录路径
-
-创建 JavaCG2ConfigureWrapper 实例时，使用参数 onlyUseConfigInJavaCode 为 false 的构造函数且不指定配置文件根目录路径，则配置文件根目录路径使用默认路径，会尝试从当前目录或 classpath 对应目录读取配置文件，配置文件不存在时使用代码中的默认值
-
-```java
-    public static void main(String[] args) {
-        new JavaCG2Entry(new JavaCG2ConfigureWrapper(false)).run();
-    }
-```
-
-将 java-callgraph2 作为库集成时，推荐通过 Builder 方式指定配置参数（参考 7.4.3），可参考经过封装的类 test.entry.TestJavaCG2Entry
-
-#### 7.4.1.3. 通过 JVM 参数指定配置文件根目录路径
-
-支持通过 JVM 参数"input.root.path"指定配置文件根目录路径，参数结尾可不指定目录分隔符"/"或"\"
-
-例如配置文件根目录路径为"C:/test"，则可在 JVM 参数中通过以下方式指定
-
-```
--Dinput.root.path=C:/test
-```
-
-可参考 test.entry.TestJavaCG2EntryJVM
-
-```java
-    public static void main(String[] args) {
-        System.setProperty(JavaCG2Constants.JVM_PROP_KEY_INPUT_ROOT_PATH, ".");
-        new JavaCG2Entry(new JavaCG2ConfigureWrapper(false)).run();
-    }
-```
-
-#### 7.4.1.4. 通过代码指定配置文件根目录路径
-
-创建入口类实例时，使用有参数构造函数，JavaCG2ConfigureWrapper 实例创建时通过构造函数参数 inputRootPath 指定配置文件根目录路径
-
-```java
-    public static void main(String[] args) {
-        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper(false, "src/main/resources");
-        new JavaCG2Entry(javaCG2ConfigureWrapper).run();
-    }
-```
-
-由于配置文件已不再随项目提供，推荐通过 Builder 方式在代码中指定配置参数（参考 7.4.3），可参考 test.entry.TestJavaCG2EntryConfigPath
-
-### 7.4.2. 通过代码指定配置参数
+### 7.4.1. 通过代码指定配置参数
 
 在代码中使用 com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper 类可以指定配置参数
 
-在创建入口类实例时，使用有参数构造函数
-
-#### 7.4.2.1. 配置参数包装类用于指定配置参数的方法
+#### 7.4.1.1. 配置参数包装类用于指定配置参数的方法
 
 以下为配置参数包装类 JavaCG2ConfigureWrapper 用于指定配置参数的方法
 
@@ -1491,7 +1404,7 @@ mvn package -Pgen_run_jar -DskipTests
 |setOtherConfigSet|设置不区分顺序的参数|
 |setElConfigText|设置 EL 表达式|
 
-#### 7.4.2.2. 示例代码
+#### 7.4.1.2. 示例代码
 
 参考示例方法 test.parse.TestParse:testParseJavaCG2TestLib，会对示例 jar 文件进行解析
 
@@ -1510,16 +1423,16 @@ mvn package -Pgen_run_jar -DskipTests
 mvn package -DskipTests -Ptest_gen_jar
 ```
 
-### 7.4.3. 通过 Builder 方式指定配置参数
+### 7.4.2. 通过 Builder 方式指定配置参数
 
-在代码中使用 Builder 类可以以链式方式指定配置参数，不需要依赖磁盘上的配置文件，适合将 java-callgraph2 作为库集成到其他项目中使用的场景
+在代码中使用 Builder 类可以以链式方式指定配置参数，适合将 java-callgraph2 作为库集成到其他项目中使用的场景
 
 涉及的 Builder 类如下
 
-|类名称|对应的配置文件|作用|
+|类名称|对应配置参数|作用|
 |---|---|---|
-|com.adrninistrator.javacg2.builder.JavaCG2ConfigBuilder|_javacg2_config/config.properties|设置主要配置参数，未设置的参数使用默认值|
-|com.adrninistrator.javacg2.builder.JavaCG2JarDirBuilder|_javacg2_config/jar_dir.properties|指定需要解析的 jar、war、jmod 文件路径，或保存 class、jar、war、jmod 文件的目录路径|
+|com.adrninistrator.javacg2.builder.JavaCG2ConfigBuilder|主要配置参数|设置主要配置参数，未设置的参数使用默认值|
+|com.adrninistrator.javacg2.builder.JavaCG2JarDirBuilder|需要解析的文件与目录列表|指定需要解析的 jar、war、jmod 文件路径，或保存 class、jar、war、jmod 文件的目录路径|
 |com.adrninistrator.javacg2.builder.JavaCG2EntryBuilder|-|生成入口类 JavaCG2Entry 实例|
 
 参考示例方法 test.builder.TestEntryBuilder:testEntryBuilder
@@ -1542,26 +1455,26 @@ mvn package -DskipTests -Ptest_gen_jar
 
 - JavaCG2EntryBuilder 的 setConfig 方法可不调用，主要配置参数使用默认值
 - 需要通过 JavaCG2EntryBuilder 的 addJarOrDir 或 setJarDir 方法指定需要解析的文件、目录，指定的路径会在 build 方法中检查是否存在
-- 未通过 Builder 设置的其他类型配置参数（如 fr_eq_conversion_method.properties）使用 jar 包中内置配置文件的默认内容
+- 未通过 Builder 设置的配置参数使用枚举中定义的默认值
 - Builder 类的实例只能用于生成一个 JavaCG2Entry 对象，生成的 JavaCG2Entry 对象也只能执行一次 run 方法，假如需要再次执行，需要创建新的实例
 
-### 7.4.4. 通过 Builder 方式指定等值转换方法与合并文件开关
+### 7.4.3. 通过 Builder 方式指定等值转换方法与合并文件开关
 
-在 7.4.3 的基础上，还可以通过以下 Builder 类指定 fr_eq_conversion_method.properties 与 \_javacg2\_merge\_file\_switch/ 目录下表达式配置文件对应的参数，通过 JavaCG2EntryBuilder 的 setFrEqConversionMethod 与 setMergeFileSwitch 方法接线
+在 7.4.2 的基础上，还可以通过以下 Builder 类指定等值转换方法与合并 jar、war 文件、目录相关开关对应的参数，通过 JavaCG2EntryBuilder 的 setFrEqConversionMethod 与 setMergeFileSwitch 方法接线
 
 涉及的 Builder 类如下
 
-|类名称|对应的配置文件|作用|
+|类名称|对应配置参数|作用|
 |---|---|---|
-|com.adrninistrator.javacg2.builder.JavaCG2FrEqConversionMethodBuilder|\_javacg2\_config/fr\_eq\_conversion\_method.properties|指定方法返回值与被调用对象或参数认为是等值转换的方法|
-|com.adrninistrator.javacg2.builder.JavaCG2MergeFileSwitchBuilder|\_javacg2\_merge\_file\_switch/ 目录下的表达式配置文件|指定合并 jar、war 文件时跳过文件的忽略表达式|
+|com.adrninistrator.javacg2.builder.JavaCG2FrEqConversionMethodBuilder|等值转换方法|指定方法返回值与被调用对象或参数认为是等值转换的方法|
+|com.adrninistrator.javacg2.builder.JavaCG2MergeFileSwitchBuilder|合并 jar、war 文件时跳过文件的忽略表达式|指定合并 jar、war 文件时跳过文件的忽略表达式|
 
 JavaCG2FrEqConversionMethodBuilder 用于指定配置参数的方法如下
 
 |方法名称|方法作用|
 |---|---|
-|addFrEqConversionMethod|添加等值转换方法，追加语义，保留 jar 包中内置配置文件的默认条目|
-|setFrEqConversionMethod|设置等值转换方法，整体覆盖语义，不保留 jar 包中内置配置文件的默认条目|
+|addFrEqConversionMethod|添加等值转换方法，追加语义，保留枚举中定义的默认条目|
+|setFrEqConversionMethod|设置等值转换方法，整体覆盖语义，不保留枚举中定义的默认条目|
 
 JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下
 
@@ -1599,21 +1512,21 @@ JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下
 
 说明：
 
-- JavaCG2EntryBuilder 的 setFrEqConversionMethod 与 setMergeFileSwitch 方法均可不调用，对应参数使用 jar 包中内置配置文件的默认内容
-- JavaCG2FrEqConversionMethodBuilder 的 add 方法与 set 方法的效果互斥，以后调用的方法为准；add 方法为追加语义，保留内置默认条目，set 方法为整体覆盖语义，不保留内置默认条目
+- JavaCG2EntryBuilder 的 setFrEqConversionMethod 与 setMergeFileSwitch 方法均可不调用，对应参数使用枚举中定义的默认值
+- JavaCG2FrEqConversionMethodBuilder 的 add 方法与 set 方法的效果互斥，以后调用的方法为准；add 方法为追加语义，保留枚举默认条目，set 方法为整体覆盖语义，不保留枚举默认条目
 - JavaCG2FrEqConversionMethodBuilder 支持以“完整类名、方法名、序号”的方式指定条目，也支持以完整格式“完整类名:方法名=序号”的字符串方式指定，方法名允许为空（例如 java.math.BigDecimal:=0）
 - JavaCG2MergeFileSwitchBuilder 的语义化方法内部会生成合法的 Aviator 表达式文本（字符串参数自动以单引号包裹）；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准
 - JavaCG2MergeFileSwitchBuilder 的 ignoreOtherInDirByFileExt 与 ignoreOtherInJarWarByFileExt 方法指定的文件后缀需要以“.”开头
 
-### 7.4.5. 通过 Builder 方式指定解析类、方法、方法调用的忽略表达式
+### 7.4.4. 通过 Builder 方式指定解析类、方法、方法调用的忽略表达式
 
-在 7.4.3 的基础上，还可以通过以下 Builder 类指定 \_javacg2\_parse\_class\_method\_switch/ 与 \_javacg2\_parse\_method\_call\_switch/ 目录下表达式配置文件对应的参数，通过 JavaCG2EntryBuilder 的 setParseSwitch 方法接线
+在 7.4.2 的基础上，还可以通过以下 Builder 类指定解析类、方法与方法调用相关开关对应的参数，通过 JavaCG2EntryBuilder 的 setParseSwitch 方法接线
 
 涉及的 Builder 类如下
 
-|类名称|对应的配置文件|作用|
+|类名称|对应配置参数|作用|
 |---|---|---|
-|com.adrninistrator.javacg2.builder.JavaCG2ParseSwitchBuilder|\_javacg2\_parse\_class\_method\_switch/ 与 \_javacg2\_parse\_method\_call\_switch/ 目录下的表达式配置文件|指定解析类、方法、方法调用时跳过数据的忽略表达式|
+|com.adrninistrator.javacg2.builder.JavaCG2ParseSwitchBuilder|解析类、方法与方法调用时跳过数据的忽略表达式|指定解析类、方法、方法调用时跳过数据的忽略表达式|
 
 JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下
 
@@ -1664,21 +1577,21 @@ JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下
 
 说明：
 
-- JavaCG2EntryBuilder 的 setParseSwitch 方法可不调用，对应参数使用 jar 包中内置配置文件的默认内容
-- 未通过 Builder 设置的表达式配置使用 jar 包中内置配置文件的默认内容，与通过配置文件指定参数时的行为一致；其中 \_javacg2\_parse\_class\_method\_switch/parse\_ignore\_method.av 的内置默认表达式会忽略 hashCode 与 equals(java.lang.Object) 方法，其余表达式配置文件的内置默认内容为空白，即不生效
+- JavaCG2EntryBuilder 的 setParseSwitch 方法可不调用，对应参数使用枚举中定义的默认值
+- 未通过 Builder 设置的表达式配置使用枚举中定义的默认值；其中 parse_ignore_method.av 的枚举默认表达式会忽略 hashCode 与 equals(java.lang.Object) 方法，其余表达式默认为空白，即不生效
 - JavaCG2ParseSwitchBuilder 的语义化方法内部会生成合法的 Aviator 表达式文本（字符串参数自动以单引号包裹，例如 ignoreClassByClassName("a.b.Class1") 生成 string.equalsAny(class\_name,'a.b.Class1')）；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准
 - 语义化方法未覆盖的用法（如 string.containsIC 等函数、方法参数数量等）可通过 setIgnoreClassExpression、setIgnoreMethodExpression、setIgnoreMethodCallExpression、setIgnoreTypeValueCallerExpression 方法使用原始表达式文本指定
 - 表达式允许使用的变量及示例可参考 jar 包中 \_el\_example/ 目录下的说明文档
 
-### 7.4.6. 通过 Builder 方式指定处理 XML 文件中 Spring Bean 的忽略表达式
+### 7.4.5. 通过 Builder 方式指定处理 XML 文件中 Spring Bean 的忽略表达式
 
-在 7.4.3 的基础上，还可以通过以下 Builder 类指定 \_javacg2\_handle\_xml\_switch/ 目录下表达式配置文件对应的参数，通过 JavaCG2EntryBuilder 的 setXmlSwitch 方法接线
+在 7.4.2 的基础上，还可以通过以下 Builder 类指定处理 XML 文件中定义的 Spring Bean 的忽略表达式对应的参数，通过 JavaCG2EntryBuilder 的 setXmlSwitch 方法接线
 
 涉及的 Builder 类如下
 
-|类名称|对应的配置文件|作用|
+|类名称|对应配置参数|作用|
 |---|---|---|
-|com.adrninistrator.javacg2.builder.JavaCG2XmlSwitchBuilder|\_javacg2\_handle\_xml\_switch/handle\_ignore\_spring\_bean\_in\_xml.av|指定处理 XML 文件中定义的 Spring Bean 时跳过 Bean 的忽略表达式|
+|com.adrninistrator.javacg2.builder.JavaCG2XmlSwitchBuilder|处理 XML 文件中定义的 Spring Bean 时跳过 Bean 的忽略表达式|指定处理 XML 文件中定义的 Spring Bean 时跳过 Bean 的忽略表达式|
 
 JavaCG2XmlSwitchBuilder 用于指定配置参数的方法如下
 
@@ -1706,7 +1619,7 @@ JavaCG2XmlSwitchBuilder 用于指定配置参数的方法如下
 
 说明：
 
-- JavaCG2EntryBuilder 的 setXmlSwitch 方法可不调用，对应参数使用 jar 包中内置配置文件的默认内容（内置默认为空白，即不生效）
+- JavaCG2EntryBuilder 的 setXmlSwitch 方法可不调用，对应参数使用枚举中定义的默认值（默认为空白，即不生效）
 - 该开关仅当待分析工程通过 XML 文件定义 Spring Bean 时相关，用于在处理 XML 文件中定义的 Spring Bean 时按表达式跳过
 - JavaCG2XmlSwitchBuilder 的语义化方法内部会生成合法的 Aviator 表达式文本（字符串参数自动以单引号包裹，例如 ignoreSpringBeanByBeanName("testService1") 生成 string.equalsAny(bean\_name,'testService1')）；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准
 - 语义化方法未覆盖的用法（如 string.containsIC 等函数）可通过 setIgnoreSpringBeanInXmlExpression 方法使用原始表达式文本指定

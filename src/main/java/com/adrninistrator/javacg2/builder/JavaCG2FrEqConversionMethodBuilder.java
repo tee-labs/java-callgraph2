@@ -14,10 +14,10 @@ import java.util.Set;
 /**
  * @author adrninistrator
  * @date 2026/10/28
- * @description: fr_eq_conversion_method.properties对应的Builder，通过代码以链式方式指定等值转换方法，不依赖配置文件
+ * @description: 等值转换方法对应的Builder，通过代码以链式方式指定等值转换方法
  * 每个条目的格式为 {完整类名}:{方法名}={被调用对象或方法参数序号}，其中方法名允许为空（例如 java.math.BigDecimal:=0）
- * addFrEqConversionMethod方法为追加语义，保留jar包中内置配置文件的默认条目
- * setFrEqConversionMethod方法为整体覆盖语义，不保留jar包中内置配置文件的默认条目
+ * addFrEqConversionMethod方法为追加语义，保留枚举中定义的默认条目
+ * setFrEqConversionMethod方法为整体覆盖语义，不保留枚举中定义的默认条目
  * 当前类的实例只能通过applyTo方法应用到一个JavaCG2ConfigureWrapper对象，假如需要应用多个，请创建当前类的多个实例
  */
 @Slf4j
@@ -37,7 +37,7 @@ public class JavaCG2FrEqConversionMethodBuilder {
     }
 
     /**
-     * 添加等值转换方法，追加语义，保留jar包中内置配置文件的默认条目，与setFrEqConversionMethod方法的效果互斥，以后调用的方法为准
+     * 添加等值转换方法，追加语义，保留枚举中定义的默认条目，与setFrEqConversionMethod方法的效果互斥，以后调用的方法为准
      *
      * @param className  完整类名，不允许为空
      * @param methodName 方法名，允许为空
@@ -55,7 +55,7 @@ public class JavaCG2FrEqConversionMethodBuilder {
     }
 
     /**
-     * 添加完整格式的等值转换方法条目，追加语义，保留jar包中内置配置文件的默认条目
+     * 添加完整格式的等值转换方法条目，追加语义，保留枚举中定义的默认条目
      *
      * @param entries 一个或多个完整格式的条目：{完整类名}:{方法名}={被调用对象或方法参数序号}，方法名允许为空
      * @return
@@ -72,7 +72,7 @@ public class JavaCG2FrEqConversionMethodBuilder {
     }
 
     /**
-     * 添加完整格式的等值转换方法条目集合，追加语义，保留jar包中内置配置文件的默认条目
+     * 添加完整格式的等值转换方法条目集合，追加语义，保留枚举中定义的默认条目
      *
      * @param entryCollection 完整格式的条目集合：{完整类名}:{方法名}={被调用对象或方法参数序号}，方法名允许为空
      * @return
@@ -85,7 +85,7 @@ public class JavaCG2FrEqConversionMethodBuilder {
     }
 
     /**
-     * 设置等值转换方法，整体覆盖语义，不保留jar包中内置配置文件的默认条目，与addFrEqConversionMethod方法的效果互斥，以后调用的方法为准
+     * 设置等值转换方法，整体覆盖语义，不保留枚举中定义的默认条目，与addFrEqConversionMethod方法的效果互斥，以后调用的方法为准
      *
      * @param className  完整类名，不允许为空
      * @param methodName 方法名，允许为空
@@ -102,7 +102,7 @@ public class JavaCG2FrEqConversionMethodBuilder {
     }
 
     /**
-     * 设置完整格式的等值转换方法条目，整体覆盖语义，不保留jar包中内置配置文件的默认条目
+     * 设置完整格式的等值转换方法条目，整体覆盖语义，不保留枚举中定义的默认条目
      *
      * @param entries 一个或多个完整格式的条目：{完整类名}:{方法名}={被调用对象或方法参数序号}，方法名允许为空
      * @return
@@ -122,7 +122,7 @@ public class JavaCG2FrEqConversionMethodBuilder {
     }
 
     /**
-     * 设置完整格式的等值转换方法条目集合，整体覆盖语义，不保留jar包中内置配置文件的默认条目
+     * 设置完整格式的等值转换方法条目集合，整体覆盖语义，不保留枚举中定义的默认条目
      *
      * @param entryCollection 完整格式的条目集合：{完整类名}:{方法名}={被调用对象或方法参数序号}，方法名允许为空
      * @return
@@ -136,7 +136,7 @@ public class JavaCG2FrEqConversionMethodBuilder {
 
     /**
      * 将当前收集的等值转换方法条目应用到配置参数包装对象
-     * 追加语义时先读取jar包中内置配置文件的默认条目，再合并当前收集的条目
+     * 追加语义时先读取枚举中定义的默认条目，再合并当前收集的条目
      *
      * @param javaCG2ConfigureWrapper
      */
@@ -150,7 +150,7 @@ public class JavaCG2FrEqConversionMethodBuilder {
             javaCG2ConfigureWrapper.setOtherConfigSet(JavaCG2OtherConfigFileUseSetEnum.OCFUSE_FR_EQ_CONVERSION_METHOD, frEqConversionMethodSet);
             return;
         }
-        // 追加语义，先读取jar包中内置配置文件的默认条目并缓存，再合并当前收集的条目
+        // 追加语义，先读取枚举中定义的默认条目并缓存，再合并当前收集的条目
         Set<String> existedSet = javaCG2ConfigureWrapper.getOtherConfigSet(JavaCG2OtherConfigFileUseSetEnum.OCFUSE_FR_EQ_CONVERSION_METHOD, false);
         log.info("以追加方式设置等值转换方法，已有条目数量 {} 新增条目数量 {}", existedSet.size(), frEqConversionMethodSet.size());
         javaCG2ConfigureWrapper.addOtherConfigSet(JavaCG2OtherConfigFileUseSetEnum.OCFUSE_FR_EQ_CONVERSION_METHOD, frEqConversionMethodSet);

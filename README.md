@@ -928,7 +928,9 @@ boolean matches1 = map.values().stream().filter(Objects::nonNull).mapToDouble(va
 
 Java 代码中通过注解定义的 Spring Bean 不需要使用 java-all-call-graph 项目解析，支持解析 Spring Bean 的名称、Spring Bean 的类名、Spring Bean 定义时对应的注解类名、Spring Bean 定义时所在的类名
 
-Spring XML 文件中定义的 Bean 需要使用 java-all-call-graph 项目解析，支持解析 Spring Bean 的名称、Spring Bean 的类名、在 XML 中定义时对应的 profile、在 XML 中定义时对应的文件路径
+Spring XML 文件中定义的 Bean 已由当前项目内置解析（不需要使用 java-all-call-graph 项目解析），支持解析 Spring Bean 的名称、Spring Bean 的类名、在 XML 中定义时对应的 profile、在 XML 中定义时对应的文件路径
+
+内置解析默认开启，可通过配置参数 use.built.in.spring.xml.bean.parser 关闭（参考 7.2.8）；也可通过 com.adrninistrator.javacg2.extensions.codeparser.SpringXmlBeanParserInterface 接口提供自定义实现覆盖内置实现（通过 ExtensionsManager 的 setSpringXmlBeanParser 方法设置，自定义实现优先）
 
 ### 3.18.3. Spring Controller
 
@@ -1148,6 +1150,8 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 在方法上使用@Bean 注解定义的 Bean
 ```
 
+以上“在 Spring XML 文件中定义的 Bean”由当前项目内置的解析类解析，在替换注入字段类型时会应用与输出 spring_bean 文件一致的忽略表达式（表达式配置 _javacg2_handle_xml_switch/handle_ignore_spring_bean_in_xml.av，被忽略的 Bean 不会参与类型替换），内置解析的开关与扩展方式参考 3.18.2 与 7.2.8
+
 # 5. 总体步骤
 
 当前项目在对 Java 代码进行静态分析时，总体的步骤如下
@@ -1169,7 +1173,7 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 |jar|支持解析 jar 文件中的 class 等文件，及 jar 文件中的 jar 文件（Spring Boot 编译生成的 jar）中的文件|
 |war|支持解析 war 文件中的 class 等文件，及 war 文件中的 jar 文件中的文件|
 |jmod|JDK9 及以上的 JDK 标准库文件格式|
-|xml|支持解析 Spring、MyBatis 相关的 XML 数据（需要通过 java-all-call-graph 实现）|
+|xml|支持解析 Spring、MyBatis 相关的 XML 数据（Spring XML 文件中定义的 Bean 已内置解析；MyBatis 等其他内容仍需要通过 java-all-call-graph 实现）|
 |properties|解析 properties 文件内容（需要通过 java-all-call-graph 实现）|
 
 ## 6.2. 直接使用原始 jar 文件
@@ -1309,6 +1313,35 @@ java-callgraph2 需要使用的重要配置参数是需要解析的文件与目�
 ### 7.2.7. 表达式字符串比较说明文档
 
 参考 [表达式字符串比较说明文档](src/main/resources/_el_example/string_compare.md)
+
+### 7.2.8. Spring XML Bean 内置解析开关
+
+Spring XML 文件中定义的 Bean 由当前项目内置的解析类（com.adrninistrator.javacg2.spring.JavaCG2SpringXmlBeanParser）解析，默认开启
+
+通过配置参数 use.built.in.spring.xml.bean.parser 可控制是否使用内置解析类：
+
+- 参数默认值为 true，使用内置解析类
+- 设置为 false 时不使用内置解析类，XML 文件中定义的 Bean 不会被解析（假如需要解析，需要自行提供实现）
+
+设置方式示例：
+
+```java
+        // 通过 JavaCG2ConfigBuilder 设置
+        JavaCG2ConfigBuilder.builder()
+                .setUseBuiltInSpringXmlBeanParser(false)
+                .build();
+
+        // 或通过 JavaCG2ConfigureWrapper 设置
+        javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_USE_BUILT_IN_SPRING_XML_BEAN_PARSER, Boolean.FALSE.toString());
+```
+
+通过 ExtensionsManager 的 setSpringXmlBeanParser 方法指定 com.adrninistrator.javacg2.extensions.codeparser.SpringXmlBeanParserInterface 接口的自定义实现时，自定义实现优先于内置实现（此时无需关注当前参数）
+
+```java
+        JavaCG2Entry javaCG2Entry = new JavaCG2Entry(javaCG2ConfigureWrapper);
+        javaCG2Entry.getExtensionsManager().setSpringXmlBeanParser(new YourSpringXmlBeanParser());
+        javaCG2Entry.run();
+```
 
 ## 7.3. 运行方式
 

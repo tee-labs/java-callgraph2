@@ -234,7 +234,25 @@ raw_actual: 记录两条方法调用关系，被调用类型分别使用：原�
 |参数默认值|false|
 |参数枚举名|CKE_PARSE_ONLY_CLASS_MODE|
 
-### 2.1.14. jmod.program.path
+### 2.1.14. use.built.in.spring.xml.bean.parser
+
+- 参数说明
+
+```
+是否使用内置的Spring XML文件中定义的Bean解析类
+通过ExtensionsManager的setSpringXmlBeanParser方法指定自定义实现时，自定义实现优先于内置实现
+配置方式：仅支持通过代码指定（JavaCG2ConfigureWrapper的setMainConfig方法，或JavaCG2ConfigBuilder的setUseBuiltInSpringXmlBeanParser方法）
+```
+
+|描述|内容|
+|---|---|
+|参数类型|Boolean|
+|参数值是否必填|否|
+|当前使用参数值|true|
+|参数默认值|true|
+|参数枚举名|CKE_USE_BUILT_IN_SPRING_XML_BEAN_PARSER|
+
+### 2.1.15. jmod.program.path
 
 - 参数说明
 
@@ -252,7 +270,7 @@ raw_actual: 记录两条方法调用关系，被调用类型分别使用：原�
 |参数默认值||
 |参数枚举名|CKE_JMOD_PROGRAM_PATH|
 
-### 2.1.15. jdk.runtime.major.version
+### 2.1.16. jdk.runtime.major.version
 
 - 参数说明
 
@@ -270,7 +288,7 @@ raw_actual: 记录两条方法调用关系，被调用类型分别使用：原�
 |参数默认值|8|
 |参数枚举名|CKE_JDK_RUNTIME_MAJOR_VERSION|
 
-### 2.1.16. el.ignore.data.max.line.num
+### 2.1.17. el.ignore.data.max.line.num
 
 - 参数说明
 

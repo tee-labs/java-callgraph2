@@ -62,4 +62,8 @@ public class JavaCG2ConfInfo {
     // 是否仅解析类信息
     @Setter
     private boolean parseOnlyClassMode;
+
+    // 是否使用内置的Spring XML文件中定义的Bean解析类
+    @Setter
+    private boolean useBuiltInSpringXmlBeanParser;
 }

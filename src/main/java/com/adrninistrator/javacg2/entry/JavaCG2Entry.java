@@ -527,6 +527,8 @@ public class JavaCG2Entry {
                 interfaceExtendsInfoMap,
                 springDefineBeanHandler,
                 extensionsManager.getSpringXmlBeanParser());
+        // 设置表达式管理类，使XML中定义的Spring Bean在替换注入字段类型时与输出spring_bean文件使用一致的忽略表达式
+        useSpringBeanByAnnotationHandler.setElManager(javaCG2ElManager);
         jarEntryPreHandle2Parser = new JarEntryPreHandle2Parser(javaCG2InputAndOutput, onlyOneJar, useSpringBeanByAnnotationHandler);
         jarEntryPreHandle2Parser.setClassExtendsImplMethodWithArgTypesMap(classExtendsImplMethodWithArgTypesMap);
         jarEntryPreHandle2Parser.setInterfaceMethodWithArgTypesMap(interfaceMethodWithArgTypesMap);

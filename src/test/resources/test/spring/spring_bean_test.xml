@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  用于测试解析Spring XML文件中定义的bean
+  该文件会随测试类打包进target/test.jar（路径为test/spring/spring_bean_test.xml），在解析test.jar时被处理
+-->
+<beans>
+
+    <!-- 普通bean，无profile -->
+    <bean id="testXmlService" class="test.spring.xmlbean.TestXmlServiceImpl"/>
+
+    <!-- Spring允许bean不指定id属性，该bean应被跳过，不出现在spring_bean文件中 -->
+    <bean class="test.spring.xmlbean.TestXmlBeanNoId"/>
+
+    <!-- 嵌套beans元素，带profile -->
+    <beans profile="dev">
+        <bean id="xmlDevBean" class="java.lang.Object"/>
+    </beans>
+
+</beans>

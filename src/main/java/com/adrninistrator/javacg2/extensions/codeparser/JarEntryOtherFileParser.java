@@ -10,7 +10,8 @@ import java.io.InputStream;
 public interface JarEntryOtherFileParser extends CodeParserInterface {
 
     /**
-     * 返回需要处理jar文件中的其他文件的后缀数组（除.class文件外），忽略大小写，不需要以"."开头，例如"xml"
+     * 返回需要处理jar文件中的其他文件的后缀数组（除.class文件外），忽略大小写，需要以"."开头，例如".xml"
+     * （ ExtensionsManager 在注册路由时直接使用当前方法返回值作为文件后缀Map的key，而jar文件中的文件后缀在路由时使用"."拼接后缀生成，因此当前方法返回值需要以"."开头）
      * 若需要使以下 parseJarEntryOtherFile() 方法被调用，则当前方法需要返回对应的文件后缀数组
      */
     String[] chooseJarEntryOtherFileExt();

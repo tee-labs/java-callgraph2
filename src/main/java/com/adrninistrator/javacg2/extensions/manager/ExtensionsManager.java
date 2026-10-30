@@ -1,5 +1,6 @@
 package com.adrninistrator.javacg2.extensions.manager;
 
+import com.adrninistrator.javacg2.conf.JavaCG2ConfInfo;
 import com.adrninistrator.javacg2.dto.inputoutput.JavaCG2InputAndOutput;
 import com.adrninistrator.javacg2.dto.output.JavaCG2OutputInfo;
 import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
@@ -11,6 +12,7 @@ import com.adrninistrator.javacg2.extensions.codeparser.JarEntryOtherFileParser;
 import com.adrninistrator.javacg2.extensions.codeparser.MethodAnnotationParser;
 import com.adrninistrator.javacg2.extensions.codeparser.SpringXmlBeanParserInterface;
 import com.adrninistrator.javacg2.extensions.methodcall.JavaCG2MethodCallExtensionInterface;
+import com.adrninistrator.javacg2.spring.JavaCG2SpringXmlBeanParser;
 import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -86,9 +88,16 @@ public class ExtensionsManager {
             throw new JavaCG2RuntimeException("不允许重复初始化");
         }
 
-        // 固定添加Spring XML Bean信息解析类
+        // 固定添加Spring XML Bean信息解析类；未指定自定义实现且未关闭内置开关时，使用内置实现
         if (springXmlBeanParser != null) {
             allCodeParserList.add(springXmlBeanParser);
+        } else if (checkUseBuiltInSpringXmlBeanParser()) {
+            springXmlBeanParser = new JavaCG2SpringXmlBeanParser();
+            log.info("未指定自定义的 {} 实现类，使用内置实现 {}", SpringXmlBeanParserInterface.class.getSimpleName(),
+                    springXmlBeanParser.getClass().getName());
+            allCodeParserList.add(springXmlBeanParser);
+        } else {
+            log.info("未使用内置的 {} 实现类", SpringXmlBeanParserInterface.class.getSimpleName());
         }
         if (outputAdapter == null) {
             log.error("未设置输出适配器 {}", JavaCG2OutputAdapter.class.getName());
@@ -161,6 +170,20 @@ public class ExtensionsManager {
         for (AbstractSaveData2FileParser saveData2FileParser : saveData2FileParserList) {
             saveData2FileParser.close();
         }
+    }
+
+    // 检查是否使用内置的Spring XML Bean解析类，配置信息不可用时视为使用默认开关值true
+    private boolean checkUseBuiltInSpringXmlBeanParser() {
+        if (javaCG2InputAndOutput == null) {
+            log.warn("未设置 {}，使用内置的Spring XML Bean解析类默认开关值true", JavaCG2InputAndOutput.class.getSimpleName());
+            return true;
+        }
+        JavaCG2ConfInfo javaCG2ConfInfo = javaCG2InputAndOutput.getJavaCG2ConfInfo();
+        if (javaCG2ConfInfo == null) {
+            log.warn("未设置 {}，使用内置的Spring XML Bean解析类默认开关值true", JavaCG2ConfInfo.class.getSimpleName());
+            return true;
+        }
+        return javaCG2ConfInfo.isUseBuiltInSpringXmlBeanParser();
     }
 
     private void checkInited() {

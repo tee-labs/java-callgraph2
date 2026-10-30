@@ -3,12 +3,14 @@ package com.adrninistrator.javacg2.spring;
 import com.adrninistrator.javacg2.common.SpringAnnotationConstants;
 import com.adrninistrator.javacg2.dto.classes.ClassExtendsInfo;
 import com.adrninistrator.javacg2.dto.spring.SpringBeanInJava;
+import com.adrninistrator.javacg2.el.manager.JavaCG2ElManager;
 import com.adrninistrator.javacg2.extensions.codeparser.SpringXmlBeanParserInterface;
 import com.adrninistrator.javacg2.util.JavaCG2AnnotationUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
 import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.Field;
 import org.apache.bcel.classfile.JavaClass;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,6 +37,14 @@ public class UseSpringBeanByAnnotationHandler {
     private final SpringDefineBeanHandler springDefineBeanHandler;
 
     private final SpringXmlBeanParserInterface springXmlBeanParser;
+
+    /*
+        表达式管理类，用于在通过XML中定义的Spring Bean替换注入字段的类型时，判断是否需要忽略对应的Spring Bean
+        可选依赖，未设置时不做忽略检查
+        当前类只持有引用，不负责关闭
+     */
+    @Setter
+    private JavaCG2ElManager elManager;
 
     /*
         保存各个类中使用的Spring Bean字段信息
@@ -276,6 +286,11 @@ public class UseSpringBeanByAnnotationHandler {
             // 从Spring XML中获取bean类型
             String springBeanTypeInXml = springXmlBeanParser.getBeanClass(springBeanName);
             if (springBeanTypeInXml != null) {
+                if (elManager != null && elManager.checkIgnoreSpringBeanInXml(springBeanName, springBeanTypeInXml, "")) {
+                    // 通过表达式判断需要忽略XML中定义的Spring Bean，视为未获取到类型
+                    // 与输出spring_bean文件时应用的忽略表达式保持一致；此处拿不到profile，传入空串
+                    return Collections.emptyList();
+                }
                 return Collections.singletonList(springBeanTypeInXml);
             }
         }

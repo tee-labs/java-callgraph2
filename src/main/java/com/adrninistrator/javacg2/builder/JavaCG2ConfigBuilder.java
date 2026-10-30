@@ -167,6 +167,18 @@ public class JavaCG2ConfigBuilder {
     }
 
     /**
+     * 设置是否使用内置的Spring XML文件中定义的Bean解析类
+     * 通过ExtensionsManager的setSpringXmlBeanParser方法指定自定义实现时，自定义实现优先于内置实现
+     *
+     * @param value true: 使用内置实现 false: 不使用内置实现
+     * @return
+     */
+    public JavaCG2ConfigBuilder setUseBuiltInSpringXmlBeanParser(boolean value) {
+        javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_USE_BUILT_IN_SPRING_XML_BEAN_PARSER, String.valueOf(value));
+        return this;
+    }
+
+    /**
      * 设置用于解析.jmod文件的jmod程序完整路径
      * 假如指定的.jmod文件在JDK的jmods目录中，可找到bin目录的jmod程序，则当前参数可不设置
      *

@@ -7,7 +7,7 @@
 |3|Java代码中定义的Spring AOP Pointcut|
 |4|Java代码中定义的Spring的包扫描路径|
 |5|Lambda表达式方法信息|
-|6|Spring Bean信息|
+|6|Spring Bean信息（Java代码与XML文件中定义的Bean，其中XML文件中定义的Bean已由当前项目内置解析）|
 |7|dto的get方法及字段|
 |8|dto的set方法及字段|
 |9|jar文件信息|

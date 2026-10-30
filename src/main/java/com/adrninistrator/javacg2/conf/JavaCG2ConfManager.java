@@ -69,6 +69,9 @@ public class JavaCG2ConfManager {
         }
         javaCG2ConfInfo.setParseOnlyClassMode(parseOnlyClassMode);
 
+        boolean useBuiltInSpringXmlBeanParser = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_USE_BUILT_IN_SPRING_XML_BEAN_PARSER);
+        javaCG2ConfInfo.setUseBuiltInSpringXmlBeanParser(useBuiltInSpringXmlBeanParser);
+
         return javaCG2ConfInfo;
     }
 

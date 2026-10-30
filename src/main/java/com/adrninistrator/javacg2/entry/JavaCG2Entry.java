@@ -4,6 +4,7 @@ import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.common.enums.JavaCG2CallTypeEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2OutPutFileTypeEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2YesNoEnum;
+import com.adrninistrator.javacg2.compatibility.JavaCG2CompatibilityChecker;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfInfo;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfManager;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
@@ -172,6 +173,9 @@ public class JavaCG2Entry {
         // 打印生成的文件信息
         printOutputFileInfo(javaCG2OutputInfo);
 
+        // 记录java-callgraph2组件使用的配置参数是否成功
+        boolean configRecordSuccess = false;
+
         try (JavaCG2RecordSink classAnnotationSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_ANNOTATION);
              JavaCG2RecordSink javaCG2ConfigSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_JAVACG2_CONFIG);
              JavaCG2RecordSink classInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO);
@@ -333,7 +337,7 @@ public class JavaCG2Entry {
             }
 
             // 记录java-callgraph2组件使用的配置参数
-            return recordJavaCG2Config(javaCG2ConfigSink);
+            configRecordSuccess = recordJavaCG2Config(javaCG2ConfigSink);
         } catch (Exception e) {
             log.error("出现异常 ", e);
             return false;
@@ -341,6 +345,23 @@ public class JavaCG2Entry {
             // 关闭扩展类管理类
             extensionsManager.close();
         }
+
+        // 执行Jar兼容性检查，在所有结果文件关闭后执行（检查时读回本次生成的结果文件进行比对）
+        if (configRecordSuccess && !checkJarCompatibility(javaCG2ConfInfo, javaCG2OutputInfo)) {
+            return false;
+        }
+        return configRecordSuccess;
+    }
+
+    // 执行Jar兼容性检查，在所有结果文件关闭后执行（检查时读回本次生成的结果文件进行比对）
+    private boolean checkJarCompatibility(JavaCG2ConfInfo javaCG2ConfInfo, JavaCG2OutputInfo javaCG2OutputInfo) {
+        if (!javaCG2ConfInfo.isCheckJarCompatibilityEnable()) {
+            return true;
+        }
+
+        log.info("开始执行Jar兼容性检查");
+        JavaCG2CompatibilityChecker javaCG2CompatibilityChecker = new JavaCG2CompatibilityChecker(javaCG2OutputInfo, outputAdapter);
+        return javaCG2CompatibilityChecker.check();
     }
 
     // 处理输出文件路径

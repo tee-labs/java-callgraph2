@@ -88,6 +88,13 @@ public enum JavaCG2ConfigKeyEnum implements MainConfigInterface {
     CKE_EL_IGNORE_DATA_MAX_LINE_NUM("el.ignore.data.max.line.num",
             new String[]{"EL表达式忽略数据文件的最大行数，默认10万行"},
             Integer.class, false, "100000"),
+    CKE_CHECK_JAR_COMPATIBILITY_ENABLE("check.jar.compatibility.enable",
+            new String[]{"解析完成后是否执行Jar兼容性检查并生成检查报告结果文件",
+                    "对代码中被引用但找不到的类、方法调用中不存在或不可访问的被调用类/方法、被使用但不存在或不可访问的字段、重复同名类冲突等问题进行检查",
+                    "使用 " + CKE_PARSE_JAR_COMPATIBILITY_MODE.getKey() + " 参数时自动执行Jar兼容性检查，无需设置当前参数",
+                    "执行Jar兼容性检查时会在解析完成后读回本次生成的结果文件进行比对，会有一定的时间与内存开销"
+            },
+            Boolean.class, false, Boolean.FALSE.toString()),
     ;
 
     // 参数key

@@ -63,6 +63,10 @@ public class JavaCG2ConfInfo {
     @Setter
     private boolean parseOnlyClassMode;
 
+    // 是否执行Jar兼容性检查并生成检查报告结果文件（使用Jar兼容性检查模式时自动执行）
+    @Setter
+    private boolean checkJarCompatibilityEnable;
+
     // 是否使用内置的Spring XML文件中定义的Bean解析类
     @Setter
     private boolean useBuiltInSpringXmlBeanParser;

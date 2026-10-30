@@ -225,6 +225,18 @@ public class JavaCG2ConfigBuilder {
     }
 
     /**
+     * 设置解析完成后是否执行Jar兼容性检查并生成检查报告结果文件
+     * 使用parse.jar.compatibility.mode参数时自动执行Jar兼容性检查，无需设置当前参数
+     *
+     * @param value true: 执行Jar兼容性检查 false: 不执行
+     * @return
+     */
+    public JavaCG2ConfigBuilder setCheckJarCompatibilityEnable(boolean value) {
+        javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_CHECK_JAR_COMPATIBILITY_ENABLE, String.valueOf(value));
+        return this;
+    }
+
+    /**
      * 生成主要配置参数对应的JavaCG2ConfigureWrapper对象
      * 未通过当前类设置的主要配置参数使用默认值
      *

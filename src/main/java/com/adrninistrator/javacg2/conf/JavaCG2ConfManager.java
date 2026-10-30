@@ -69,6 +69,14 @@ public class JavaCG2ConfManager {
         }
         javaCG2ConfInfo.setParseOnlyClassMode(parseOnlyClassMode);
 
+        // 处理是否执行Jar兼容性检查，使用Jar兼容性检查模式时自动执行
+        boolean checkJarCompatibilityEnable = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_CHECK_JAR_COMPATIBILITY_ENABLE);
+        if (!checkJarCompatibilityEnable && parseJarCompatibilityMode) {
+            log.info("使用Jar兼容性检查模式，自动执行Jar兼容性检查");
+            checkJarCompatibilityEnable = true;
+        }
+        javaCG2ConfInfo.setCheckJarCompatibilityEnable(checkJarCompatibilityEnable);
+
         boolean useBuiltInSpringXmlBeanParser = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_USE_BUILT_IN_SPRING_XML_BEAN_PARSER);
         javaCG2ConfInfo.setUseBuiltInSpringXmlBeanParser(useBuiltInSpringXmlBeanParser);
 

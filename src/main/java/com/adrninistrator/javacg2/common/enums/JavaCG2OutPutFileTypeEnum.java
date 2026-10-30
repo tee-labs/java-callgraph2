@@ -69,6 +69,10 @@ public enum JavaCG2OutPutFileTypeEnum {
     OPFTE_SPRING_AOP_POINTCUT_XML("spring_aop_pointcut_xml", "Spring AOP pointcut信息，在XML中定义"),
     OPFTE_SPRING_AOP_ADVICE_XML("spring_aop_advice_xml", "Spring AOP advice信息，在XML中定义"),
     OPFTE_SPRING_SCAN_PACKAGE_XML("spring_scan_package_xml", "Spring的包扫描路径，在XML文件中定义"),
+    OPFTE_COMPATIBILITY_CLASS_REFERENCE_MISSING("compatibility_class_reference_missing", "Jar兼容性检查-被引用的类不存在"),
+    OPFTE_COMPATIBILITY_METHOD_CALL_MISSING("compatibility_method_call_missing", "Jar兼容性检查-方法调用中的被调用类/方法不存在或不可访问"),
+    OPFTE_COMPATIBILITY_FIELD_USAGE_MISSING("compatibility_field_usage_missing", "Jar兼容性检查-被使用的字段不存在或不可访问"),
+    OPFTE_COMPATIBILITY_DUP_CLASS_CONFLICT("compatibility_dup_class_conflict", "Jar兼容性检查-重复同名类冲突"),
     OPFTE_ILLEGAL("illegal", "非法值"),
     ;
 

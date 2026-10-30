@@ -1,0 +1,38 @@
+# 推送v*标签时自动发布到Maven Central（Central Portal）
+# 需要在仓库Settings-Secrets and variables-Actions中配置以下secrets：
+#   CENTRAL_USERNAME / CENTRAL_PASSWORD：Central Portal的User Token（Account页面Generate User Token生成）
+#   GPG_PRIVATE_KEY：ASCII armored格式的GPG私钥（gpg --armor --export-secret-keys <keyId>导出的全文）
+#   GPG_PASSPHRASE：GPG私钥口令
+name: Publish to Maven Central
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "8"
+          cache: maven
+          # 生成settings.xml中id为central的server（对应pom中publishingServerId），并将GPG私钥导入keyring
+          server-id: central
+          server-username: MAVEN_CENTRAL_USERNAME
+          server-password: MAVEN_CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Publish
+        run: mvn -B clean deploy -Prelease
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

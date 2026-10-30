@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.adrninistrator/java-callgraph2.svg)]()
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mccxj/java-callgraph2.svg)]()
 
 [![Apache License 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-green.svg)]()
 
@@ -6,7 +6,7 @@
 
 java-callgraph2 项目用于对 Java 代码（编译生成的 class、jar、war、jmod 等文件）进行静态分析，包括类、方法、字段、注解、泛型、方法调用、枚举等，支持生成的文件见 [生成文件说明](docs/file_desc.md)。将非结构化的 Java 代码解析为结构化数据，可基于这些数据实现对代码的自动化分析，也可做为基础数据提供给大模型进行分析
 
-当前项目原本 fork 自 [https://github.com/gousiosg/java-callgraph](https://github.com/gousiosg/java-callgraph)，用于生成 Java 方法调用关系
+当前项目原本 fork 自 [https://github.com/gousiosg/java-callgraph](https://github.com/gousiosg/java-callgraph)，用于生成 Java 方法调用关系；本仓库为 [Adrninistrator/java-callgraph2](https://github.com/Adrninistrator/java-callgraph2) 的 fork，在其基础上进行了大量改造，以 `io.github.mccxj:java-callgraph2` 坐标独立发布
 
 后来进行了优化和增强，差别已比较大，不容易合并回原始项目中，且仅提供通过静态分析获取 Java 方法调用关系的功能，因此创建了该项目
 
@@ -1383,7 +1383,7 @@ com.adrninistrator.javacg2.entry.JavaCG2Entry
 
 ```xml
 <dependency>
-    <groupId>com.github.adrninistrator</groupId>
+    <groupId>io.github.mccxj</groupId>
     <artifactId>java-callgraph2</artifactId>
     <version>{版本号}</version>
 </dependency>
@@ -1392,10 +1392,10 @@ com.adrninistrator.javacg2.entry.JavaCG2Entry
 - 使用 Gradle 管理依赖
 
 ```
-implementation("com.github.adrninistrator:java-callgraph2:{版本号}")
+implementation("io.github.mccxj:java-callgraph2:{版本号}")
 ```
 
-最新版本号可查看 [https://central.sonatype.com/artifact/com.github.adrninistrator/java-callgraph2/versions](https://central.sonatype.com/artifact/com.github.adrninistrator/java-callgraph2/versions)
+最新版本号可查看 [https://central.sonatype.com/artifact/io.github.mccxj/java-callgraph2/versions](https://central.sonatype.com/artifact/io.github.mccxj/java-callgraph2/versions)
 
 #### 7.3.5.2. 通过代码指定参数运行
 

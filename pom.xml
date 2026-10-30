@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.adrninistrator</groupId>
+    <groupId>io.github.mccxj</groupId>
     <artifactId>java-callgraph2</artifactId>
-    <version>4.1.0</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>java-callgraph2</name>
-    <description>Programs for producing static call graphs for Java programs</description>
-    <url>https://github.com/Adrninistrator/java-callgraph2</url>
+    <description>Static call graph generator for Java programs, forked from Adrninistrator/java-callgraph2</description>
+    <url>https://github.com/mccxj/java-callgraph2</url>
 
     <licenses>
         <license>
@@ -22,16 +22,16 @@
 
     <developers>
         <developer>
-            <id>Adrninistrator</id>
-            <name>zhengyiee</name>
-            <email>zhengyiee@qq.com</email>
+            <id>mccxj</id>
+            <name>mccxj</name>
+            <url>https://github.com/mccxj</url>
         </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:https://github.com/Adrninistrator/java-callgraph2.git</connection>
-        <developerConnection>scm:git:https://github.com/Adrninistrator/java-callgraph2.git</developerConnection>
-        <url>https://github.com/Adrninistrator/java-callgraph2</url>
+        <connection>scm:git:https://github.com/mccxj/java-callgraph2.git</connection>
+        <developerConnection>scm:git:https://github.com/mccxj/java-callgraph2.git</developerConnection>
+        <url>https://github.com/mccxj/java-callgraph2</url>
     </scm>
 
     <properties>
@@ -243,6 +243,8 @@
                         <!-- 关闭doclint检查，避免@date、@description等自定义标签导致构建失败 -->
                         <doclint>none</doclint>
                         <additionalJOption>-quiet</additionalJOption>
+                        <!-- javadoc解析常量字段初始化表达式时无法解析Lombok生成的方法（如枚举的getType()），不因此中断 -->
+                        <failOnError>false</failOnError>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -258,17 +260,6 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh-snapshots</id>
-            <url>https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <profiles>
         <!--
@@ -441,8 +432,8 @@
             </build>
         </profile>
 
-        <!-- 发布到Maven Central时使用：生成sources/javadoc包并签名，等价于原publish.gradle
-             执行发布前需要在~/.m2/settings.xml中配置id为ossrh、ossrh-snapshots的server的用户名密码
+        <!-- 发布到Maven Central时使用：生成sources/javadoc包并签名，发布到Central Portal，等价于原publish.gradle
+             执行发布前需要在~/.m2/settings.xml中配置id为central的server，用户名密码为Central Portal的User Token
              mvn clean deploy -Prelease
         -->
         <profile>
@@ -487,6 +478,19 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+
+                    <!-- 发布到Central Portal，替代distributionManagement；settings.xml中server的id需为central -->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.12.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <!-- 校验通过后自动发布，无需在Central Portal页面手动Release -->
+                            <autoPublish>true</autoPublish>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

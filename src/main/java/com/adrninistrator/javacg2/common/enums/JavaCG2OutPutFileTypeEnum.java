@@ -64,6 +64,11 @@ public enum JavaCG2OutPutFileTypeEnum {
     OPFTE_SPRING_AOP_POINTCUT_JAVA("spring_aop_pointcut_java", "Java代码中定义的Spring AOP Pointcut"),
     OPFTE_SPRING_AOP_ADVICE_JAVA("spring_aop_advice_java", "Java代码中定义的Spring AOP Advice"),
     OPFTE_SPRING_DI_FIELD("spring_di_field", "Spring依赖注入字段信息"),
+    OPFTE_SPRING_TASK_XML("spring_task_xml", "Spring定时任务信息，通过XML定义"),
+    OPFTE_SPRING_AOP_ASPECT_XML("spring_aop_aspect_xml", "Spring AOP aspect信息，在XML中定义"),
+    OPFTE_SPRING_AOP_POINTCUT_XML("spring_aop_pointcut_xml", "Spring AOP pointcut信息，在XML中定义"),
+    OPFTE_SPRING_AOP_ADVICE_XML("spring_aop_advice_xml", "Spring AOP advice信息，在XML中定义"),
+    OPFTE_SPRING_SCAN_PACKAGE_XML("spring_scan_package_xml", "Spring的包扫描路径，在XML文件中定义"),
     OPFTE_ILLEGAL("illegal", "非法值"),
     ;
 

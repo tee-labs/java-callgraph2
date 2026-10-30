@@ -573,14 +573,16 @@ public class JavaCG2Entry {
 
     // 打印生成的文件信息
     private void printOutputFileInfo(JavaCG2OutputInfo javaCG2OutputInfo) {
+        // 扩展机制注册的其他文件名集合，主文件中同名的文件不再打印，避免重复
+        Set<String> otherFileNameSet = javaCG2OutputInfo.getOtherFileNameSet();
         for (JavaCG2OutPutFileTypeEnum javaCG2OutPutFileTypeEnum : JavaCG2OutPutFileTypeEnum.values()) {
-            if (javaCG2OutPutFileTypeEnum == JavaCG2OutPutFileTypeEnum.OPFTE_ILLEGAL) {
+            if (javaCG2OutPutFileTypeEnum == JavaCG2OutPutFileTypeEnum.OPFTE_ILLEGAL ||
+                    otherFileNameSet.contains(javaCG2OutPutFileTypeEnum.getFileName())) {
                 continue;
             }
             log.info("写入文件: {}", javaCG2OutputInfo.getMainFilePath(javaCG2OutPutFileTypeEnum));
         }
 
-        Set<String> otherFileNameSet = javaCG2OutputInfo.getOtherFileNameSet();
         if (otherFileNameSet.isEmpty()) {
             log.info("不写入其他类型的文件");
             return;

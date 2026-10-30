@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  用于测试解析Spring XML文件中定义的定时任务（task）、AOP、组件扫描（component-scan）信息
+  该文件会随测试类打包进target/test.jar（路径为test/spring/spring_task_aop_scan_test.xml），在解析test.jar时被处理
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context">
+
+    <!-- 定时任务 -->
+    <task:scheduled-tasks>
+        <task:scheduled ref="testXmlTaskBean" method="doTask"/>
+    </task:scheduled-tasks>
+
+    <!-- AOP配置 -->
+    <aop:config>
+        <!-- aop:config元素下直接定义的pointcut -->
+        <aop:pointcut id="testXmlPointcutDirect" expression="execution(* test.spring.xmlbean.TestXmlServiceImpl.*(..))"/>
+
+        <!-- 指定order属性的aspect，包含pointcut与多种advice -->
+        <aop:aspect id="testXmlAspect" ref="testXmlAspectBean" order="2">
+            <aop:pointcut id="testXmlPointcutInAspect" expression="within(test.spring.xmlbean..*)"/>
+            <aop:before method="beforeAdvice" pointcut-ref="testXmlPointcutInAspect"/>
+            <aop:after-returning method="afterReturningAdvice" pointcut="execution(* test.spring..doSomething(..))"/>
+        </aop:aspect>
+
+        <!-- 未指定order属性的aspect，order应使用默认值Integer.MAX_VALUE -->
+        <aop:aspect id="testXmlAspectNoOrder" ref="testXmlAspectBean">
+            <aop:around method="aroundAdvice" pointcut-ref="testXmlPointcutDirect"/>
+        </aop:aspect>
+
+        <!-- pointcut表达式含换行符（通过字符引用&#10;定义），应进行base64编码 -->
+        <aop:aspect id="testXmlAspectWithNewline" ref="testXmlAspectBean" order="3">
+            <aop:after-throwing method="afterThrowingAdvice" pointcut="execution(* test.spring.xmlbean..*.*(..))&#10;"/>
+        </aop:aspect>
+    </aop:config>
+
+    <!-- 组件扫描，base-package属性值使用逗号、空格、分号多种分隔符 -->
+    <context:component-scan base-package="test.spring.xmlbean, test.spring.xmltask;test.spring.xmlaop"/>
+
+    <!-- 普通bean元素，由内置的Spring XML Bean解析类处理，不影响当前类的解析 -->
+    <bean id="testXmlTaskAopScanBean" class="java.lang.Object"/>
+
+</beans>

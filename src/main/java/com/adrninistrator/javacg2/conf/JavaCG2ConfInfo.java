@@ -66,4 +66,8 @@ public class JavaCG2ConfInfo {
     // 是否使用内置的Spring XML文件中定义的Bean解析类
     @Setter
     private boolean useBuiltInSpringXmlBeanParser;
+
+    // 是否使用内置的Spring XML文件中的定时任务、AOP、组件扫描信息解析类
+    @Setter
+    private boolean useBuiltInSpringXmlTaskAopScanParser;
 }

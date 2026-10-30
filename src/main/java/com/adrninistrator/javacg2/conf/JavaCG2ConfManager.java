@@ -72,6 +72,9 @@ public class JavaCG2ConfManager {
         boolean useBuiltInSpringXmlBeanParser = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_USE_BUILT_IN_SPRING_XML_BEAN_PARSER);
         javaCG2ConfInfo.setUseBuiltInSpringXmlBeanParser(useBuiltInSpringXmlBeanParser);
 
+        boolean useBuiltInSpringXmlTaskAopScanParser = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_USE_BUILT_IN_SPRING_XML_TASK_AOP_SCAN_PARSER);
+        javaCG2ConfInfo.setUseBuiltInSpringXmlTaskAopScanParser(useBuiltInSpringXmlTaskAopScanParser);
+
         return javaCG2ConfInfo;
     }
 

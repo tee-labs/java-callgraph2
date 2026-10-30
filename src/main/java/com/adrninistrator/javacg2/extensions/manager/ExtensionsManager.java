@@ -11,8 +11,10 @@ import com.adrninistrator.javacg2.extensions.codeparser.CodeParserInterface;
 import com.adrninistrator.javacg2.extensions.codeparser.JarEntryOtherFileParser;
 import com.adrninistrator.javacg2.extensions.codeparser.MethodAnnotationParser;
 import com.adrninistrator.javacg2.extensions.codeparser.SpringXmlBeanParserInterface;
+import com.adrninistrator.javacg2.extensions.codeparser.SpringXmlTaskAopScanParserInterface;
 import com.adrninistrator.javacg2.extensions.methodcall.JavaCG2MethodCallExtensionInterface;
 import com.adrninistrator.javacg2.spring.JavaCG2SpringXmlBeanParser;
+import com.adrninistrator.javacg2.spring.JavaCG2SpringXmlTaskAopScanParser;
 import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -80,6 +82,10 @@ public class ExtensionsManager {
     @Setter
     private SpringXmlBeanParserInterface springXmlBeanParser;
 
+    // Spring XML文件中的定时任务、AOP、组件扫描信息解析类
+    @Setter
+    private SpringXmlTaskAopScanParserInterface springXmlTaskAopScanParser;
+
     private boolean inited = false;
 
     // 初始化
@@ -98,6 +104,18 @@ public class ExtensionsManager {
             allCodeParserList.add(springXmlBeanParser);
         } else {
             log.info("未使用内置的 {} 实现类", SpringXmlBeanParserInterface.class.getSimpleName());
+        }
+
+        // 固定添加Spring XML文件中的定时任务、AOP、组件扫描信息解析类；未指定自定义实现且未关闭内置开关时，使用内置实现
+        if (springXmlTaskAopScanParser != null) {
+            allCodeParserList.add(springXmlTaskAopScanParser);
+        } else if (checkUseBuiltInSpringXmlTaskAopScanParser()) {
+            springXmlTaskAopScanParser = new JavaCG2SpringXmlTaskAopScanParser();
+            log.info("未指定自定义的 {} 实现类，使用内置实现 {}", SpringXmlTaskAopScanParserInterface.class.getSimpleName(),
+                    springXmlTaskAopScanParser.getClass().getName());
+            allCodeParserList.add(springXmlTaskAopScanParser);
+        } else {
+            log.info("未使用内置的 {} 实现类", SpringXmlTaskAopScanParserInterface.class.getSimpleName());
         }
         if (outputAdapter == null) {
             log.error("未设置输出适配器 {}", JavaCG2OutputAdapter.class.getName());
@@ -186,6 +204,20 @@ public class ExtensionsManager {
         return javaCG2ConfInfo.isUseBuiltInSpringXmlBeanParser();
     }
 
+    // 检查是否使用内置的Spring XML文件中的定时任务、AOP、组件扫描信息解析类，配置信息不可用时视为使用默认开关值true
+    private boolean checkUseBuiltInSpringXmlTaskAopScanParser() {
+        if (javaCG2InputAndOutput == null) {
+            log.warn("未设置 {}，使用内置的Spring XML定时任务/AOP/组件扫描信息解析类默认开关值true", JavaCG2InputAndOutput.class.getSimpleName());
+            return true;
+        }
+        JavaCG2ConfInfo javaCG2ConfInfo = javaCG2InputAndOutput.getJavaCG2ConfInfo();
+        if (javaCG2ConfInfo == null) {
+            log.warn("未设置 {}，使用内置的Spring XML定时任务/AOP/组件扫描信息解析类默认开关值true", JavaCG2ConfInfo.class.getSimpleName());
+            return true;
+        }
+        return javaCG2ConfInfo.isUseBuiltInSpringXmlTaskAopScanParser();
+    }
+
     private void checkInited() {
         if (!inited) {
             throw new JavaCG2RuntimeException("还未完成初始化");
@@ -255,5 +287,9 @@ public class ExtensionsManager {
 
     public SpringXmlBeanParserInterface getSpringXmlBeanParser() {
         return springXmlBeanParser;
+    }
+
+    public SpringXmlTaskAopScanParserInterface getSpringXmlTaskAopScanParser() {
+        return springXmlTaskAopScanParser;
     }
 }

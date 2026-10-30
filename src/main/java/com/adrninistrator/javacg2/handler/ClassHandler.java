@@ -17,6 +17,7 @@ import com.adrninistrator.javacg2.dto.type.JavaCG2Type;
 import com.adrninistrator.javacg2.el.manager.JavaCG2ElManager;
 import com.adrninistrator.javacg2.extensions.annotationattributes.AnnotationAttributesFormatterInterface;
 import com.adrninistrator.javacg2.extensions.manager.ExtensionsManager;
+import com.adrninistrator.javacg2.spring.SpringDefineControllerTaskHandler;
 import com.adrninistrator.javacg2.spring.UseSpringBeanByAnnotationHandler;
 import com.adrninistrator.javacg2.util.JavaCG2AnnotationUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ByteCodeUtil;
@@ -87,6 +88,9 @@ public class ClassHandler {
 
     @Setter
     private UseSpringBeanByAnnotationHandler useSpringBeanByAnnotationHandler;
+
+    @Setter
+    private SpringDefineControllerTaskHandler springDefineControllerTaskHandler;
 
     @Setter
     private Map<String, Boolean> runnableImplClassMap;
@@ -333,6 +337,9 @@ public class ClassHandler {
 
         // 记录类上的注解信息
         JavaCG2AnnotationUtil.writeAnnotationInfo(classAnnotationSink, javaClass.getAnnotationEntries(), annotationAttributesFormatter, className);
+
+        // 从类上的注解中派生Spring Controller相关的信息
+        springDefineControllerTaskHandler.handleClassAnnotation(className, javaClass.getAnnotationEntries());
 
         if (javaCG2ConfInfo.isFirstParseInitMethodType()) {
             for (Method method : javaClass.getMethods()) {
@@ -637,6 +644,7 @@ public class ClassHandler {
         methodHandler4Invoke.setMethodCallRawCalleeSink(methodCallRawCalleeSink);
         methodHandler4Invoke.setLambdaMethodInfoSink(lambdaMethodInfoSink);
         methodHandler4Invoke.setMethodAnnotationSink(methodAnnotationSink);
+        methodHandler4Invoke.setSpringDefineControllerTaskHandler(springDefineControllerTaskHandler);
         methodHandler4Invoke.setMethodArgAnnotationSink(methodArgAnnotationSink);
         methodHandler4Invoke.setMethodLineNumberSink(methodLineNumberSink);
         methodHandler4Invoke.setClassAndJarNum(classAndJarNum);

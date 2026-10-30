@@ -38,6 +38,7 @@ import com.adrninistrator.javacg2.parser.JarEntryPreHandle2Parser;
 import com.adrninistrator.javacg2.spring.SpringDefineAopHandler;
 import com.adrninistrator.javacg2.spring.SpringDefineBeanHandler;
 import com.adrninistrator.javacg2.spring.SpringDefineComponentScanHandler;
+import com.adrninistrator.javacg2.spring.SpringDefineControllerTaskHandler;
 import com.adrninistrator.javacg2.spring.UseSpringBeanByAnnotationHandler;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2JarUtil;
@@ -112,6 +113,9 @@ public class JavaCG2Entry {
     private SpringDefineComponentScanHandler springDefineComponentScanHandler;
 
     private SpringDefineAopHandler springDefineAopHandler;
+
+    // 从类及方法的注解中派生Spring Controller与Spring定时任务信息的处理器
+    private SpringDefineControllerTaskHandler springDefineControllerTaskHandler;
 
     public JavaCG2Entry(JavaCG2ConfigureWrapper javaCG2ConfigureWrapper) {
         this.javaCG2ConfigureWrapper = javaCG2ConfigureWrapper;
@@ -235,6 +239,8 @@ public class JavaCG2Entry {
              JavaCG2RecordSink springAopPointcutSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_AOP_POINTCUT_JAVA);
              JavaCG2RecordSink springAopAdviceSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_AOP_ADVICE_JAVA);
              JavaCG2RecordSink springDIFieldSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_DI_FIELD);
+             JavaCG2RecordSink springControllerSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_CONTROLLER);
+             JavaCG2RecordSink springTaskJavaSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_TASK_JAVA);
              JavaCG2RecordSink staticFinalFieldMethodCallIdSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SF_FIELD_METHOD_CALL);
              WriterSupportSkip logMethodSpendTimeWriter = new WriterSupportSkip(javaCG2OutputInfo.getMainFilePath(JavaCG2OutPutFileTypeEnum.OPFTE_LOG_METHOD_SPEND_TIME), false)
         ) {
@@ -290,7 +296,7 @@ public class JavaCG2Entry {
             String mergeJarFilePath = JavaCG2FileUtil.getCanonicalPath(mergeJarResult.getMergeJarFile());
             // 处理jar文件
             if (!handleJar(mergeJarFilePath, methodCallSink, springBeanSink, springScanPackageSink, springAopAspectSink, springAopPointcutSink, springAopAdviceSink,
-                    javaCG2ElManager)
+                    springControllerSink, springTaskJavaSink, javaCG2ElManager)
                     || failCounter.getCount() > 0) {
                 log.error("处理失败，出错次数 {}", failCounter.getCount());
                 return false;
@@ -493,6 +499,9 @@ public class JavaCG2Entry {
         springDefineBeanHandler = new SpringDefineBeanHandler(javaCG2InputAndOutput, failCounter);
         springDefineComponentScanHandler = new SpringDefineComponentScanHandler();
         springDefineAopHandler = new SpringDefineAopHandler();
+        // 从类及方法的注解中派生Spring Controller与Spring定时任务信息，不依赖符号执行，无条件创建相关handler
+        springDefineControllerTaskHandler = new SpringDefineControllerTaskHandler();
+        springDefineControllerTaskHandler.setAllClassNameSet(allClassNameSet);
         boolean onlyOneJar = jarPathNumMap.size() == 1;
         jarEntryPreHandle1Parser = new JarEntryPreHandle1Parser(javaCG2InputAndOutput, onlyOneJar);
         jarEntryPreHandle1Parser.setClassImplementsInfoMap(classImplementsInfoMap);
@@ -564,6 +573,7 @@ public class JavaCG2Entry {
         // 正式处理相关
         jarEntryHandleParser = new JarEntryHandleParser(javaCG2InputAndOutput, onlyOneJar);
         jarEntryHandleParser.setUseSpringBeanByAnnotationHandler(useSpringBeanByAnnotationHandler);
+        jarEntryHandleParser.setSpringDefineControllerTaskHandler(springDefineControllerTaskHandler);
         jarEntryHandleParser.setRunnableImplClassMap(runnableImplClassMap);
         jarEntryHandleParser.setCallableImplClassMap(callableImplClassMap);
         jarEntryHandleParser.setTransactionCallbackImplClassMap(transactionCallbackImplClassMap);
@@ -616,7 +626,8 @@ public class JavaCG2Entry {
 
     // 处理一个jar文件
     private boolean handleJar(String jarFilePath, JavaCG2RecordSink methodCallSink, JavaCG2RecordSink springBeanSink, JavaCG2RecordSink springScanPackageSink, JavaCG2RecordSink springAopAspectSink,
-                              JavaCG2RecordSink springAopPointcutSink, JavaCG2RecordSink springAopAdviceSink, JavaCG2ElManager javaCG2ElManager) {
+                              JavaCG2RecordSink springAopPointcutSink, JavaCG2RecordSink springAopAdviceSink, JavaCG2RecordSink springControllerSink,
+                              JavaCG2RecordSink springTaskJavaSink, JavaCG2ElManager javaCG2ElManager) {
         try {
             // 对Class进行预处理
             if (!preHandleClasses1(jarFilePath)) {
@@ -645,6 +656,9 @@ public class JavaCG2Entry {
 
             // 记录Spring AOP信息
             recordSpringAop(springAopAspectSink, springAopPointcutSink, springAopAdviceSink);
+
+            // 记录通过类及方法注解定义的Spring Controller与Spring定时任务信息
+            recordSpringControllerAndTask(springControllerSink, springTaskJavaSink);
             return true;
         } catch (Exception e) {
             log.error("处理jar文件出现异常 {} ", jarFilePath, e);
@@ -779,6 +793,14 @@ public class JavaCG2Entry {
                             springAopAdviceInfo.getAnnotationSimpleClassName(), base64.getStrValue(), expression, String.valueOf(springAopAdviceInfo.getAspectOrder()));
                 }
             }
+        }
+    }
+
+    // 记录通过类及方法注解定义的Spring Controller与Spring定时任务信息
+    private void recordSpringControllerAndTask(JavaCG2RecordSink springControllerSink, JavaCG2RecordSink springTaskJavaSink) throws IOException {
+        if (springDefineControllerTaskHandler != null) {
+            springDefineControllerTaskHandler.writeSpringController2Files(springControllerSink);
+            springDefineControllerTaskHandler.writeSpringTask2Files(springTaskJavaSink);
         }
     }
 

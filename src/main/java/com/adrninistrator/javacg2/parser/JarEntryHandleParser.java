@@ -12,6 +12,7 @@ import com.adrninistrator.javacg2.dto.type.JavaCG2GenericsType;
 import com.adrninistrator.javacg2.extensions.annotationattributes.AnnotationAttributesFormatterInterface;
 import com.adrninistrator.javacg2.extensions.manager.ExtensionsManager;
 import com.adrninistrator.javacg2.handler.ClassHandler;
+import com.adrninistrator.javacg2.spring.SpringDefineControllerTaskHandler;
 import com.adrninistrator.javacg2.spring.UseSpringBeanByAnnotationHandler;
 import com.adrninistrator.javacg2.util.JavaCG2AnnotationUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ByteCodeUtil;
@@ -69,6 +70,9 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
 
     @Setter
     private UseSpringBeanByAnnotationHandler useSpringBeanByAnnotationHandler;
+
+    @Setter
+    private SpringDefineControllerTaskHandler springDefineControllerTaskHandler;
 
     @Setter
     private Map<String, Boolean> runnableImplClassMap;
@@ -371,6 +375,7 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
     private ClassHandler genClassHandler(JavaClass javaClass, String jarEntryPath, int classJarNum) {
         ClassHandler classHandler = new ClassHandler(javaClass, jarEntryPath, javaCG2InputAndOutput, classJarNum);
         classHandler.setUseSpringBeanByAnnotationHandler(useSpringBeanByAnnotationHandler);
+        classHandler.setSpringDefineControllerTaskHandler(springDefineControllerTaskHandler);
         classHandler.setRunnableImplClassMap(runnableImplClassMap);
         classHandler.setCallableImplClassMap(callableImplClassMap);
         classHandler.setTransactionCallbackImplClassMap(transactionCallbackImplClassMap);

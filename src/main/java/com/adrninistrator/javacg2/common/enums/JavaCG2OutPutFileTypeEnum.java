@@ -73,6 +73,8 @@ public enum JavaCG2OutPutFileTypeEnum {
     OPFTE_COMPATIBILITY_METHOD_CALL_MISSING("compatibility_method_call_missing", "Jar兼容性检查-方法调用中的被调用类/方法不存在或不可访问"),
     OPFTE_COMPATIBILITY_FIELD_USAGE_MISSING("compatibility_field_usage_missing", "Jar兼容性检查-被使用的字段不存在或不可访问"),
     OPFTE_COMPATIBILITY_DUP_CLASS_CONFLICT("compatibility_dup_class_conflict", "Jar兼容性检查-重复同名类冲突"),
+    OPFTE_SPRING_CONTROLLER("spring_controller", "Spring Controller信息"),
+    OPFTE_SPRING_TASK_JAVA("spring_task_java", "Spring定时任务信息，通过Java代码注解定义"),
     OPFTE_ILLEGAL("illegal", "非法值"),
     ;
 

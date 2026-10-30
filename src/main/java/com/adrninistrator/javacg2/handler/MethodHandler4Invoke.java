@@ -31,6 +31,7 @@ import com.adrninistrator.javacg2.extensions.annotationattributes.AnnotationAttr
 import com.adrninistrator.javacg2.extensions.codeparser.MethodAnnotationParser;
 import com.adrninistrator.javacg2.extensions.manager.ExtensionsManager;
 import com.adrninistrator.javacg2.extensions.methodcall.JavaCG2MethodCallExtensionInterface;
+import com.adrninistrator.javacg2.spring.SpringDefineControllerTaskHandler;
 import com.adrninistrator.javacg2.spring.UseSpringBeanByAnnotationHandler;
 import com.adrninistrator.javacg2.util.JavaCG2AnnotationUtil;
 import com.adrninistrator.javacg2.util.JavaCG2BootstrapMethodUtil;
@@ -134,6 +135,9 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
     private ExtensionsManager extensionsManager;
 
     private AnnotationAttributesFormatterInterface annotationAttributesFormatter;
+
+    @Setter
+    private SpringDefineControllerTaskHandler springDefineControllerTaskHandler;
 
     @Setter
     private JavaCG2RecordSink lambdaMethodInfoSink;
@@ -242,6 +246,10 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
         // 记录方法上的注解信息，并写入方法返回类型
         JavaCG2AnnotationUtil.writeAnnotationInfo(methodAnnotationSink, method.getAnnotationEntries(), annotationAttributesFormatter, callerFullMethod, methodReturnType,
                 String.valueOf(classJarNum));
+
+        // 从方法上的注解中派生Spring Controller与Spring定时任务信息
+        springDefineControllerTaskHandler.handleMethodAnnotation(callerClassName, callerFullMethod, methodReturnType, classJarNum, method.getArgumentTypes(),
+                method.getAnnotationEntries());
 
         // 记录方法参数上的注解信息
         ParameterAnnotationEntry[] parameterAnnotationEntries = method.getParameterAnnotationEntries();

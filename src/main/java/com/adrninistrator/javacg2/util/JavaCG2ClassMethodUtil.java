@@ -13,9 +13,11 @@ import org.apache.bcel.classfile.Method;
 import org.apache.bcel.classfile.Utility;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -555,6 +557,31 @@ public class JavaCG2ClassMethodUtil {
      */
     public static String getPackageName(String className) {
         return StringUtils.substringBeforeLast(className, JavaCG2Constants.FLAG_DOT);
+    }
+
+    /**
+     * 获取简单类名，即类名中最后一个.之后的内容
+     *
+     * @param className
+     * @return
+     */
+    public static String getSimpleNameFromClassName(String className) {
+        return StringUtils.substringAfterLast(className, JavaCG2Constants.FLAG_DOT);
+    }
+
+    /**
+     * 生成方法hash+字节数，格式为"URL安全的Base64编码的方法MD5值#方法及返回类型字符串的长度（3位16进制）"
+     * 生成规则与java-all-call-graph的JACGClassMethodUtil.genMethodHashWithLen方法保持一致，使下游工程可以零迁移使用
+     *
+     * @param fullMethod 完整方法（类名+方法名+参数）
+     * @param returnType 方法返回类型，包含数组标志
+     * @return
+     */
+    public static String genMethodHashWithLen(String fullMethod, String returnType) {
+        String fullMethodWithReturnType = genFullMethodWithReturnType(fullMethod, returnType);
+        byte[] md5 = DigestUtils.md5(fullMethodWithReturnType);
+        // Base64使用URL安全的编码方式，输出结果范围为字母+"-"+"_"，与java-all-call-graph保持一致
+        return String.format("%s#%03x", Base64.getUrlEncoder().encodeToString(md5), fullMethodWithReturnType.length());
     }
 
     /**

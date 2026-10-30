@@ -43,6 +43,43 @@ public class SpringAnnotationConstants {
 
     public static final String ANNOTATION_TYPE_POINTCUT = "Lorg/aspectj/lang/annotation/Pointcut;";
 
+    /*
+        以下为Java风格的Spring MVC与定时任务相关注解的完整类名
+        用于从类/方法的注解中派生Spring Controller与Spring定时任务信息，派生规则与java-all-call-graph的WriteDbHandler4ClassAnnotation、
+        WriteDbHandler4MethodAnnotation中对应逻辑保持一致
+     */
+
+    // Spring MVC的Controller注解
+    public static final String ANNOTATION_NAME_CONTROLLER = "org.springframework.stereotype.Controller";
+
+    // Spring MVC的RestController注解
+    public static final String ANNOTATION_NAME_REST_CONTROLLER = "org.springframework.web.bind.annotation.RestController";
+
+    // Spring MVC的Controller相关注解
+    public static final String[] ANNOTATION_NAME_CONTROLLERS = new String[]{
+            ANNOTATION_NAME_CONTROLLER,
+            ANNOTATION_NAME_REST_CONTROLLER
+    };
+
+    // Spring MVC的RequestMapping注解
+    public static final String ANNOTATION_NAME_REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping";
+
+    // Spring MVC的RequestMapping相关注解
+    public static final String[] ANNOTATION_NAME_REQUEST_MAPPINGS = new String[]{
+            ANNOTATION_NAME_REQUEST_MAPPING,
+            "org.springframework.web.bind.annotation.DeleteMapping",
+            "org.springframework.web.bind.annotation.GetMapping",
+            "org.springframework.web.bind.annotation.PatchMapping",
+            "org.springframework.web.bind.annotation.PostMapping",
+            "org.springframework.web.bind.annotation.PutMapping"
+    };
+
+    // Spring定时任务的Scheduled注解
+    public static final String ANNOTATION_NAME_SCHEDULED = "org.springframework.scheduling.annotation.Scheduled";
+
+    // Spring MVC的RequestMapping相关注解中代表路径的属性名称
+    public static final String ANNOTATION_ATTRIBUTE_PATH = "path";
+
     public static final String ANNOTATION_CLASS_NAME_BEAN = "org.springframework.context.annotation.Bean";
 
     public static final String ANNOTATION_SIMPLE_CLASS_NAME_AFTER_RETURNING = "AfterReturning";

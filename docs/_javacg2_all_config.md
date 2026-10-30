@@ -252,7 +252,25 @@ raw_actual: 记录两条方法调用关系，被调用类型分别使用：原�
 |参数默认值|true|
 |参数枚举名|CKE_USE_BUILT_IN_SPRING_XML_BEAN_PARSER|
 
-### 2.1.15. jmod.program.path
+### 2.1.15. use.built.in.spring.xml.task.aop.scan.parser
+
+- 参数说明
+
+```
+是否使用内置的Spring XML文件中的定时任务（task）、AOP、组件扫描（component-scan）信息解析类
+通过ExtensionsManager的setSpringXmlTaskAopScanParser方法指定自定义实现时，自定义实现优先于内置实现
+配置方式：仅支持通过代码指定（JavaCG2ConfigureWrapper的setMainConfig方法，或JavaCG2ConfigBuilder的setUseBuiltInSpringXmlTaskAopScanParser方法）
+```
+
+|描述|内容|
+|---|---|
+|参数类型|Boolean|
+|参数值是否必填|否|
+|当前使用参数值|true|
+|参数默认值|true|
+|参数枚举名|CKE_USE_BUILT_IN_SPRING_XML_TASK_AOP_SCAN_PARSER|
+
+### 2.1.16. jmod.program.path
 
 - 参数说明
 
@@ -270,7 +288,7 @@ raw_actual: 记录两条方法调用关系，被调用类型分别使用：原�
 |参数默认值||
 |参数枚举名|CKE_JMOD_PROGRAM_PATH|
 
-### 2.1.16. jdk.runtime.major.version
+### 2.1.17. jdk.runtime.major.version
 
 - 参数说明
 
@@ -288,7 +306,7 @@ raw_actual: 记录两条方法调用关系，被调用类型分别使用：原�
 |参数默认值|8|
 |参数枚举名|CKE_JDK_RUNTIME_MAJOR_VERSION|
 
-### 2.1.17. el.ignore.data.max.line.num
+### 2.1.18. el.ignore.data.max.line.num
 
 - 参数说明
 
@@ -303,6 +321,26 @@ EL表达式忽略数据文件的最大行数，默认10万行
 |当前使用参数值|100000|
 |参数默认值|100000|
 |参数枚举名|CKE_EL_IGNORE_DATA_MAX_LINE_NUM|
+
+### 2.1.19. check.jar.compatibility.enable
+
+- 参数说明
+
+```
+解析完成后是否执行Jar兼容性检查并生成检查报告结果文件
+对代码中被引用但找不到的类、方法调用中不存在或不可访问的被调用类/方法、被使用但不存在或不可访问的字段、重复同名类冲突等问题进行检查
+使用 parse.jar.compatibility.mode 参数时自动执行Jar兼容性检查，无需设置当前参数
+执行Jar兼容性检查时会在解析完成后读回本次生成的结果文件进行比对，会有一定的时间与内存开销
+配置方式：仅支持通过代码指定（JavaCG2ConfigureWrapper的setMainConfig方法，或JavaCG2ConfigBuilder的setCheckJarCompatibilityEnable方法）
+```
+
+|描述|内容|
+|---|---|
+|参数类型|Boolean|
+|参数值是否必填|否|
+|当前使用参数值|false|
+|参数默认值|false|
+|参数枚举名|CKE_CHECK_JAR_COMPATIBILITY_ENABLE|
 
 # 3. 不区分顺序的其他配置参数
 

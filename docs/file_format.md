@@ -1441,6 +1441,8 @@ spring_aop_advice_xml
 
 包括XML中定义的aspect的ID、aspect的方法名、advice XML元素的名称表达式、pointcut-ref名称、pointcut表达式、XML文件路径等
 
+该文件由当前项目内置解析生成（参考7.2.9），格式与java-all-call-graph项目产出的同名文件保持一致
+
 - 文件各列内容说明
 
 |序号|说明|
@@ -1481,6 +1483,8 @@ spring_aop_aspect_xml
 
 包括XML中定义的aspect的ID、对应的Bean名称、aspect排序数值、XML文件路径等
 
+该文件由当前项目内置解析生成（参考7.2.9），格式与java-all-call-graph项目产出的同名文件保持一致
+
 - 文件各列内容说明
 
 |序号|说明|
@@ -1517,6 +1521,8 @@ spring_aop_pointcut_xml
 - 文件说明
 
 包括XML中定义的pointcut的ID、表达式、XML文件路径等
+
+该文件由当前项目内置解析生成（参考7.2.9），格式与java-all-call-graph项目产出的同名文件保持一致
 
 - 文件各列内容说明
 
@@ -1559,9 +1565,13 @@ spring_controller
 
 通过类及方法注解定义的Spring Controller信息，包括对应的方法、Controller的URI
 
+该文件由当前项目内置解析生成，从类及方法的注解中派生，派生规则与java-all-call-graph一致，列格式与java-all-call-graph的jacg_spring_controller表保持一致
+
 方法可能用于文件上传字段，通过方法请求参数判断
 
 方法可能用于文件下载字段，通过方法请求参数与返回类型判断
+
+注意：当前项目在解析阶段无法分析方法参数是否在方法调用中被使用，也无法解析方法返回类型的泛型参数，因此"方法可能用于文件上传/文件下载"两列只会出现0（否）与2（不确定），不会出现1（是）；出现1需要java-all-call-graph在写库阶段进一步分析
 
 - 文件各列内容说明
 
@@ -1576,8 +1586,8 @@ spring_controller
 |7|注解类名|
 |8|唯一类名|
 |9|方法所在的jar文件序号|
-|10|方法可能用于文件上传，1:是，0:否|
-|11|方法可能用于文件下载，1:是，0:否|
+|10|方法可能用于文件上传，1:是，0:否，2:不确定|
+|11|方法可能用于文件下载，1:是，0:否，2:不确定|
 |12|完整方法（类名+方法名+参数）|
 |13|方法返回类型，包含数组标志|
 
@@ -1610,6 +1620,8 @@ spring_scan_package_xml
 
 包括Spring的包扫描路径、XML文件路径
 
+该文件由当前项目内置解析生成（参考7.2.9），格式与java-all-call-graph项目产出的同名文件保持一致
+
 - 文件各列内容说明
 
 |序号|说明|
@@ -1628,6 +1640,10 @@ spring_task_java
 - 文件说明
 
 包括Spring Bean的名称、对应的方法详情信息
+
+该文件由当前项目内置解析生成，从方法上的@Scheduled注解中派生，派生规则与java-all-call-graph一致，列格式与java-all-call-graph的jacg_spring_task表在Java代码中定义时的记录保持一致
+
+注意当前文件与spring_task_xml文件（参考1.73）的列格式不同：当前文件为9列，包含记录id、方法hash+字节数、类型等列；spring_task_xml文件为3列
 
 - 文件各列内容说明
 
@@ -1652,6 +1668,8 @@ spring_task_xml
 - 文件说明
 
 包括Spring定时任务Bean的名称及方法名、XML文件路径
+
+该文件由当前项目内置解析生成（参考7.2.9），格式与java-all-call-graph项目产出的同名文件保持一致
 
 - 文件各列内容说明
 
@@ -1688,3 +1706,172 @@ xml_conf
 |11|元素值是否经过BASE64编码，1:是，0:否|
 |12|当前的元素值或元素属性值|
 
+
+## 1.75. Jar兼容性检查-被引用的类不存在
+
+- 文件名
+
+compatibility_class_reference_missing
+
+- 文件说明
+
+Jar兼容性检查生成的报告文件，检查类中引用的类是否存在（检查逻辑与java-all-call-graph的Jar兼容性检查一致）
+
+对JDK中的类（java.、javax.、javafx.、sun.、com.sun.、jdk.等包名前缀）不做检查
+
+通过配置参数check.jar.compatibility.enable开启检查，使用parse.jar.compatibility.mode参数时自动执行检查；未发现问题时生成内容为空的文件
+
+- 文件各列内容说明
+
+|序号|说明|
+|---|---|
+|1|引用方完整类名|
+|2|被引用的完整类名（不存在）|
+|3|引用方所在的jar文件序号|
+|4|引用方所在jar文件路径|
+|5|引用方所在jar文件的内部路径|
+
+## 1.76. Jar兼容性检查-方法调用中的被调用类/方法不存在或不可访问
+
+- 文件名
+
+compatibility_method_call_missing
+
+- 文件说明
+
+Jar兼容性检查生成的报告文件，检查方法调用中的被调用类、被调用方法是否存在，及被调用方法的可见性（private/protected/default）与静态/非静态一致性
+
+仅检查存在指令的方法调用类型（参考docs/call_type.md），沿父类、接口向上查找被调用方法（含java.lang.Object中定义的方法）；被调用方法的继承链中存在JDK类或不在解析结果中的类时不做判断，避免误报
+
+对JDK中的类（java.、javax.、javafx.、sun.、com.sun.、jdk.等包名前缀）不做检查
+
+通过配置参数check.jar.compatibility.enable开启检查，使用parse.jar.compatibility.mode参数时自动执行检查；未发现问题时生成内容为空的文件；在兼容性检查模式、仅解析类模式下不生成方法调用数据，对应问题不会被记录
+
+- 文件各列内容说明
+
+|序号|说明|
+|---|---|
+|1|问题描述|
+|2|调用方，完整方法|
+|3|调用方法源代码行号|
+|4|方法调用类型|
+|5|被调用方，完整方法|
+|6|被调用方法原始的返回类型|
+|7|调用方所在jar文件序号|
+|8|调用方所在jar文件路径|
+|9|调用方所在jar文件的内部路径|
+|10|检查明细，被调用方法存在时记录找到的方法定义及access_flags，被调用方法不存在时为空|
+
+## 1.77. Jar兼容性检查-被使用的字段不存在或不可访问
+
+- 文件名
+
+compatibility_field_usage_missing
+
+- 文件说明
+
+Jar兼容性检查生成的报告文件，检查被其他类使用的字段是否存在，及字段的可见性（private/protected/default）与静态/非静态一致性
+
+沿父类、接口向上查找被使用的字段；被使用字段所在类的继承链中存在JDK类或不在解析结果中的类时不做判断，避免误报
+
+对JDK中的类（java.、javax.、javafx.、sun.、com.sun.、jdk.等包名前缀）不做检查
+
+通过配置参数check.jar.compatibility.enable开启检查，使用parse.jar.compatibility.mode参数时自动执行检查；未发现问题时生成内容为空的文件；在兼容性检查模式、仅解析类模式下不生成字段使用数据，对应问题不会被记录
+
+- 文件各列内容说明
+
+|序号|说明|
+|---|---|
+|1|问题描述|
+|2|使用字段的方法，完整方法|
+|3|使用字段时get还是put，1:get，0:put|
+|4|被使用的字段所在的类名|
+|5|被使用的字段名称|
+|6|被使用的字段类型（包含数组标志）|
+|7|使用字段的类所在jar文件序号|
+|8|使用字段的类所在jar文件路径|
+|9|使用字段的类所在jar文件的内部路径|
+|10|检查明细，被使用的字段存在时记录找到的字段定义、修饰符与static标志，字段不存在时为空|
+
+## 1.78. Jar兼容性检查-重复同名类冲突
+
+- 文件名
+
+compatibility_dup_class_conflict
+
+- 文件说明
+
+Jar兼容性检查生成的报告文件，检查重复同名类中class文件HASH不同的情况，及同名类之间public方法、字段冲突的情况
+
+通过配置参数check.jar.compatibility.enable开启检查，使用parse.jar.compatibility.mode参数时自动执行检查；未发现问题时生成内容为空的文件
+
+- 文件各列内容说明
+
+|序号|说明|
+|---|---|
+|1|问题类型，H:存在多种class文件HASH，M:public方法冲突，F:public字段冲突|
+|2|完整类名|
+|3|类版本1的class文件在jar文件中的路径|
+|4|类版本1的class文件所在jar文件序号|
+|5|类版本1的class文件所在jar文件路径|
+|6|类版本2的class文件在jar文件中的路径|
+|7|类版本2的class文件所在jar文件序号|
+|8|类版本2的class文件所在jar文件路径|
+|9|方法名及参数，或字段名称（仅public方法、字段冲突时有值）|
+|10|方法返回类型，或字段类型（仅public方法、字段冲突时有值）|
+|11|问题描述|
+
+## 1.79. JarDiff比较-发生变化的类
+
+- 文件名
+
+jar_diff_modified_classes
+
+- 文件说明
+
+通过独立API（com.adrninistrator.javacg2.jardiff.JavaCG2JarDiffRunner）比较两次解析生成的输出目录（旧、新）获得的发生变化的类，比对逻辑与java-all-call-graph的JarDiff功能一致，不依赖数据库
+
+比较结果文件生成在指定的比较结果文件输出目录中，后缀名可通过API指定；未发现变化的类、方法时生成内容为空的文件；文件无表头行
+
+已知限制：当前项目不解析MyBatis XML，Mapper接口方法指令未变化但Mapper XML中SQL变化的情况无法检出；被删除的jar文件、类、方法不会记录（与java-all-call-graph行为一致）；重复同名类的信息（dup_class_info、dup_method_info等文件）不参与比较
+
+结果按jar文件在jar_info中的序号顺序、类名字典序排序，保证输出稳定
+
+- 文件各列内容说明
+
+|序号|说明|
+|---|---|
+|1|jar文件名称前缀（文件名去掉“-数字及后面的内容”）|
+|2|新jar文件名称|
+|3|旧jar文件名称（新增的jar文件为空）|
+|4|完整类名|
+|5|变更类型，M:class文件HASH发生变化的类，N:新增的类|
+|6|新class文件在jar文件中的路径|
+|7|新类所在的jar文件序号|
+|8|旧class文件在jar文件中的路径（新增的类为空）|
+|9|旧类所在的jar文件序号（新增的类为空）|
+
+## 1.80. JarDiff比较-发生变化的方法
+
+- 文件名
+
+jar_diff_modified_methods
+
+- 文件说明
+
+通过独立API（com.adrninistrator.javacg2.jardiff.JavaCG2JarDiffRunner）比较两次解析生成的输出目录（旧、新）获得的发生变化的方法，比对逻辑与java-all-call-graph的JarDiff功能一致，不依赖数据库
+
+通过method_info中的方法指令HASH比较方法是否变化；已知限制同上（jar_diff_modified_classes文件说明）
+
+结果按jar文件在jar_info中的序号顺序、完整方法字典序排序，保证输出稳定
+
+- 文件各列内容说明
+
+|序号|说明|
+|---|---|
+|1|jar文件名称前缀（文件名去掉“-数字及后面的内容”）|
+|2|新jar文件名称|
+|3|旧jar文件名称（新增的jar文件为空）|
+|4|发生变化的完整方法|
+|5|方法返回类型|
+|6|方法在旧jar文件中是否存在，true:存在（修改的方法） false:不存在（新增的方法）|

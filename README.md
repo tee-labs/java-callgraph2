@@ -918,11 +918,13 @@ boolean matches1 = map.values().stream().filter(Objects::nonNull).mapToDouble(va
 
 支持解析 MyBatis Mapper 类中的每个写操作方法中执行数据库操作类型（insert、update、delete）与对应的数据库表名，以及对应的 MyBatis XML 文件路径
 
-## 3.18. Spring 相关信息（需要使用 java-all-call-graph 项目解析）
+## 3.18. Spring 相关信息（部分需要使用 java-all-call-graph 项目解析）
 
 ### 3.18.1. Spring AOP
 
 支持解析 Spring AOP 的 advice 影响的方法，包括 Spring AOP advice 定义方式（XML 中定义、代码中定义）、XML 中定义的 aspect 的 ID 与方法名、advice 类型（after、afterReturning、afterThrowing、around、before 等）、XML 中的 pointcut-ref 名称、pointcut 表达式、aspect 的 Order 排序数值、advice 的完整方法、影响的完整方法等
+
+XML 中定义的 AOP aspect、pointcut、advice 定义信息已由当前项目内置解析（生成 spring_aop_aspect_xml、spring_aop_pointcut_xml、spring_aop_advice_xml 文件，参考 7.2.9），advice 影响的方法等进一步分析仍需要使用 java-all-call-graph 项目实现
 
 ### 3.18.2. Spring Bean
 
@@ -936,13 +938,23 @@ Spring XML 文件中定义的 Bean 已由当前项目内置解析（不需要使
 
 支持解析 Spring Controller 对应的完整方法、用于显示的 URI、类上的注解 path 属性原始值、方法上的注解 path 属性原始值、注解类名等
 
+Java 代码中通过类及方法注解定义的 Spring Controller 信息已由当前项目内置解析（生成 spring_controller 文件），从类上的 @Controller、@RestController 注解及方法上的 @RequestMapping、@GetMapping、@PostMapping 等注解中派生，派生规则与 java-all-call-graph 一致，列格式与 java-all-call-graph 的 jacg_spring_controller 表保持一致
+
+注意：“方法可能用于文件上传/文件下载”两列在解析阶段只会出现 0（否）与 2（不确定），不会出现 1（是）；出现 1 需要 java-all-call-graph 在写库阶段进一步分析
+
 ### 3.18.4. Spring Task
 
 支持解析 Spring Task 对应的 Spring Bean 的名称、完整方法、在 Java 代码中定义时所在的类名、在 XML 中定义时对应的文件路径
 
+Java 代码中通过 @Scheduled 注解定义的定时任务信息已由当前项目内置解析（生成 spring_task_java 文件），派生规则与 java-all-call-graph 一致，列格式与 java-all-call-graph 的 jacg_spring_task 表在 Java 代码中定义时的记录保持一致
+
+XML 中定义的定时任务信息已由当前项目内置解析（生成 spring_task_xml 文件，参考 7.2.9），定时任务对应的完整方法等进一步分析仍需要使用 java-all-call-graph 项目实现
+
 ### 3.18.5. Spring 包扫描路径
 
 支持解析 Spring 包扫描路径，包括 XML 或 Java 代码中定义的
+
+XML 中定义的包扫描路径已由当前项目内置解析（生成 spring_scan_package_xml 文件，参考 7.2.9）
 
 ## 3.19. properties 文件内容（需要使用 java-all-call-graph 项目解析）
 
@@ -1173,7 +1185,7 @@ Spring Bean 使用字段注入时，字段可以定义为接口/父类类型，�
 |jar|支持解析 jar 文件中的 class 等文件，及 jar 文件中的 jar 文件（Spring Boot 编译生成的 jar）中的文件|
 |war|支持解析 war 文件中的 class 等文件，及 war 文件中的 jar 文件中的文件|
 |jmod|JDK9 及以上的 JDK 标准库文件格式|
-|xml|支持解析 Spring、MyBatis 相关的 XML 数据（Spring XML 文件中定义的 Bean 已内置解析；MyBatis 等其他内容仍需要通过 java-all-call-graph 实现）|
+|xml|支持解析 Spring、MyBatis 相关的 XML 数据（Spring XML 文件中定义的 Bean、定时任务、AOP、组件扫描信息已内置解析；MyBatis 等其他内容仍需要通过 java-all-call-graph 实现）|
 |properties|解析 properties 文件内容（需要通过 java-all-call-graph 实现）|
 
 ## 6.2. 直接使用原始 jar 文件
@@ -1341,6 +1353,70 @@ Spring XML 文件中定义的 Bean 由当前项目内置的解析类（com.adrni
         JavaCG2Entry javaCG2Entry = new JavaCG2Entry(javaCG2ConfigureWrapper);
         javaCG2Entry.getExtensionsManager().setSpringXmlBeanParser(new YourSpringXmlBeanParser());
         javaCG2Entry.run();
+```
+
+### 7.2.9. Spring XML 定时任务/AOP/组件扫描内置解析开关
+
+Spring XML 文件中定义的定时任务（task:scheduled-tasks）、AOP（aop:config 及其 pointcut、aspect、advice）、组件扫描（context:component-scan）信息由当前项目内置的解析类（com.adrninistrator.javacg2.spring.JavaCG2SpringXmlTaskAopScanParser）解析，默认开启，生成 spring_task_xml、spring_aop_aspect_xml、spring_aop_pointcut_xml、spring_aop_advice_xml、spring_scan_package_xml 结果文件（格式与 java-all-call-graph 项目产出的同名文件保持一致）
+
+通过配置参数 use.built.in.spring.xml.task.aop.scan.parser 可控制是否使用内置解析类：
+
+- 参数默认值为 true，使用内置解析类
+- 设置为 false 时不使用内置解析类，以上信息不会被解析，对应的结果文件不会生成（假如需要解析，需要自行提供实现）
+
+设置方式示例：
+
+```java
+        // 通过 JavaCG2ConfigBuilder 设置
+        JavaCG2ConfigBuilder.builder()
+                .setUseBuiltInSpringXmlTaskAopScanParser(false)
+                .build();
+
+        // 或通过 JavaCG2ConfigureWrapper 设置
+        javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_USE_BUILT_IN_SPRING_XML_TASK_AOP_SCAN_PARSER, Boolean.FALSE.toString());
+```
+
+通过 ExtensionsManager 的 setSpringXmlTaskAopScanParser 方法指定 com.adrninistrator.javacg2.extensions.codeparser.SpringXmlTaskAopScanParserInterface 接口的自定义实现时，自定义实现优先于内置实现（此时无需关注当前参数）
+
+```java
+        JavaCG2Entry javaCG2Entry = new JavaCG2Entry(javaCG2ConfigureWrapper);
+        javaCG2Entry.getExtensionsManager().setSpringXmlTaskAopScanParser(new YourSpringXmlTaskAopScanParser());
+        javaCG2Entry.run();
+```
+
+### 7.2.10. Jar 兼容性检查
+
+Java 项目升级 JDK 或依赖库版本后，可能出现依赖库中使用了找不到的类、方法、字段的兼容问题（"Jar Hell"）
+
+java-callgraph2 内置了 Jar 兼容性检查（检查逻辑与 java-all-call-graph 的 Jar 兼容性检查一致），在解析完成后读回本次生成的结果文件在内存中进行比对，不需要建数据库即可获得兼容性问题报告，生成以下结果文件（格式参考 3.1 及 docs/file_format.md）：
+
+- compatibility_class_reference_missing：被引用的类不存在
+- compatibility_method_call_missing：方法调用中的被调用类/方法不存在或不可访问
+- compatibility_field_usage_missing：被使用的字段不存在或不可访问
+- compatibility_dup_class_conflict：重复同名类冲突（存在多种 class 文件 HASH、public 方法/字段冲突）
+
+说明：
+
+- 对 JDK 中的类（java.、javax.、javafx.、sun.、com.sun.、jdk. 等包名前缀）不做检查，避免将 JDK 类误报为缺失；假如需要检查与 JDK 相关的兼容性问题，可将 JDK 的 jmod 文件加入解析范围（参考 jmod.program.path 参数）
+- 方法调用中的被调用方法沿父类、接口向上查找（含 java.lang.Object 中定义的方法）；被调用方法的继承链中存在 JDK 类或不在解析结果中的类时不做判断，避免误报
+- 未发现问题时生成内容为空的结果文件
+
+通过配置参数 check.jar.compatibility.enable 可控制是否执行 Jar 兼容性检查：
+
+- 参数默认值为 false，不执行检查，默认行为无变化
+- 使用配置参数 parse.jar.compatibility.mode（Jar 兼容性检查模式，仅解析基础信息）时自动执行检查，无需设置当前参数；该模式下不生成方法调用、字段使用数据，仅生成被引用类不存在、重复同名类冲突的报告
+- 完整解析时也可将该参数设置为 true 执行检查，生成全部报告
+
+设置方式示例：
+
+```java
+        // 通过 JavaCG2ConfigBuilder 设置
+        JavaCG2ConfigBuilder.builder()
+                .setCheckJarCompatibilityEnable(true)
+                .build();
+
+        // 或通过 JavaCG2ConfigureWrapper 设置
+        javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_CHECK_JAR_COMPATIBILITY_ENABLE, Boolean.TRUE.toString());
 ```
 
 ## 7.3. 运行方式
@@ -1662,6 +1738,48 @@ JavaCG2XmlSwitchBuilder 用于指定配置参数的方法如下
 - 语义化方法未覆盖的用法（如 string.containsIC 等函数）可通过 setIgnoreSpringBeanInXmlExpression 方法使用原始表达式文本指定
 - Spring Bean 的 profile 可能为空字符串，可能包含一级或多级，使用半角逗号拼接
 - 表达式允许使用的变量及示例可参考 jar 包中 \_el\_example/ 目录下的说明文档
+
+## 7.5. JarDiff 比较新旧版本 jar 文件的方法变化
+
+Java 项目依赖库升级后，需要了解新旧版本 jar 文件中有哪些类、方法发生了变化
+
+java-callgraph2 内置了 JarDiff 比较（比对逻辑与 java-all-call-graph 的 JarDiff 功能一致），通过独立 API 比较两次解析生成的输出目录（旧、新），在内存中比对，不需要建数据库，生成以下结果文件（格式参考 3.1 及 docs/file_format.md）：
+
+- jar_diff_modified_classes：发生变化的类
+- jar_diff_modified_methods：发生变化的方法
+
+影响范围分析（生成变化方法的调用链）不在当前项目范围内，可使用 java-all-call-graph 项目实现
+
+使用方式示例：
+
+```java
+        // 构造比较器，参数依次为：旧版本jar文件对应的解析输出目录、新版本jar文件对应的解析输出目录、比较结果文件输出目录
+        JavaCG2JarDiffRunner jarDiffRunner = new JavaCG2JarDiffRunner("D:/out/old", "D:/out/new", "D:/out/jar_diff");
+        // 设置读回结果文件及生成结果文件使用的后缀名，需要与生成旧、新输出目录时使用的 output.file.ext 参数一致，默认为.txt
+        jarDiffRunner.setOutputFileExt(".md");
+        // 执行比较，始终生成比较结果文件（未发现变化的类、方法时生成内容为空的文件）
+        boolean success = jarDiffRunner.run();
+        // 需要时可在内存中获得发生变化的方法信息，key为新jar文件名称
+        Map<String, List<JavaCG2JarDiffModifiedMethodInfo>> modifiedMethodInfoMap = jarDiffRunner.getJarModifiedMethodInfoMap();
+```
+
+比对规则：
+
+- jar 文件按“文件名去掉版本号的前缀+文件名后缀”配对（忽略“-数字及后面的内容”），例如 jar-diff-2.0.0.jar 与 jar-diff-1.0.0.jar 的文件名前缀都是 jar-diff；jar 文件 HASH 相同则认为未变化，整体跳过
+- jar 文件 HASH 不同，或旧目录中不存在对应前缀的 jar 文件（新增的 jar 文件）时，进入类级比对；新增的 jar 文件中的全部类、方法均会记录
+- 类级比对：新旧目录中均存在该类且 class 文件 HASH 相同则跳过；否则记录为发生变化的类，并进入方法级比对
+- 方法级比对：通过 method_info 中的方法指令 HASH 比较；旧方法不存在则为新增的方法，指令 HASH 不同则为修改的方法
+- 常量值变化导致的方法指令变化可通过方法指令 HASH 检出（与 java-all-call-graph 行为一致）
+- 方法名为静态代码块（clinit）的方法、方法指令 HASH 为空的方法（如 abstract、native 方法），在旧类存在时跳过比较
+
+已知限制：
+
+- java-all-call-graph 对 MyBatis Mapper 方法使用 Mapper XML 中 SQL 语句的 HASH 代替方法指令 HASH 进行比较；当前项目不解析 MyBatis XML，因此 Mapper 接口方法指令未变化但 Mapper XML 中 SQL 变化的情况无法检出
+- 被删除的 jar 文件、类、方法不会记录（与 java-all-call-graph 行为一致）
+- 重复同名类的信息（dup_class_info、dup_method_info 等文件）不参与比较（与 java-all-call-graph 行为一致）
+- 旧、新输出目录中的 jar 文件在比较时需要仍存在于 jar_info 中记录的路径（jar_info 中记录的是路径，jar 文件 HASH 在比较时计算）
+
+参考示例测试类 test.jardiff.TestJarDiffRunner、test.jardiff.TestJarDiffE2E
 
 # 8. 人工增加方法调用关系
 

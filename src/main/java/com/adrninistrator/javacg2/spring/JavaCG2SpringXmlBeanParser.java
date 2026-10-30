@@ -84,7 +84,7 @@ public class JavaCG2SpringXmlBeanParser implements SpringXmlBeanParserInterface 
             for (Element element : root.getChildren()) {
                 if (checkBeanElement(element)) {
                     // 解析bean元素
-                    parseBeanElement(element, Collections.emptyList());
+                    parseBeanElement(element, Collections.emptyList(), jarEntryPath);
                 }
             }
             // 处理XML中的beans元素
@@ -93,12 +93,8 @@ public class JavaCG2SpringXmlBeanParser implements SpringXmlBeanParserInterface 
                     // beans元素
                     List<String> profileList = new ArrayList<>();
                     // 解析beans元素
-                    parseBeansElement(element, profileList);
+                    parseBeansElement(element, profileList, jarEntryPath);
                 }
-            }
-
-            for (SpringBeanInXml springBeanInXml : springBeanInXmlList) {
-                springBeanInXml.setXmlFilePath(jarEntryPath);
             }
             return true;
         } catch (Exception e) {
@@ -108,7 +104,7 @@ public class JavaCG2SpringXmlBeanParser implements SpringXmlBeanParserInterface 
     }
 
     // 解析beans元素
-    private void parseBeansElement(Element element, List<String> profileList) {
+    private void parseBeansElement(Element element, List<String> profileList, String jarEntryPath) {
         String profile = element.getAttributeValue("profile");
         if (StringUtils.isNotBlank(profile)) {
             profileList.add(profile);
@@ -118,16 +114,16 @@ public class JavaCG2SpringXmlBeanParser implements SpringXmlBeanParserInterface 
             if (checkBeansElement(childElement)) {
                 // 解析beans元素
                 List<String> newProfileList = new ArrayList<>(profileList);
-                parseBeansElement(childElement, newProfileList);
+                parseBeansElement(childElement, newProfileList, jarEntryPath);
             } else if (checkBeanElement(childElement)) {
                 // 解析bean元素
-                parseBeanElement(childElement, profileList);
+                parseBeanElement(childElement, profileList, jarEntryPath);
             }
         }
     }
 
     // 解析bean元素
-    private void parseBeanElement(Element element, List<String> profileList) {
+    private void parseBeanElement(Element element, List<String> profileList, String jarEntryPath) {
         String beanId = element.getAttributeValue("id");
         String beanClass = element.getAttributeValue("class");
         if (StringUtils.isNoneBlank(beanId, beanClass)) {
@@ -142,6 +138,7 @@ public class JavaCG2SpringXmlBeanParser implements SpringXmlBeanParserInterface 
                 String profile = StringUtils.join(profileList, JavaCG2Constants.FLAG_COMMA);
                 springBeanInXml.setProfile(profile);
             }
+            springBeanInXml.setXmlFilePath(jarEntryPath);
             springBeanInXmlList.add(springBeanInXml);
         }
     }

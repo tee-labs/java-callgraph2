@@ -151,6 +151,16 @@ public abstract class AbstractElManager implements Closeable {
         return elHandler;
     }
 
+    /**
+     * 检查对应的表达式处理类是否已注册
+     *
+     * @param elConfig
+     * @return true: 已注册 false: 未注册
+     */
+    protected boolean checkElHandlerExists(ElConfigInterface elConfig) {
+        return elHandlerMap.containsKey(elConfig.getKey());
+    }
+
     @Override
     public void close() {
         closed = true;

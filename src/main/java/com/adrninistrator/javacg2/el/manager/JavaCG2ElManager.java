@@ -245,6 +245,9 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     public boolean checkIgnoreParseClass(String className) {
+        if (checkNotIncludeParseClass(className)) {
+            return true;
+        }
         ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS);
         Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
         if (usedVariableMap == null) {
@@ -255,6 +258,23 @@ public class JavaCG2ElManager extends CommonElManager {
         return elHandler.runExpression(usedVariableMap, displayMap);
     }
 
+    // 检查是否未命中仅解析类（白名单）表达式，未命中时需要跳过解析
+    private boolean checkNotIncludeParseClass(String className) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_CLASS)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_CLASS);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        addData4Class(elHandler, usedVariableMap, displayMap, className);
+        return !elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
     /**
      * 检查是否需要跳过解析方法
      *
@@ -262,6 +282,9 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     public boolean checkIgnoreParseMethod(String fullMethod) {
+        if (checkNotIncludeParseMethod(fullMethod)) {
+            return true;
+        }
         ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD);
         Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
         if (usedVariableMap == null) {
@@ -270,6 +293,23 @@ public class JavaCG2ElManager extends CommonElManager {
         Map<String, Object> displayMap = new HashMap<>();
         addData4Method(elHandler, usedVariableMap, displayMap, fullMethod);
         return elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
+    // 检查是否未命中仅解析方法（白名单）表达式，未命中时需要跳过解析
+    private boolean checkNotIncludeParseMethod(String fullMethod) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        addData4Method(elHandler, usedVariableMap, displayMap, fullMethod);
+        return !elHandler.runExpression(usedVariableMap, displayMap);
     }
 
     /**
@@ -281,6 +321,9 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     public boolean checkIgnoreMethodCall(String methodCallType, String callerFullMethod, String calleeFullMethod) {
+        if (checkNotIncludeMethodCall(methodCallType, callerFullMethod, calleeFullMethod)) {
+            return true;
+        }
         ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL);
         Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
         if (usedVariableMap == null) {
@@ -293,6 +336,25 @@ public class JavaCG2ElManager extends CommonElManager {
         return elHandler.runExpression(usedVariableMap, displayMap);
     }
 
+    // 检查是否未命中仅解析方法调用（白名单）表达式，未命中时需要跳过解析
+    private boolean checkNotIncludeMethodCall(String methodCallType, String callerFullMethod, String calleeFullMethod) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        methodCallAddData4Type(elHandler, methodCallType, usedVariableMap, displayMap);
+        methodCallAddData4CallerMethod(elHandler, callerFullMethod, usedVariableMap, displayMap);
+        methodCallAddData4CalleeMethod(elHandler, calleeFullMethod, usedVariableMap, displayMap);
+        return !elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
     /**
      * 处理方法调用时解析被调用对象和参数可能的类型与值判断是否跳过方法，通过调用方法判断
      *
@@ -300,6 +362,9 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     public boolean checkIgnoreMethodCallTypeValueCaller(String callerFullMethod) {
+        if (checkNotIncludeMethodCallTypeValueCaller(callerFullMethod)) {
+            return true;
+        }
         ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL_TYPE_VALUE_CALLER);
         Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
         if (usedVariableMap == null) {
@@ -308,6 +373,23 @@ public class JavaCG2ElManager extends CommonElManager {
         Map<String, Object> displayMap = new HashMap<>();
         methodCallAddData4CallerMethod(elHandler, callerFullMethod, usedVariableMap, displayMap);
         return elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
+    // 检查是否未命中解析方法调用被调用对象和参数可能的类型与值时仅处理哪些方法（白名单）表达式，未命中时需要跳过解析
+    private boolean checkNotIncludeMethodCallTypeValueCaller(String callerFullMethod) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL_TYPE_VALUE_CALLER)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL_TYPE_VALUE_CALLER);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        methodCallAddData4CallerMethod(elHandler, callerFullMethod, usedVariableMap, displayMap);
+        return !elHandler.runExpression(usedVariableMap, displayMap);
     }
 
     /**

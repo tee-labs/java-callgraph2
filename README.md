@@ -1626,7 +1626,7 @@ JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下，均通�
 - JavaCG2MergeFileSwitchBuilder 的各方法通过原始 Aviator 表达式文本设置，字符串参数需要以单引号包裹；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准；多种判断条件需要在同一个表达式中通过 \|\| 等逻辑运算符组合
 - 忽略目录中文件的表达式可使用变量 file\_path、file\_dir\_path、file\_name（忽略非 jar、war、class 文件时还可使用 file\_ext，取值以“.”开头）；忽略 jar、war 文件中文件的表达式可使用变量 file\_path、file\_dir\_path、file\_name（忽略 class 文件时还可使用 class\_file\_path，忽略非 jar、war、class 文件时还可使用 file\_ext）；每个表达式允许使用的变量以枚举 JavaCG2ElConfigEnum 中的定义及各方法 Javadoc 为准
 
-### 7.4.4. 通过 Builder 方式指定解析类、方法、方法调用的忽略表达式
+### 7.4.4. 通过 Builder 方式指定解析类、方法、方法调用的忽略与包含表达式
 
 在 7.4.2 的基础上，还可以通过以下 Builder 类指定解析类、方法与方法调用相关开关对应的参数，通过 JavaCG2EntryBuilder 的 setParseSwitch 方法接线
 
@@ -1634,24 +1634,29 @@ JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下，均通�
 
 |类名称|对应配置参数|作用|
 |---|---|---|
-|com.adrninistrator.javacg2.builder.JavaCG2ParseSwitchBuilder|解析类、方法与方法调用时跳过数据的忽略表达式|指定解析类、方法、方法调用时跳过数据的忽略表达式|
+|com.adrninistrator.javacg2.builder.JavaCG2ParseSwitchBuilder|解析类、方法与方法调用时跳过数据的忽略（黑名单）表达式与仅解析数据的包含（白名单）表达式|指定解析类、方法、方法调用时跳过数据的忽略（黑名单）表达式与仅解析数据的包含（白名单）表达式|
 
 JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下，均通过原始 Aviator 表达式文本设置（字符串参数需要以单引号包裹），每个方法对应一个表达式配置枚举
 
 |方法名称|方法作用|
 |---|---|
 |setIgnoreClassExpression|通过原始表达式文本设置跳过解析类的表达式|
+|setIncludeClassExpression|通过原始表达式文本设置仅解析哪些类（白名单）的表达式|
 |setIgnoreMethodExpression|通过原始表达式文本设置跳过解析方法的表达式|
+|setIncludeMethodExpression|通过原始表达式文本设置仅解析哪些方法（白名单）的表达式|
 |setIgnoreMethodCallExpression|通过原始表达式文本设置跳过解析方法调用的表达式|
+|setIncludeMethodCallExpression|通过原始表达式文本设置仅解析哪些方法调用（白名单）的表达式|
 |setIgnoreTypeValueCallerExpression|通过原始表达式文本设置跳过解析方法调用被调用对象和参数可能的类型与值的表达式|
+|setIncludeTypeValueCallerExpression|通过原始表达式文本设置解析方法调用被调用对象和参数可能的类型与值时仅处理哪些方法（白名单）的表达式|
 
-参考示例方法 test.builder.TestParseSwitchBuilder:testRunNotMatch 与 test.builder.TestParseSwitchBuilder:testIgnoreClassEndToEnd
+参考示例方法 test.builder.TestParseSwitchBuilder:testRunNotMatch、test.builder.TestParseSwitchBuilder:testIgnoreClassEndToEnd 与 test.builder.TestParseSwitchBuilder:testIncludeClassEndToEnd
 
 示例方法代码如下：
 
 ```java
         JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
                 .setParseSwitch(JavaCG2ParseSwitchBuilder.builder()
+                        .setIncludeClassExpression("string.startsWithAny(package_name, 'com.business.')")
                         .setIgnoreClassExpression("string.startsWithAny(package_name, 'com.business.not_needed.')")
                         .setIgnoreMethodExpression("string.endsWithAny(full_method, 'hashCode()', 'equals(java.lang.Object)')")
                         .setIgnoreMethodCallExpression("string.equalsAny(ee_class_name, 'com.business.thirdparty.Class1')"))
@@ -1662,6 +1667,7 @@ JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下，均通过原
 
 常用表达式示例如下：
 
+- 按完整包名前缀仅解析类（白名单）：`string.startsWithAny(package_name, 'com.business.')`
 - 按完整类名跳过解析类：`string.equalsAny(class_name, 'a.b.Class1')`
 - 按完整包名前缀跳过解析类：`string.startsWithAny(package_name, 'com.business.')`
 - 跳过解析 getter/setter 方法：`string.startsWithAny(method_name, 'get', 'set')`
@@ -1672,9 +1678,12 @@ JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下，均通过原
 
 - JavaCG2EntryBuilder 的 setParseSwitch 方法可不调用，对应参数使用枚举中定义的默认值
 - 未通过 Builder 设置的表达式配置使用枚举中定义的默认值；其中 parse_ignore_method.av 的枚举默认表达式会忽略 hashCode 与 equals(java.lang.Object) 方法，其余表达式默认为空白，即不生效
+- 包含（白名单）表达式的判断方向与忽略（黑名单）表达式相反：包含表达式执行结果为 true 时解析对应数据，为 false 时跳过；未设置（空白）时不生效，即全部解析；忽略表达式执行结果为 true 时跳过对应数据
+- 包含表达式与忽略表达式同时设置时两道判断串联：先判断包含表达式，后判断忽略表达式；包含表达式未命中时直接跳过，且不再判断忽略表达式；即跳过 =（包含表达式已设置且未命中）或（忽略表达式命中）
+- 包含表达式与忽略表达式可同时设置，实现“白名单圈定范围 + 黑名单剔除”，例如仅解析 com.business 包中的类，再从中剔除不需要的类；包含表达式未设置时不影响忽略表达式的行为
 - JavaCG2ParseSwitchBuilder 的各方法通过原始 Aviator 表达式文本设置，字符串参数需要以单引号包裹；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准；多种判断条件需要在同一个表达式中通过 \|\| 等逻辑运算符组合
 - 设置跳过解析方法的表达式时会整体替换默认表达式，假如还需要忽略默认的 hashCode 与 equals(java.lang.Object) 方法，需要在表达式中包含对应的判断条件
-- 跳过解析类的表达式可使用变量 class\_name、package\_name、simple\_class\_name；跳过解析方法的表达式还可使用 method\_name、method\_arg\_num、full\_method；跳过解析方法调用的表达式可使用 method\_call\_type 及以 er\_（调用方）、ee\_（被调用方）开头的变量；跳过解析方法调用被调用对象和参数可能的类型与值的表达式仅可使用以 er\_ 开头的变量
+- 跳过解析类的表达式可使用变量 class\_name、package\_name、simple\_class\_name；跳过解析方法的表达式还可使用 method\_name、method\_arg\_num、full\_method；跳过解析方法调用的表达式可使用 method\_call\_type 及以 er\_（调用方）、ee\_（被调用方）开头的变量；跳过解析方法调用被调用对象和参数可能的类型与值的表达式仅可使用以 er\_ 开头的变量；仅解析（白名单）类、方法的表达式可使用的变量与对应的忽略表达式相同
 - 表达式允许使用的变量及示例可参考 jar 包中 \_el\_example/ 目录下的说明文档
 
 ### 7.4.5. 通过 Builder 方式指定处理 XML 文件中 Spring Bean 的忽略表达式

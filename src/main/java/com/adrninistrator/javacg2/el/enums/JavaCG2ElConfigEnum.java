@@ -87,50 +87,36 @@ public enum JavaCG2ElConfigEnum implements ElConfigInterface {
             }, JavaCG2ElChecker4MergeFileInJarWar.class, true, ""),
     ECE_PARSE_IGNORE_CLASS(JavaCG2DirEnum.IDE_PARSE_CLASS_METHOD_SWITCH.getDirName() + "/parse_ignore_class.av",
             new String[]{"指定是否跳过解析类"},
-            new ElAllowedVariableInterface[]{
-                    JavaCG2ElAllowedVariableEnum.EAVE_PARSE_CLASS_NAME,
-                    JavaCG2ElAllowedVariableEnum.EAVE_PARSE_PACKAGE_NAME,
-                    JavaCG2ElAllowedVariableEnum.EAVE_PARSE_SIMPLE_CLASS_NAME
-            }, JavaCG2ElChecker4ParseClass.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_PARSE_CLASS, JavaCG2ElChecker4ParseClass.class, true, ""),
+    ECE_PARSE_INCLUDE_CLASS(JavaCG2DirEnum.IDE_PARSE_CLASS_METHOD_SWITCH.getDirName() + "/parse_include_class.av",
+            new String[]{"指定仅解析哪些类（白名单），表达式执行结果为true时解析，为false时跳过，未设置（空白）时全部解析",
+                    "与parse_ignore_class.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_PARSE_CLASS, JavaCG2ElChecker4ParseClass.class, false, ""),
     ECE_PARSE_IGNORE_METHOD(JavaCG2DirEnum.IDE_PARSE_CLASS_METHOD_SWITCH.getDirName() + "/parse_ignore_method.av",
             new String[]{"指定是否跳过解析方法"},
-            new ElAllowedVariableInterface[]{
-                    JavaCG2ElAllowedVariableEnum.EAVE_PARSE_CLASS_NAME,
-                    JavaCG2ElAllowedVariableEnum.EAVE_PARSE_PACKAGE_NAME,
-                    JavaCG2ElAllowedVariableEnum.EAVE_PARSE_SIMPLE_CLASS_NAME,
-                    JavaCG2ElAllowedVariableEnum.EAVE_PARSE_METHOD_NAME,
-                    JavaCG2ElAllowedVariableEnum.EAVE_PARSE_METHOD_ARG_NUM,
-                    JavaCG2ElAllowedVariableEnum.EAVE_PARSE_FULL_METHOD
-            }, JavaCG2ElChecker4ParseMethod.class, true,
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_PARSE_METHOD, JavaCG2ElChecker4ParseMethod.class, true,
             ElStringAnyFunctionEnum.ENDS_WITH_ANY.getName() + "(" + JavaCG2ElAllowedVariableEnum.EAVE_PARSE_FULL_METHOD.getVariableName() +
             ", 'hashCode()', 'equals(java.lang.Object)')"),
+    ECE_PARSE_INCLUDE_METHOD(JavaCG2DirEnum.IDE_PARSE_CLASS_METHOD_SWITCH.getDirName() + "/parse_include_method.av",
+            new String[]{"指定仅解析哪些方法（白名单），表达式执行结果为true时解析，为false时跳过，未设置（空白）时全部解析",
+                    "与parse_ignore_method.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_PARSE_METHOD, JavaCG2ElChecker4ParseMethod.class, false, ""),
     ECE_PARSE_IGNORE_METHOD_CALL(JavaCG2DirEnum.IDE_PARSE_METHOD_CALL_SWITCH.getDirName() + "/parse_ignore_method_call.av",
             new String[]{"指定是否跳过解析方法调用，支持通过方法调用类型、调用方法或被调用方法等判断"},
-            new ElAllowedVariableInterface[]{
-                    CommonElAllowedVariableEnum.EAVE_METHOD_CALL_TYPE,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_CLASS_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_PACKAGE_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_SIMPLE_CLASS_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_METHOD_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_METHOD_ARG_NUM,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_FULL_METHOD,
-                    CommonElAllowedVariableEnum.EAVE_MC_EE_CLASS_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_EE_PACKAGE_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_EE_SIMPLE_CLASS_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_EE_METHOD_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_EE_METHOD_ARG_NUM,
-                    CommonElAllowedVariableEnum.EAVE_MC_EE_FULL_METHOD
-            }, JavaCG2ElChecker4MethodCall.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_PARSE_METHOD_CALL, JavaCG2ElChecker4MethodCall.class, true, ""),
+    ECE_PARSE_INCLUDE_METHOD_CALL(JavaCG2DirEnum.IDE_PARSE_METHOD_CALL_SWITCH.getDirName() + "/parse_include_method_call.av",
+            new String[]{"指定仅解析哪些方法调用（白名单），表达式执行结果为true时解析，为false时跳过，未设置（空白）时全部解析",
+                    "与parse_ignore_method_call.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）",
+                    "仅当本表达式（白名单）命中后才会继续判断parse_ignore_method_call.av"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_PARSE_METHOD_CALL, JavaCG2ElChecker4MethodCall.class, false, ""),
     ECE_PARSE_IGNORE_METHOD_CALL_TYPE_VALUE_CALLER(JavaCG2DirEnum.IDE_PARSE_METHOD_CALL_SWITCH.getDirName() + "/parse_ignore_method_call_type_value_caller.av",
             new String[]{"指定解析方法调用被调用对象和参数可能的类型与值需要跳过哪些方法，通过调用方法判断"},
-            new ElAllowedVariableInterface[]{
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_CLASS_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_PACKAGE_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_SIMPLE_CLASS_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_METHOD_NAME,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_METHOD_ARG_NUM,
-                    CommonElAllowedVariableEnum.EAVE_MC_ER_FULL_METHOD
-            }, JavaCG2ElChecker4ParseMethod.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_PARSE_METHOD_CALL_TYPE_VALUE_CALLER, JavaCG2ElChecker4ParseMethod.class, true, ""),
+    ECE_PARSE_INCLUDE_METHOD_CALL_TYPE_VALUE_CALLER(JavaCG2DirEnum.IDE_PARSE_METHOD_CALL_SWITCH.getDirName() + "/parse_include_method_call_type_value_caller.av",
+            new String[]{"指定解析方法调用被调用对象和参数可能的类型与值时仅处理哪些方法（白名单），通过调用方法判断，表达式执行结果为true时处理，为false时跳过，未设置（空白）时全部处理",
+                    "与parse_ignore_method_call_type_value_caller.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）",
+                    "仅当本表达式（白名单）命中后才会继续判断parse_ignore_method_call_type_value_caller.av"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_PARSE_METHOD_CALL_TYPE_VALUE_CALLER, JavaCG2ElChecker4ParseMethod.class, false, ""),
     ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML(JavaCG2DirEnum.IDE_HANDLE_XML_SWITCH.getDirName() + "/handle_ignore_spring_bean_in_xml.av",
             new String[]{"指定处理XML文件中定义的Spring Bean需要跳过哪些Bean"},
             new ElAllowedVariableInterface[]{
@@ -166,6 +152,54 @@ public enum JavaCG2ElConfigEnum implements ElConfigInterface {
         this.elCheckClass = elCheckClass;
         this.ignoreData = ignoreData;
         this.defaultValue = defaultValue;
+    }
+
+    // 供ignore/include两组枚举常量复用的允许变量数组持有类；枚举常量不能直接引用本枚举中在常量之后声明的静态字段，因此通过嵌套类持有
+    private static class ElConfigEnumHolder {
+
+        // 解析类表达式允许使用的变量
+        private static final ElAllowedVariableInterface[] ALLOWED_VARIABLES_4_PARSE_CLASS = {
+                JavaCG2ElAllowedVariableEnum.EAVE_PARSE_CLASS_NAME,
+                JavaCG2ElAllowedVariableEnum.EAVE_PARSE_PACKAGE_NAME,
+                JavaCG2ElAllowedVariableEnum.EAVE_PARSE_SIMPLE_CLASS_NAME
+        };
+
+        // 解析方法表达式允许使用的变量
+        private static final ElAllowedVariableInterface[] ALLOWED_VARIABLES_4_PARSE_METHOD = {
+                JavaCG2ElAllowedVariableEnum.EAVE_PARSE_CLASS_NAME,
+                JavaCG2ElAllowedVariableEnum.EAVE_PARSE_PACKAGE_NAME,
+                JavaCG2ElAllowedVariableEnum.EAVE_PARSE_SIMPLE_CLASS_NAME,
+                JavaCG2ElAllowedVariableEnum.EAVE_PARSE_METHOD_NAME,
+                JavaCG2ElAllowedVariableEnum.EAVE_PARSE_METHOD_ARG_NUM,
+                JavaCG2ElAllowedVariableEnum.EAVE_PARSE_FULL_METHOD
+        };
+
+        // 解析方法调用表达式允许使用的变量
+        private static final ElAllowedVariableInterface[] ALLOWED_VARIABLES_4_PARSE_METHOD_CALL = {
+                CommonElAllowedVariableEnum.EAVE_METHOD_CALL_TYPE,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_CLASS_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_PACKAGE_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_SIMPLE_CLASS_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_METHOD_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_METHOD_ARG_NUM,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_FULL_METHOD,
+                CommonElAllowedVariableEnum.EAVE_MC_EE_CLASS_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_EE_PACKAGE_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_EE_SIMPLE_CLASS_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_EE_METHOD_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_EE_METHOD_ARG_NUM,
+                CommonElAllowedVariableEnum.EAVE_MC_EE_FULL_METHOD
+        };
+
+        // 解析方法调用被调用对象和参数可能的类型与值时通过调用方方法判断的表达式允许使用的变量
+        private static final ElAllowedVariableInterface[] ALLOWED_VARIABLES_4_PARSE_METHOD_CALL_TYPE_VALUE_CALLER = {
+                CommonElAllowedVariableEnum.EAVE_MC_ER_CLASS_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_PACKAGE_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_SIMPLE_CLASS_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_METHOD_NAME,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_METHOD_ARG_NUM,
+                CommonElAllowedVariableEnum.EAVE_MC_ER_FULL_METHOD
+        };
     }
 
     @Override

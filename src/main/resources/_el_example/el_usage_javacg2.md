@@ -13,10 +13,33 @@
 |指定是否跳过合并jar、war中的非jar、war、class文件|_javacg2_merge_file_switch/ignore_other_in_jar_war.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_OTHER_IN_JAR_WAR|
 |通过class文件对应指定层级的目录路径判断是否跳过合并当前jar、war文件|_javacg2_merge_file_switch/ignore_jar_war_by_class_dir_prefix.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX|
 |指定是否跳过解析类|_javacg2_parse_class_method_switch/parse_ignore_class.av|JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS|
+|指定仅解析哪些类（白名单）|_javacg2_parse_class_method_switch/parse_include_class.av|JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_CLASS|
 |指定是否跳过解析方法|_javacg2_parse_class_method_switch/parse_ignore_method.av|JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD|
+|指定仅解析哪些方法（白名单）|_javacg2_parse_class_method_switch/parse_include_method.av|JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD|
 |指定是否跳过解析方法调用，支持通过方法调用类型、调用方法或被调用方法等判断|_javacg2_parse_method_call_switch/parse_ignore_method_call.av|JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL|
+|指定仅解析哪些方法调用（白名单）|_javacg2_parse_method_call_switch/parse_include_method_call.av|JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL|
 |指定解析方法调用被调用对象和参数可能的类型与值需要跳过哪些方法，通过调用方法判断|_javacg2_parse_method_call_switch/parse_ignore_method_call_type_value_caller.av|JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL_TYPE_VALUE_CALLER|
+|指定解析方法调用被调用对象和参数可能的类型与值时仅处理哪些方法（白名单），通过调用方法判断|_javacg2_parse_method_call_switch/parse_include_method_call_type_value_caller.av|JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL_TYPE_VALUE_CALLER|
 |指定处理XML文件中定义的Spring Bean需要跳过哪些Bean|_javacg2_handle_xml_switch/handle_ignore_spring_bean_in_xml.av|JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML|
+
+# 包含（白名单）表达式说明
+parse_include_class.av、parse_include_method.av、parse_include_method_call.av、parse_include_method_call_type_value_caller.av为包含（白名单）表达式配置
+包含（白名单）表达式的判断方向与忽略（黑名单）表达式相反：表达式执行结果为true时解析对应数据，为false时跳过；未设置（空白）时不生效，即全部解析
+包含表达式与忽略表达式同时设置时两道判断串联：先判断包含表达式，后判断忽略表达式；包含表达式未命中时直接跳过，且不再判断忽略表达式；即跳过 =（包含表达式已设置且未命中）或（忽略表达式命中）
+包含（白名单）表达式配置不生成表达式忽略数据文件，未命中包含表达式的数据不会记录在el_ignore_data.log文件中
+
+# 包含（白名单）表达式示例
+仅解析指定包中的类：string.startsWithAny(package_name, 'com.business.')
+
+仅解析指定的类：string.equalsAny(class_name, 'a.b.Class1', 'a.b.Class2')
+
+仅解析指定包中的方法：string.startsWithAny(class_name, 'com.business.')
+
+仅解析指定方法名的方法：string.equalsAny(method_name, 'method1', 'method2')
+
+仅解析指定方法调用类型的方法调用：string.equalsAny(method_call_type, 'VIR', 'INT')
+
+仅解析调用方属于指定包的方法调用：string.startsWithAny(er_package_name, 'com.business.')
 
 # 表达式调试方式
 将配置文件 _javacg2_config/config.properties 的 el.debug.mode 参数设置为 true 可以使表达式执行时开启调试模式，会在应用日志中输出表达式执行时的详细信息

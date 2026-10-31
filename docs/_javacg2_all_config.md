@@ -672,7 +672,33 @@ JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS
 
 ```
 
-## 5.10. _javacg2_parse_class_method_switch/parse_ignore_method.av
+## 5.10. _javacg2_parse_class_method_switch/parse_include_class.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_CLASS
+
+- 参数说明
+
+指定仅解析哪些类（白名单），表达式执行结果为true时解析，为false时跳过，未设置（空白）时全部解析
+
+与parse_ignore_class.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|class_name|String|完整类名|a.b.Class1|
+|package_name|String|完整包名<br>不会以.结束|a.b|
+|simple_class_name|String|简单类名|Class1|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.11. _javacg2_parse_class_method_switch/parse_ignore_method.av
 
 - 配置文件枚举类名与常量名
 
@@ -699,7 +725,36 @@ JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD
 string.endsWithAny(full_method, 'hashCode()', 'equals(java.lang.Object)')
 ```
 
-## 5.11. _javacg2_parse_method_call_switch/parse_ignore_method_call.av
+## 5.12. _javacg2_parse_class_method_switch/parse_include_method.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD
+
+- 参数说明
+
+指定仅解析哪些方法（白名单），表达式执行结果为true时解析，为false时跳过，未设置（空白）时全部解析
+
+与parse_ignore_method.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|class_name|String|完整类名|a.b.Class1|
+|package_name|String|完整包名<br>不会以.结束|a.b|
+|simple_class_name|String|简单类名|Class1|
+|method_name|String|方法名<br>不包括括号及方法参数|method1|
+|method_arg_num|int|方法参数数量|0<br>1|
+|full_method|String|完整方法|a.b.Class1:f1()<br>a.b.Class1:f2(int,java.lang.String)|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.13. _javacg2_parse_method_call_switch/parse_ignore_method_call.av
 
 - 配置文件枚举类名与常量名
 
@@ -733,7 +788,45 @@ JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL
 
 ```
 
-## 5.12. _javacg2_parse_method_call_switch/parse_ignore_method_call_type_value_caller.av
+## 5.14. _javacg2_parse_method_call_switch/parse_include_method_call.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL
+
+- 参数说明
+
+指定仅解析哪些方法调用（白名单），表达式执行结果为true时解析，为false时跳过，未设置（空白）时全部解析
+
+与parse_ignore_method_call.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+仅当本表达式（白名单）命中后才会继续判断parse_ignore_method_call.av
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|method_call_type|String|方法调用类型<br>参考 JavaCG2CallTypeEnum 类|VIR INT SPE STA DYN _SPR_ACT_I _SPR_ACT_C _ACT_I _ACT_C _ITF _BSM _LM _RIR1 _RIR2 _CIC1 _CIC2 _TCID1 _TCID2 _TCWRID1 _TCWRID2 _TSR _SCC _CCS _CCS_SPE _CCS_I _CCID _ICID _MA _MAA ILLEGAL|
+|er_class_name|String|调用方完整类名|a.b.Class1|
+|er_package_name|String|调用方完整包名<br>不会以.结束|a.b|
+|er_simple_class_name|String|调用方简单类名|Class1|
+|er_method_name|String|调用方方法名<br>不包括括号及方法参数|method1|
+|er_method_arg_num|int|调用方方法参数数量|0<br>1|
+|er_full_method|String|调用方完整方法<br>包括括号及方法参数|a.b.Class1:method1(int)|
+|ee_class_name|String|被调用方完整类名|a.b.Class1|
+|ee_package_name|String|被调用方完整包名<br>不会以.结束|a.b|
+|ee_simple_class_name|String|被调用方简单类名|Class1|
+|ee_method_name|String|被调用方方法名<br>不包括括号及方法参数|method1|
+|ee_method_arg_num|int|被调用方方法参数数量|0<br>1|
+|ee_full_method|String|被调用方完整方法<br>包括括号及方法参数|a.b.Class1:method1(int)|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.15. _javacg2_parse_method_call_switch/parse_ignore_method_call_type_value_caller.av
 
 - 配置文件枚举类名与常量名
 
@@ -760,7 +853,38 @@ JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL_TYPE_VALUE_CALLER
 
 ```
 
-## 5.13. _javacg2_handle_xml_switch/handle_ignore_spring_bean_in_xml.av
+## 5.16. _javacg2_parse_method_call_switch/parse_include_method_call_type_value_caller.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL_TYPE_VALUE_CALLER
+
+- 参数说明
+
+指定解析方法调用被调用对象和参数可能的类型与值时仅处理哪些方法（白名单），通过调用方法判断，表达式执行结果为true时处理，为false时跳过，未设置（空白）时全部处理
+
+与parse_ignore_method_call_type_value_caller.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+仅当本表达式（白名单）命中后才会继续判断parse_ignore_method_call_type_value_caller.av
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|er_class_name|String|调用方完整类名|a.b.Class1|
+|er_package_name|String|调用方完整包名<br>不会以.结束|a.b|
+|er_simple_class_name|String|调用方简单类名|Class1|
+|er_method_name|String|调用方方法名<br>不包括括号及方法参数|method1|
+|er_method_arg_num|int|调用方方法参数数量|0<br>1|
+|er_full_method|String|调用方完整方法<br>包括括号及方法参数|a.b.Class1:method1(int)|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.17. _javacg2_handle_xml_switch/handle_ignore_spring_bean_in_xml.av
 
 - 配置文件枚举类名与常量名
 

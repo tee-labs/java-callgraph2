@@ -32,7 +32,7 @@ public class TestMergeFileSwitchBuilder extends TestBase {
     public void testIgnoreNotMatch() {
         JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
                 .setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder.builder()
-                        .ignoreJarInDirByFileName("not_exists_1.jar", "not_exists_2.jar"))
+                        .setIgnoreJarInDirExpression("string.equalsAny(file_name, 'not_exists_1.jar', 'not_exists_2.jar')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry.run());
@@ -43,7 +43,7 @@ public class TestMergeFileSwitchBuilder extends TestBase {
     public void testIgnoreNotMatchByFileExt() {
         JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
                 .setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder.builder()
-                        .ignoreOtherInDirByFileExt(".not_exists_ext"))
+                        .setIgnoreOtherInDirExpression("string.equalsAny(file_ext, '.not_exists_ext')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry.run());
@@ -54,7 +54,7 @@ public class TestMergeFileSwitchBuilder extends TestBase {
     public void testIgnoreTestJarDirectly() {
         JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
                 .setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder.builder()
-                        .ignoreJarInDirByFileName("test.jar"))
+                        .setIgnoreJarInDirExpression("string.equalsAny(file_name, 'test.jar')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry.run());
@@ -76,7 +76,7 @@ public class TestMergeFileSwitchBuilder extends TestBase {
                         .setOutputRootPath(OUT_TEST_DIR)
                         .setOutputFileExt(".md"))
                 .setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder.builder()
-                        .ignoreJarInDirByFileName("test.jar"))
+                        .setIgnoreJarInDirExpression("string.equalsAny(file_name, 'test.jar')"))
                 .addJarOrDir(MERGE_SWITCH_DIR)
                 .build();
         log.info("执行结果 {}", javaCG2Entry.run());
@@ -105,49 +105,21 @@ public class TestMergeFileSwitchBuilder extends TestBase {
         }
     }
 
-    // 未设置MergeFileSwitch对应的Builder时不影响原行为，同时也验证多个语义化方法一起使用
+    // 未设置MergeFileSwitch对应的Builder时不影响原行为，同时也验证多个不同枚举的原始表达式一起使用
     @Test
     public void testNotSetMergeFileSwitch() {
         JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
                 .setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder.builder()
-                        .ignoreJarInJarWarByFileName("not_exists_inner.jar")
-                        .ignoreOtherInJarWarByFileExt(".not_exists_ext"))
+                        .setIgnoreJarInJarWarExpression("string.equalsAny(file_name, 'not_exists_inner.jar')")
+                        .setIgnoreOtherInJarWarExpression("string.equalsAny(file_ext, '.not_exists_ext')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry.run());
     }
 
-    // 参数为空时出现异常
+    // 非法参数抛出异常
     @Test
     public void testInvalidArgs() {
-        // 未指定文件名
-        try {
-            JavaCG2MergeFileSwitchBuilder.builder().ignoreJarInDirByFileName();
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
-        // 文件名为空白
-        try {
-            JavaCG2MergeFileSwitchBuilder.builder().ignoreWarInDirByFileName(" ");
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
-        // 文件名包含单引号
-        try {
-            JavaCG2MergeFileSwitchBuilder.builder().ignoreClassInDirByFileName("a'b.class");
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
-        // 文件后缀未以.开头
-        try {
-            JavaCG2MergeFileSwitchBuilder.builder().ignoreOtherInDirByFileExt("xml");
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
         // 原始表达式文本为null
         try {
             JavaCG2MergeFileSwitchBuilder.builder().setIgnoreJarWarByClassDirPrefixExpression(null);

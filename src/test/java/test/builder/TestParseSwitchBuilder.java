@@ -36,39 +36,37 @@ public class TestParseSwitchBuilder extends TestBase {
     private static final String OUT_DIR_IGNORE = "out/test_parse_switch_ignore";
     private static final String OUT_DIR_CONTROL = "out/test_parse_switch_control";
 
-    // 语义化方法生成的表达式文本正确，同一个枚举多次设置以后设置的为准
+    // 原始表达式文本按原样设置，同一个枚举多次设置以后设置的为准
     @Test
-    public void testGenExpressionText() {
+    public void testSetExpressionText() {
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         JavaCG2ParseSwitchBuilder.builder()
-                .ignoreClassByClassName("a.b.Class1", "a.b.Class2")
-                .ignoreMethodByFullMethodSuffix("hashCode()", "equals(java.lang.Object)")
-                .ignoreMethodCallByCallType("VIR", "INT")
-                .ignoreTypeValueByCallerFullMethod("a.b.Class1:test1(int)")
+                .setIgnoreClassExpression("string.equalsAny(class_name, 'a.b.Class1', 'a.b.Class2')")
+                .setIgnoreMethodExpression("string.endsWithAny(full_method, 'hashCode()', 'equals(java.lang.Object)')")
+                .setIgnoreMethodCallExpression("!string.containsIC(ee_class_name, 'test')")
+                .setIgnoreTypeValueCallerExpression("er_method_arg_num != 4")
                 .applyTo(javaCG2ConfigureWrapper);
-        Assert.assertEquals("string.equalsAny(class_name,'a.b.Class1','a.b.Class2')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS));
-        Assert.assertEquals("string.endsWithAny(full_method,'hashCode()','equals(java.lang.Object)')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum
+        Assert.assertEquals("string.equalsAny(class_name, 'a.b.Class1', 'a.b.Class2')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS));
+        Assert.assertEquals("string.endsWithAny(full_method, 'hashCode()', 'equals(java.lang.Object)')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum
                 .ECE_PARSE_IGNORE_METHOD));
-        Assert.assertEquals("string.equalsAny(method_call_type,'VIR','INT')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL));
-        Assert.assertEquals("string.equalsAny(er_full_method,'a.b.Class1:test1(int)')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum
-                .ECE_PARSE_IGNORE_METHOD_CALL_TYPE_VALUE_CALLER));
+        Assert.assertEquals("!string.containsIC(ee_class_name, 'test')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL));
+        Assert.assertEquals("er_method_arg_num != 4", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL_TYPE_VALUE_CALLER));
 
         // 同一个枚举多次设置以后设置的为准
         JavaCG2ConfigureWrapper wrapper2 = new JavaCG2ConfigureWrapper();
         JavaCG2ParseSwitchBuilder.builder()
-                .ignoreClassByClassName("a.b.Class1")
-                .ignoreClassByPackageNamePrefix("a.b.")
+                .setIgnoreClassExpression("string.equalsAny(class_name, 'a.b.Class1')")
+                .setIgnoreClassExpression("string.startsWithAny(package_name, 'a.b.')")
                 .applyTo(wrapper2);
-        Assert.assertEquals("string.startsWithAny(package_name,'a.b.')", wrapper2.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS));
+        Assert.assertEquals("string.startsWithAny(package_name, 'a.b.')", wrapper2.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS));
 
-        // 原始表达式入口按原样设置，不以分号结尾
+        // 多种判断条件可通过||组合在同一个表达式中
         JavaCG2ConfigureWrapper wrapper3 = new JavaCG2ConfigureWrapper();
         JavaCG2ParseSwitchBuilder.builder()
-                .setIgnoreMethodExpression("method_arg_num != 4")
-                .setIgnoreMethodCallExpression("!string.containsIC(ee_class_name, 'test')")
+                .setIgnoreClassExpression("string.equalsAny(class_name, 'a.b.Class1') || string.startsWithAny(package_name, 'a.b.')")
                 .applyTo(wrapper3);
-        Assert.assertEquals("method_arg_num != 4", wrapper3.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD));
-        Assert.assertEquals("!string.containsIC(ee_class_name, 'test')", wrapper3.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL));
+        Assert.assertEquals("string.equalsAny(class_name, 'a.b.Class1') || string.startsWithAny(package_name, 'a.b.')", wrapper3.getElConfigText(JavaCG2ElConfigEnum
+                .ECE_PARSE_IGNORE_CLASS));
     }
 
     // 设置不匹配任何类/方法/方法调用的忽略表达式后不影响正常执行
@@ -76,10 +74,10 @@ public class TestParseSwitchBuilder extends TestBase {
     public void testRunNotMatch() {
         JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
                 .setParseSwitch(JavaCG2ParseSwitchBuilder.builder()
-                        .ignoreClassByClassName("not.exists.Class1")
-                        .ignoreMethodByFullMethodSuffix("not_exists()")
-                        .ignoreMethodCallByCalleeClassName("not.exists.Class2")
-                        .ignoreTypeValueByCallerFullMethod("not.exists.Class3:test1()"))
+                        .setIgnoreClassExpression("string.equalsAny(class_name, 'not.exists.Class1')")
+                        .setIgnoreMethodExpression("string.endsWithAny(full_method, 'not_exists()')")
+                        .setIgnoreMethodCallExpression("string.equalsAny(ee_class_name, 'not.exists.Class2')")
+                        .setIgnoreTypeValueCallerExpression("string.equalsAny(er_full_method, 'not.exists.Class3:test1()')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry.run());
@@ -90,14 +88,14 @@ public class TestParseSwitchBuilder extends TestBase {
     public void testIgnoreClassEndToEnd() throws Exception {
         // 对照组：设置不匹配任何类的忽略表达式
         String classInfo4Control = runAndReadClassInfo(OUT_DIR_CONTROL, JavaCG2ParseSwitchBuilder.builder()
-                .ignoreClassByClassName("not.exists.Class1"));
+                .setIgnoreClassExpression("string.equalsAny(class_name, 'not.exists.Class1')"));
         log.info("对照组class_info.md中是否出现类 {} {}", CLASS_TO_IGNORE, classInfo4Control.contains(CLASS_TO_IGNORE));
         // 不匹配任何类的忽略表达式不会跳过类
         Assert.assertTrue(classInfo4Control.contains(CLASS_TO_IGNORE));
 
         // 过滤组：设置匹配的忽略表达式
         String classInfo4Ignore = runAndReadClassInfo(OUT_DIR_IGNORE, JavaCG2ParseSwitchBuilder.builder()
-                .ignoreClassByClassName(CLASS_TO_IGNORE));
+                .setIgnoreClassExpression("string.equalsAny(class_name, '" + CLASS_TO_IGNORE + "')"));
         log.info("过滤组class_info.md中是否出现类 {} {}", CLASS_TO_IGNORE, classInfo4Ignore.contains(CLASS_TO_IGNORE));
         // 匹配的忽略表达式跳过类
         Assert.assertFalse(classInfo4Ignore.contains(CLASS_TO_IGNORE));
@@ -144,12 +142,12 @@ public class TestParseSwitchBuilder extends TestBase {
         JavaCG2Entry javaCG2Entry2 = JavaCG2EntryBuilder.builder()
                 .setConfig(javaCG2ConfigBuilder2)
                 .setParseSwitch(JavaCG2ParseSwitchBuilder.builder()
-                        .ignoreMethodByMethodName("not_exists_method"))
+                        .setIgnoreMethodExpression("string.equalsAny(method_name, 'not_exists_method')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry2.run());
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper2 = javaCG2ConfigBuilder2.build();
-        Assert.assertEquals("string.equalsAny(method_name,'not_exists_method')", javaCG2ConfigureWrapper2.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD));
+        Assert.assertEquals("string.equalsAny(method_name, 'not_exists_method')", javaCG2ConfigureWrapper2.getElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD));
     }
 
     // 内置默认对齐：merge switch未设置的枚举使用jar包中内置配置文件的默认内容（内置为空，维持空白）
@@ -170,34 +168,6 @@ public class TestParseSwitchBuilder extends TestBase {
     // 非法参数抛出异常
     @Test
     public void testInvalidArgs() {
-        // 未指定类名
-        try {
-            JavaCG2ParseSwitchBuilder.builder().ignoreClassByClassName();
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
-        // 类名为空白
-        try {
-            JavaCG2ParseSwitchBuilder.builder().ignoreClassByPackageName(" ");
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
-        // 完整方法包含单引号
-        try {
-            JavaCG2ParseSwitchBuilder.builder().ignoreMethodByFullMethod("a.b.Class1:te'st()");
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
-        // 方法调用类型为null
-        try {
-            JavaCG2ParseSwitchBuilder.builder().ignoreMethodCallByCallType(null);
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
         // 原始表达式文本为null
         try {
             JavaCG2ParseSwitchBuilder.builder().setIgnoreClassExpression(null);

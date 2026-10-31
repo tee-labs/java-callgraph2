@@ -21,11 +21,11 @@ import java.util.List;
  *             .setFrEqConversionMethod(JavaCG2FrEqConversionMethodBuilder.builder()
  *                     .addFrEqConversionMethod("test.callgraph.dto.Dto1", "copy", 1))
  *             .setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder.builder()
- *                     .ignoreJarInDirByFileName("not_needed.jar"))
+ *                     .setIgnoreJarInDirExpression("string.equalsAny(file_name, 'not_needed.jar')"))
  *             .setParseSwitch(JavaCG2ParseSwitchBuilder.builder()
- *                     .ignoreClassByPackageName("com.business.not_needed"))
+ *                     .setIgnoreClassExpression("string.startsWithAny(package_name, 'com.business.')"))
  *             .setXmlSwitch(JavaCG2XmlSwitchBuilder.builder()
- *                     .ignoreSpringBeanByBeanName("not_needed_bean"))
+ *                     .setIgnoreSpringBeanInXmlExpression("string.equalsAny(bean_name, 'not_needed_bean')"))
  *             .addJarOrDir("D:/tmp/test.jar")
  *             .build();
  *     boolean success = javaCG2Entry.run();

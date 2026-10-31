@@ -21,33 +21,22 @@ import test.base.TestBase;
 @Slf4j
 public class TestXmlSwitchBuilder extends TestBase {
 
-    // 语义化方法生成的表达式文本正确
+    // 原始表达式文本按原样设置
     @Test
-    public void testGenExpressionText() {
+    public void testSetExpressionText() {
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         JavaCG2XmlSwitchBuilder.builder()
-                .ignoreSpringBeanByBeanName("testService1", "testService2")
+                .setIgnoreSpringBeanInXmlExpression("string.containsIC(class_name, 'test')")
                 .applyTo(javaCG2ConfigureWrapper);
-        Assert.assertEquals("string.equalsAny(bean_name,'testService1','testService2')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum
-                .ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
+        Assert.assertEquals("string.containsIC(class_name, 'test')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
 
+        // 多种判断条件可通过||组合在同一个表达式中
         JavaCG2ConfigureWrapper wrapper2 = new JavaCG2ConfigureWrapper();
         JavaCG2XmlSwitchBuilder.builder()
-                .ignoreSpringBeanByClassName("a.b.Class1", "a.b.Class2")
+                .setIgnoreSpringBeanInXmlExpression("string.startsWithAny(profile, 'dev') || string.equalsAny(bean_name, 'testService1')")
                 .applyTo(wrapper2);
-        Assert.assertEquals("string.equalsAny(class_name,'a.b.Class1','a.b.Class2')", wrapper2.getElConfigText(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
-
-        JavaCG2ConfigureWrapper wrapper3 = new JavaCG2ConfigureWrapper();
-        JavaCG2XmlSwitchBuilder.builder()
-                .ignoreSpringBeanByProfile("dev")
-                .applyTo(wrapper3);
-        Assert.assertEquals("string.equalsAny(profile,'dev')", wrapper3.getElConfigText(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
-
-        JavaCG2ConfigureWrapper wrapper4 = new JavaCG2ConfigureWrapper();
-        JavaCG2XmlSwitchBuilder.builder()
-                .ignoreSpringBeanByProfilePrefix("dev", "test")
-                .applyTo(wrapper4);
-        Assert.assertEquals("string.startsWithAny(profile,'dev','test')", wrapper4.getElConfigText(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
+        Assert.assertEquals("string.startsWithAny(profile, 'dev') || string.equalsAny(bean_name, 'testService1')", wrapper2.getElConfigText(JavaCG2ElConfigEnum
+                .ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
     }
 
     // 同一个表达式配置枚举多次设置以后设置的为准
@@ -55,61 +44,15 @@ public class TestXmlSwitchBuilder extends TestBase {
     public void testLastSetWins() {
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         JavaCG2XmlSwitchBuilder.builder()
-                .ignoreSpringBeanByBeanName("testService1")
-                .ignoreSpringBeanByClassName("a.b.Class1")
+                .setIgnoreSpringBeanInXmlExpression("string.equalsAny(bean_name, 'testService1')")
+                .setIgnoreSpringBeanInXmlExpression("string.equalsAny(class_name, 'a.b.Class1')")
                 .applyTo(javaCG2ConfigureWrapper);
-        Assert.assertEquals("string.equalsAny(class_name,'a.b.Class1')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
-
-        // 语义化方法与原始表达式入口以后设置的为准
-        JavaCG2ConfigureWrapper wrapper2 = new JavaCG2ConfigureWrapper();
-        JavaCG2XmlSwitchBuilder.builder()
-                .ignoreSpringBeanByBeanName("testService1")
-                .setIgnoreSpringBeanInXmlExpression("profile != 'dev'")
-                .applyTo(wrapper2);
-        Assert.assertEquals("profile != 'dev'", wrapper2.getElConfigText(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
-    }
-
-    // 原始表达式入口按原样设置
-    @Test
-    public void testRawExpression() {
-        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
-        JavaCG2XmlSwitchBuilder.builder()
-                .setIgnoreSpringBeanInXmlExpression("string.containsIC(class_name, 'test')")
-                .applyTo(javaCG2ConfigureWrapper);
-        Assert.assertEquals("string.containsIC(class_name, 'test')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
+        Assert.assertEquals("string.equalsAny(class_name, 'a.b.Class1')", javaCG2ConfigureWrapper.getElConfigText(JavaCG2ElConfigEnum.ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
     }
 
     // 非法参数抛出异常
     @Test
     public void testInvalidArgs() {
-        // 未指定Bean名称
-        try {
-            JavaCG2XmlSwitchBuilder.builder().ignoreSpringBeanByBeanName();
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
-        // 类名为null
-        try {
-            JavaCG2XmlSwitchBuilder.builder().ignoreSpringBeanByClassName(null);
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
-        // profile为空白
-        try {
-            JavaCG2XmlSwitchBuilder.builder().ignoreSpringBeanByProfile(" ");
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
-        // profile前缀包含单引号
-        try {
-            JavaCG2XmlSwitchBuilder.builder().ignoreSpringBeanByProfilePrefix("de'v");
-            Assert.fail();
-        } catch (JavaCG2ConfigException e) {
-            log.info("出现预期的异常 {}", e.getMessage());
-        }
         // 原始表达式文本为null
         try {
             JavaCG2XmlSwitchBuilder.builder().setIgnoreSpringBeanInXmlExpression(null);
@@ -138,7 +81,7 @@ public class TestXmlSwitchBuilder extends TestBase {
     public void testRunNotMatch() {
         JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
                 .setXmlSwitch(JavaCG2XmlSwitchBuilder.builder()
-                        .ignoreSpringBeanByBeanName("not_exists_bean"))
+                        .setIgnoreSpringBeanInXmlExpression("string.equalsAny(bean_name, 'not_exists_bean')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry.run());
@@ -163,12 +106,12 @@ public class TestXmlSwitchBuilder extends TestBase {
         JavaCG2Entry javaCG2Entry2 = JavaCG2EntryBuilder.builder()
                 .setConfig(javaCG2ConfigBuilder2)
                 .setXmlSwitch(JavaCG2XmlSwitchBuilder.builder()
-                        .ignoreSpringBeanByBeanName("not_exists_bean"))
+                        .setIgnoreSpringBeanInXmlExpression("string.equalsAny(bean_name, 'not_exists_bean')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry2.run());
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper2 = javaCG2ConfigBuilder2.build();
-        Assert.assertEquals("string.equalsAny(bean_name,'not_exists_bean')", javaCG2ConfigureWrapper2.getElConfigText(JavaCG2ElConfigEnum
+        Assert.assertEquals("string.equalsAny(bean_name, 'not_exists_bean')", javaCG2ConfigureWrapper2.getElConfigText(JavaCG2ElConfigEnum
                 .ECE_HANDLE_IGNORE_SPRING_BEAN_IN_XML));
     }
 }

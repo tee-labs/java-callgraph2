@@ -1589,22 +1589,17 @@ JavaCG2FrEqConversionMethodBuilder 用于指定配置参数的方法如下
 |addFrEqConversionMethod|添加等值转换方法，追加语义，保留枚举中定义的默认条目|
 |setFrEqConversionMethod|设置等值转换方法，整体覆盖语义，不保留枚举中定义的默认条目|
 
-JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下
+JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下，均通过原始 Aviator 表达式文本设置（字符串参数需要以单引号包裹），每个方法对应一个表达式配置枚举
 
 |方法名称|方法作用|
 |---|---|
-|ignoreJarInDirByFileName|按文件名忽略目录中的 jar 文件|
-|ignoreWarInDirByFileName|按文件名忽略目录中的 war 文件|
-|ignoreClassInDirByFileName|按文件名忽略目录中的 class 文件|
-|ignoreJarInJarWarByFileName|按文件名忽略 jar、war 文件中的 jar 文件|
-|ignoreClassInJarWarByFileName|按文件名忽略 jar、war 文件中的 class 文件|
-|ignoreJarInDirByFilePath|按文件路径忽略目录中的 jar 文件|
-|ignoreWarInDirByFilePath|按文件路径忽略目录中的 war 文件|
-|ignoreClassInDirByFilePath|按文件路径忽略目录中的 class 文件|
-|ignoreJarInJarWarByFilePath|按文件路径忽略 jar、war 文件中的 jar 文件|
-|ignoreClassInJarWarByFilePath|按文件路径忽略 jar、war 文件中的 class 文件|
-|ignoreOtherInDirByFileExt|按文件后缀忽略目录中的非 jar、war、class 文件|
-|ignoreOtherInJarWarByFileExt|按文件后缀忽略 jar、war 文件中的非 jar、war、class 文件|
+|setIgnoreJarInDirExpression|通过原始表达式文本设置跳过合并目录中的 jar 文件的表达式|
+|setIgnoreWarInDirExpression|通过原始表达式文本设置跳过合并目录中的 war 文件的表达式|
+|setIgnoreClassInDirExpression|通过原始表达式文本设置跳过合并目录中的 class 文件的表达式|
+|setIgnoreOtherInDirExpression|通过原始表达式文本设置跳过合并目录中的非 jar、war、class 文件的表达式|
+|setIgnoreJarInJarWarExpression|通过原始表达式文本设置跳过合并 jar、war 文件中的 jar 文件的表达式|
+|setIgnoreClassInJarWarExpression|通过原始表达式文本设置跳过合并 jar、war 文件中的 class 文件的表达式|
+|setIgnoreOtherInJarWarExpression|通过原始表达式文本设置跳过合并 jar、war 文件中的非 jar、war、class 文件的表达式|
 |setIgnoreJarWarByClassDirPrefixExpression|通过原始表达式文本设置通过 class 文件对应指定层级的目录路径判断是否跳过合并当前 jar、war 文件的表达式|
 
 参考示例方法 test.builder.TestFrEqConversionMethodBuilder:testAddKeepDefault 与 test.builder.TestMergeFileSwitchBuilder:testIgnoreNotMatch
@@ -1616,8 +1611,8 @@ JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下
                 .setFrEqConversionMethod(JavaCG2FrEqConversionMethodBuilder.builder()
                         .addFrEqConversionMethod("test.callgraph.dto.TestDto1", "copy", 1))
                 .setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder.builder()
-                        .ignoreJarInDirByFileName("not_needed.jar")
-                        .ignoreOtherInDirByFileExt(".xml", ".properties"))
+                        .setIgnoreJarInDirExpression("string.equalsAny(file_name, 'not_needed.jar')")
+                        .setIgnoreOtherInDirExpression("string.equalsAny(file_ext, '.xml', '.properties')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry.run());
@@ -1628,8 +1623,8 @@ JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下
 - JavaCG2EntryBuilder 的 setFrEqConversionMethod 与 setMergeFileSwitch 方法均可不调用，对应参数使用枚举中定义的默认值
 - JavaCG2FrEqConversionMethodBuilder 的 add 方法与 set 方法的效果互斥，以后调用的方法为准；add 方法为追加语义，保留枚举默认条目，set 方法为整体覆盖语义，不保留枚举默认条目
 - JavaCG2FrEqConversionMethodBuilder 支持以“完整类名、方法名、序号”的方式指定条目，也支持以完整格式“完整类名:方法名=序号”的字符串方式指定，方法名允许为空（例如 java.math.BigDecimal:=0）
-- JavaCG2MergeFileSwitchBuilder 的语义化方法内部会生成合法的 Aviator 表达式文本（字符串参数自动以单引号包裹）；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准
-- JavaCG2MergeFileSwitchBuilder 的 ignoreOtherInDirByFileExt 与 ignoreOtherInJarWarByFileExt 方法指定的文件后缀需要以“.”开头
+- JavaCG2MergeFileSwitchBuilder 的各方法通过原始 Aviator 表达式文本设置，字符串参数需要以单引号包裹；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准；多种判断条件需要在同一个表达式中通过 \|\| 等逻辑运算符组合
+- 忽略目录中文件的表达式可使用变量 file\_path、file\_dir\_path、file\_name（忽略非 jar、war、class 文件时还可使用 file\_ext，取值以“.”开头）；忽略 jar、war 文件中文件的表达式可使用变量 file\_path、file\_dir\_path、file\_name（忽略 class 文件时还可使用 class\_file\_path，忽略非 jar、war、class 文件时还可使用 file\_ext）；每个表达式允许使用的变量以枚举 JavaCG2ElConfigEnum 中的定义及各方法 Javadoc 为准
 
 ### 7.4.4. 通过 Builder 方式指定解析类、方法、方法调用的忽略表达式
 
@@ -1641,33 +1636,10 @@ JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下
 |---|---|---|
 |com.adrninistrator.javacg2.builder.JavaCG2ParseSwitchBuilder|解析类、方法与方法调用时跳过数据的忽略表达式|指定解析类、方法、方法调用时跳过数据的忽略表达式|
 
-JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下
+JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下，均通过原始 Aviator 表达式文本设置（字符串参数需要以单引号包裹），每个方法对应一个表达式配置枚举
 
 |方法名称|方法作用|
 |---|---|
-|ignoreClassByClassName|按完整类名跳过解析类|
-|ignoreClassByPackageName|按完整包名跳过解析类|
-|ignoreClassByPackageNamePrefix|按完整包名前缀跳过解析类|
-|ignoreClassBySimpleClassName|按简单类名跳过解析类|
-|ignoreMethodByFullMethod|按完整方法跳过解析方法|
-|ignoreMethodByFullMethodSuffix|按完整方法后缀跳过解析方法|
-|ignoreMethodByClassName|按完整类名跳过解析方法|
-|ignoreMethodByClassNamePrefix|按完整类名前缀跳过解析方法|
-|ignoreMethodByMethodName|按方法名跳过解析方法|
-|ignoreMethodCallByCallType|按方法调用类型跳过解析方法调用|
-|ignoreMethodCallByCallerClassName|按调用方完整类名跳过解析方法调用|
-|ignoreMethodCallByCallerPackageName|按调用方完整包名跳过解析方法调用|
-|ignoreMethodCallByCallerPackageNamePrefix|按调用方完整包名前缀跳过解析方法调用|
-|ignoreMethodCallByCallerFullMethod|按调用方完整方法跳过解析方法调用|
-|ignoreMethodCallByCalleeClassName|按被调用方完整类名跳过解析方法调用|
-|ignoreMethodCallByCalleePackageName|按被调用方完整包名跳过解析方法调用|
-|ignoreMethodCallByCalleePackageNamePrefix|按被调用方完整包名前缀跳过解析方法调用|
-|ignoreMethodCallByCalleeMethodName|按被调用方方法名跳过解析方法调用|
-|ignoreMethodCallByCalleeFullMethod|按被调用方完整方法跳过解析方法调用|
-|ignoreTypeValueByCallerClassName|按调用方完整类名跳过解析方法调用被调用对象和参数可能的类型与值|
-|ignoreTypeValueByCallerPackageName|按调用方完整包名跳过解析方法调用被调用对象和参数可能的类型与值|
-|ignoreTypeValueByCallerPackageNamePrefix|按调用方完整包名前缀跳过解析方法调用被调用对象和参数可能的类型与值|
-|ignoreTypeValueByCallerFullMethod|按调用方完整方法跳过解析方法调用被调用对象和参数可能的类型与值|
 |setIgnoreClassExpression|通过原始表达式文本设置跳过解析类的表达式|
 |setIgnoreMethodExpression|通过原始表达式文本设置跳过解析方法的表达式|
 |setIgnoreMethodCallExpression|通过原始表达式文本设置跳过解析方法调用的表达式|
@@ -1680,20 +1652,29 @@ JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下
 ```java
         JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
                 .setParseSwitch(JavaCG2ParseSwitchBuilder.builder()
-                        .ignoreClassByPackageName("com.business.not_needed")
-                        .ignoreMethodByFullMethodSuffix("hashCode()", "equals(java.lang.Object)")
-                        .ignoreMethodCallByCalleeClassName("com.business.thirdparty.Class1"))
+                        .setIgnoreClassExpression("string.startsWithAny(package_name, 'com.business.not_needed.')")
+                        .setIgnoreMethodExpression("string.endsWithAny(full_method, 'hashCode()', 'equals(java.lang.Object)')")
+                        .setIgnoreMethodCallExpression("string.equalsAny(ee_class_name, 'com.business.thirdparty.Class1')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry.run());
 ```
 
+常用表达式示例如下：
+
+- 按完整类名跳过解析类：`string.equalsAny(class_name, 'a.b.Class1')`
+- 按完整包名前缀跳过解析类：`string.startsWithAny(package_name, 'com.business.')`
+- 跳过解析 getter/setter 方法：`string.startsWithAny(method_name, 'get', 'set')`
+- 在默认表达式基础上追加跳过解析的方法：`string.endsWithAny(full_method, 'hashCode()', 'equals(java.lang.Object)') || string.startsWithAny(method_name, 'lambda$')`
+- 按方法调用类型与被调用方包名前缀跳过解析方法调用：`string.equalsAny(method_call_type, 'VIR', 'INT') || string.startsWithAny(ee_package_name, 'com.thirdparty.')`
+
 说明：
 
 - JavaCG2EntryBuilder 的 setParseSwitch 方法可不调用，对应参数使用枚举中定义的默认值
 - 未通过 Builder 设置的表达式配置使用枚举中定义的默认值；其中 parse_ignore_method.av 的枚举默认表达式会忽略 hashCode 与 equals(java.lang.Object) 方法，其余表达式默认为空白，即不生效
-- JavaCG2ParseSwitchBuilder 的语义化方法内部会生成合法的 Aviator 表达式文本（字符串参数自动以单引号包裹，例如 ignoreClassByClassName("a.b.Class1") 生成 string.equalsAny(class\_name,'a.b.Class1')）；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准
-- 语义化方法未覆盖的用法（如 string.containsIC 等函数、方法参数数量等）可通过 setIgnoreClassExpression、setIgnoreMethodExpression、setIgnoreMethodCallExpression、setIgnoreTypeValueCallerExpression 方法使用原始表达式文本指定
+- JavaCG2ParseSwitchBuilder 的各方法通过原始 Aviator 表达式文本设置，字符串参数需要以单引号包裹；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准；多种判断条件需要在同一个表达式中通过 \|\| 等逻辑运算符组合
+- 设置跳过解析方法的表达式时会整体替换默认表达式，假如还需要忽略默认的 hashCode 与 equals(java.lang.Object) 方法，需要在表达式中包含对应的判断条件
+- 跳过解析类的表达式可使用变量 class\_name、package\_name、simple\_class\_name；跳过解析方法的表达式还可使用 method\_name、method\_arg\_num、full\_method；跳过解析方法调用的表达式可使用 method\_call\_type 及以 er\_（调用方）、ee\_（被调用方）开头的变量；跳过解析方法调用被调用对象和参数可能的类型与值的表达式仅可使用以 er\_ 开头的变量
 - 表达式允许使用的变量及示例可参考 jar 包中 \_el\_example/ 目录下的说明文档
 
 ### 7.4.5. 通过 Builder 方式指定处理 XML 文件中 Spring Bean 的忽略表达式
@@ -1706,14 +1687,10 @@ JavaCG2ParseSwitchBuilder 用于指定配置参数的方法如下
 |---|---|---|
 |com.adrninistrator.javacg2.builder.JavaCG2XmlSwitchBuilder|处理 XML 文件中定义的 Spring Bean 时跳过 Bean 的忽略表达式|指定处理 XML 文件中定义的 Spring Bean 时跳过 Bean 的忽略表达式|
 
-JavaCG2XmlSwitchBuilder 用于指定配置参数的方法如下
+JavaCG2XmlSwitchBuilder 用于指定配置参数的方法如下，均通过原始 Aviator 表达式文本设置（字符串参数需要以单引号包裹），每个方法对应一个表达式配置枚举
 
 |方法名称|方法作用|
 |---|---|
-|ignoreSpringBeanByBeanName|按 Spring Bean 名称跳过处理 XML 文件中定义的 Spring Bean|
-|ignoreSpringBeanByClassName|按 Spring Bean 类名跳过处理 XML 文件中定义的 Spring Bean|
-|ignoreSpringBeanByProfile|按 Spring Bean profile 跳过处理 XML 文件中定义的 Spring Bean|
-|ignoreSpringBeanByProfilePrefix|按 Spring Bean profile 前缀跳过处理 XML 文件中定义的 Spring Bean|
 |setIgnoreSpringBeanInXmlExpression|通过原始表达式文本设置跳过处理 XML 文件中定义的 Spring Bean 的表达式|
 
 参考示例方法 test.builder.TestXmlSwitchBuilder:testRunNotMatch
@@ -1723,8 +1700,7 @@ JavaCG2XmlSwitchBuilder 用于指定配置参数的方法如下
 ```java
         JavaCG2Entry javaCG2Entry = JavaCG2EntryBuilder.builder()
                 .setXmlSwitch(JavaCG2XmlSwitchBuilder.builder()
-                        .ignoreSpringBeanByBeanName("not_needed_bean")
-                        .ignoreSpringBeanByProfile("dev"))
+                        .setIgnoreSpringBeanInXmlExpression("string.equalsAny(bean_name, 'not_needed_bean') || string.startsWithAny(profile, 'dev')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry.run());
@@ -1734,8 +1710,8 @@ JavaCG2XmlSwitchBuilder 用于指定配置参数的方法如下
 
 - JavaCG2EntryBuilder 的 setXmlSwitch 方法可不调用，对应参数使用枚举中定义的默认值（默认为空白，即不生效）
 - 该开关仅当待分析工程通过 XML 文件定义 Spring Bean 时相关，用于在处理 XML 文件中定义的 Spring Bean 时按表达式跳过
-- JavaCG2XmlSwitchBuilder 的语义化方法内部会生成合法的 Aviator 表达式文本（字符串参数自动以单引号包裹，例如 ignoreSpringBeanByBeanName("testService1") 生成 string.equalsAny(bean\_name,'testService1')）；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准
-- 语义化方法未覆盖的用法（如 string.containsIC 等函数）可通过 setIgnoreSpringBeanInXmlExpression 方法使用原始表达式文本指定
+- JavaCG2XmlSwitchBuilder 的方法通过原始 Aviator 表达式文本设置，字符串参数需要以单引号包裹；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准；多种判断条件需要在同一个表达式中通过 \|\| 等逻辑运算符组合
+- 表达式可使用变量 bean\_name、class\_name、profile
 - Spring Bean 的 profile 可能为空字符串，可能包含一级或多级，使用半角逗号拼接
 - 表达式允许使用的变量及示例可参考 jar 包中 \_el\_example/ 目录下的说明文档
 

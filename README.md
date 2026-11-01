@@ -1531,6 +1531,62 @@ mvn package -Pgen_run_jar -DskipTests
 
 命令行入口与 run.bat、run.sh 脚本已移除，构建生成的 jar/run_javacg2.jar 及 lib 目录中的依赖 jar 可作为库使用：将其加入 classpath，在代码中通过 Builder 方式或入口类 JavaCG2Entry 执行解析（参考 7.4）
 
+### 7.3.7. 输出适配器与结果数据读回
+
+#### 7.3.7.1. 输出适配器
+
+结果数据的统一写出接口为 writer/JavaCG2OutputAdapter，为每种结果文件提供对应的记录 Sink（writer/JavaCG2RecordSink，一条记录对应结果文件中的一行）；通过 JavaCG2Entry 的 setOutputAdapter 方法可在 run() 之前注册自定义实现
+
+|实现类|作用|
+|---|---|
+|JavaCG2FileOutputAdapter|默认实现，将记录写入输出目录中的结果文件，遵守 output.file.header.enable 参数与 schema.headerSupported 规则|
+|JavaCG2MemoryOutputAdapter|将记录写入内存，结果数据供同进程直接消费，不落盘|
+
+#### 7.3.7.2. 内存输出适配器
+
+JavaCG2MemoryOutputAdapter 适用于将当前项目作为库嵌入使用的场景：解析结果无需写为文件，写出的结果数据在同一个进程中直接消费。表头行的写出规则与文件实现一致：构造时可指定表头开关（与 output.file.header.enable 参数含义一致），仅对定义了列结构且允许表头的文件类型生效（jar_info 等文件不会输出表头）
+
+主要方法：
+
+|方法|作用|
+|---|---|
+|genMainRecordSink|生成主结果文件对应的记录 Sink（写出）|
+|genOtherRecordSink|生成其他结果文件（如扩展机制生成的文件）对应的记录 Sink（写出）|
+|genRecordSource|生成主结果文件对应的记录数据来源（读回），未生成对应的结果文件时返回 null|
+|genOtherRecordSource|生成其他结果文件对应的记录数据来源（读回），未生成对应的结果文件时返回 null|
+|getMainRecordContent|获取指定主结果文件收集的全部内容（包含表头行，如有），未生成对应的结果文件时返回 null|
+|getOtherRecordContent|获取指定其他结果文件收集的全部内容（包含表头行，如有），未生成对应的结果文件时返回 null|
+
+内存 Sink（JavaCG2MemoryRecordSink）的 close() 方法即封版边界，关闭后不允许再写入；收集的记录内容格式与写入结果文件的内容一致（各列以 tab 分隔，每行一条记录）
+
+使用方式示例：
+
+```java
+        JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
+        javaCG2ConfigureWrapper.setOtherConfigList(JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR, "target/test.jar");
+        JavaCG2Entry javaCG2Entry = new JavaCG2Entry(javaCG2ConfigureWrapper);
+        // 注册内存输出适配器，参数为是否在结果文件首行输出表头（与 output.file.header.enable 参数含义一致）
+        javaCG2Entry.setOutputAdapter(new JavaCG2MemoryOutputAdapter(false));
+        // 解析结果保存在内存适配器中，不写为结果文件（配置参数保存文件、EL 表达式数据文件等仍写为文件）
+        boolean success = javaCG2Entry.run();
+```
+
+注意：内存适配器仅接管通过记录 Sink 写出的结果数据（各结果文件）；配置参数保存文件（_javacg2_all_config 等）、EL 表达式数据文件、_log_method_spend_time 有各自的写出通道，仍会写为文件，因此使用内存适配器时仍需指定可用的输出根目录
+
+#### 7.3.7.3. 结果数据读回
+
+结果数据的读回接口为 writer/JavaCG2RecordSource，按结果文件类型定位一个结果文件的数据行，与写出侧的 JavaCG2RecordSink 对应；表头行（开启 output.file.header.enable 参数时写出的首行）由实现在内部跳过，读回方无需处理
+
+|实现类|作用|
+|---|---|
+|JavaCG2FileRecordSource|从输出根目录与文件后缀名定位的结果文件中读回|
+|JavaCG2MemoryRecordSource|从内存输出适配器收集的数据中读回|
+
+支持读回的输出适配器通过 genRecordSource 方法提供读回数据来源；Jar 兼容性检查（JavaCG2CompatibilityChecker）与 JarDiff 比较（JavaCG2JarDiffRunner）在解析完成后读回本次生成的结果数据进行比对，读回数据来源与文件路径解耦：
+
+- Jar 兼容性检查：默认从输出目录中的结果文件读回（原有行为不变）；通过构造器传入支持读回的输出适配器（如 JavaCG2MemoryOutputAdapter）时，从适配器收集的数据中读回，检查报告也通过该适配器生成
+- JarDiff 比较：默认从旧、新输出目录中的结果文件读回，比较结果文件写入文件（原有行为不变）；通过构造器传入输出适配器时，从适配器收集的数据中读回，比较结果文件也通过指定的适配器生成
+
 ## 7.4. 配置参数指定方式
 
 ### 7.4.1. 通过代码指定配置参数
@@ -1796,6 +1852,14 @@ java-callgraph2 内置了 JarDiff 比较（比对逻辑与 java-all-call-graph �
 - 旧、新输出目录中的 jar 文件在比较时需要仍存在于 jar_info 中记录的路径（jar_info 中记录的是路径，jar 文件 HASH 在比较时计算）
 
 参考示例测试类 test.jardiff.TestJarDiffRunner、test.jardiff.TestJarDiffE2E
+
+除使用输出目录构造 JavaCG2JarDiffRunner 外，也支持通过支持读回的输出适配器构造（参考 7.3.7），读回旧、新版本的结果数据并写出比较结果文件，例如使用内存输出适配器时解析结果无需落盘：
+
+```java
+        // 参数依次为：读回旧版本结果数据使用的输出适配器、读回新版本结果数据使用的输出适配器、写出比较结果文件使用的输出适配器
+        JavaCG2JarDiffRunner jarDiffRunner = new JavaCG2JarDiffRunner(oldMemoryOutputAdapter, newMemoryOutputAdapter, diffMemoryOutputAdapter);
+        boolean success = jarDiffRunner.run();
+```
 
 # 8. 人工增加方法调用关系
 

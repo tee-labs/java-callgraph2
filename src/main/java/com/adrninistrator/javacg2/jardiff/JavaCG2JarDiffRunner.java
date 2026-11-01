@@ -6,11 +6,14 @@ import com.adrninistrator.javacg2.common.JavaCG2OutputFileSchema;
 import com.adrninistrator.javacg2.common.enums.JavaCG2OutPutFileTypeEnum;
 import com.adrninistrator.javacg2.dto.jardiff.JavaCG2JarDiffModifiedClassInfo;
 import com.adrninistrator.javacg2.dto.jardiff.JavaCG2JarDiffModifiedMethodInfo;
+import com.adrninistrator.javacg2.dto.output.JavaCG2OutputInfo;
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
-import com.adrninistrator.javacg2.writer.JavaCG2FileRecordSink;
+import com.adrninistrator.javacg2.writer.JavaCG2FileOutputAdapter;
+import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSource;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -37,8 +40,10 @@ import java.util.regex.Pattern;
 /**
  * @author adrninistrator
  * @date 2026/10/30
- * @description: 比较两次java-callgraph2解析生成的输出目录（旧、新），获得发生变化的类、方法的独立库API
- * 比对逻辑参考java-all-call-graph的JarDiff功能（AbstractRunnerGenJarDiffCallGraph），不依赖数据库，直接读回两次解析生成的结果文件在内存中比对
+ * @description: 比较两次java-callgraph2解析生成的输出结果（旧、新），获得发生变化的类、方法的独立库API
+ * 比对逻辑参考java-all-call-graph的JarDiff功能（AbstractRunnerGenJarDiffCallGraph），不依赖数据库，直接读回两次解析生成的结果数据在内存中比对
+ * 读回的数据来源与文件路径解耦：默认从旧、新输出目录中的结果文件读回（JavaCG2FileRecordSource），
+ * 也可通过构造器指定支持读回的输出适配器（如JavaCG2MemoryOutputAdapter）；比较结果文件默认写入文件，也可注入输出适配器生成
  * 比对规则：
  * 1 jar文件按“文件名去掉版本号的前缀+文件名后缀”配对（忽略“-数字及后面的内容”），jar文件HASH相同则认为未变化，整体跳过
  * 2 jar文件HASH不同，或旧目录中不存在对应前缀的jar文件（新增的jar文件）时，进入类级比对
@@ -80,11 +85,25 @@ public class JavaCG2JarDiffRunner {
 
     private final AtomicBoolean runFlag = new AtomicBoolean(false);
 
+    // 旧版本对应的解析输出目录，通过构造器指定读回输出适配器时为null
     private final String oldOutputDirPath;
 
+    // 新版本对应的解析输出目录，通过构造器指定读回输出适配器时为null
     private final String newOutputDirPath;
 
+    // 比较结果文件输出目录，通过构造器指定写出输出适配器时为null
     private final String diffOutputDirPath;
+
+    /*
+        读回旧、新版本结果数据及写出比较结果文件使用的输出适配器
+        未通过构造器指定时，在run方法中使用默认的文件实现，行为与原有实现一致
+     */
+    @Setter
+    private JavaCG2OutputAdapter oldOutputAdapter;
+    @Setter
+    private JavaCG2OutputAdapter newOutputAdapter;
+    @Setter
+    private JavaCG2OutputAdapter diffOutputAdapter;
 
     // 读回结果文件及生成结果文件使用的后缀名，默认为.txt，需要与生成旧、新输出目录时使用的output.file.ext参数一致
     @Getter
@@ -122,6 +141,23 @@ public class JavaCG2JarDiffRunner {
     }
 
     /**
+     * 通过支持读回的输出适配器读回旧、新版本的结果数据，比较结果文件也通过指定的输出适配器生成
+     * 使用当前构造器时不使用输出目录，读回及写出的数据来源均由输出适配器决定（如JavaCG2MemoryOutputAdapter）
+     *
+     * @param oldOutputAdapter  读回旧版本结果数据使用的输出适配器
+     * @param newOutputAdapter  读回新版本结果数据使用的输出适配器
+     * @param diffOutputAdapter 写出比较结果文件使用的输出适配器
+     */
+    public JavaCG2JarDiffRunner(JavaCG2OutputAdapter oldOutputAdapter, JavaCG2OutputAdapter newOutputAdapter, JavaCG2OutputAdapter diffOutputAdapter) {
+        this.oldOutputDirPath = null;
+        this.newOutputDirPath = null;
+        this.diffOutputDirPath = null;
+        this.oldOutputAdapter = oldOutputAdapter;
+        this.newOutputAdapter = newOutputAdapter;
+        this.diffOutputAdapter = diffOutputAdapter;
+    }
+
+    /**
      * 执行JarDiff比较，始终生成比较结果文件（未发现变化的类、方法时生成内容为空的文件）
      *
      * @return true: 执行成功 false: 执行失败
@@ -138,34 +174,37 @@ public class JavaCG2JarDiffRunner {
                 return false;
             }
 
+            // 输出适配器未指定时使用默认的文件实现，行为与原有实现一致
+            initOutputAdapters();
+
             // 读回新旧目录的jar_info文件
-            List<JarInfoLine> jarInfoListOld = readJarInfo(oldOutputDirPath);
+            List<JarInfoLine> jarInfoListOld = readJarInfo(oldOutputAdapter);
             if (jarInfoListOld == null) {
                 return false;
             }
-            List<JarInfoLine> jarInfoListNew = readJarInfo(newOutputDirPath);
+            List<JarInfoLine> jarInfoListNew = readJarInfo(newOutputAdapter);
             if (jarInfoListNew == null) {
                 return false;
             }
 
             // 读回class_info文件，key1为jar文件序号，key2为完整类名
-            Map<Integer, Map<String, ClassInfoLine>> oldClassInfoMap = readClassInfo(oldOutputDirPath);
+            Map<Integer, Map<String, ClassInfoLine>> oldClassInfoMap = readClassInfo(oldOutputAdapter);
             if (oldClassInfoMap == null) {
                 return false;
             }
-            Map<Integer, Map<String, ClassInfoLine>> newClassInfoMap = readClassInfo(newOutputDirPath);
+            Map<Integer, Map<String, ClassInfoLine>> newClassInfoMap = readClassInfo(newOutputAdapter);
             if (newClassInfoMap == null) {
                 return false;
             }
 
             // 读回旧目录的method_info文件，key为完整方法+冒号+返回类型，value为方法指令HASH
-            Map<String, String> oldMethodHashMap = readOldMethodHashMap(oldOutputDirPath);
+            Map<String, String> oldMethodHashMap = readOldMethodHashMap(oldOutputAdapter);
             if (oldMethodHashMap == null) {
                 return false;
             }
 
             // 读回新目录的method_info文件，key1为jar文件序号，key2为完整类名
-            Map<Integer, Map<String, List<MethodInfoLine>>> newMethodInfoMap = readNewMethodInfo(newOutputDirPath);
+            Map<Integer, Map<String, List<MethodInfoLine>>> newMethodInfoMap = readNewMethodInfo(newOutputAdapter);
             if (newMethodInfoMap == null) {
                 return false;
             }
@@ -201,37 +240,50 @@ public class JavaCG2JarDiffRunner {
             return false;
         }
 
-        if (!JavaCG2FileUtil.isDirectoryExists(oldOutputDirPath, false)) {
+        if (oldOutputAdapter == null && !JavaCG2FileUtil.isDirectoryExists(oldOutputDirPath, false)) {
             log.error("旧版本jar文件对应的解析输出目录不存在 {}", oldOutputDirPath);
             return false;
         }
 
-        if (!JavaCG2FileUtil.isDirectoryExists(newOutputDirPath, false)) {
+        if (newOutputAdapter == null && !JavaCG2FileUtil.isDirectoryExists(newOutputDirPath, false)) {
             log.error("新版本jar文件对应的解析输出目录不存在 {}", newOutputDirPath);
             return false;
         }
 
-        if (!JavaCG2FileUtil.isDirectoryExists(diffOutputDirPath, true)) {
+        if (diffOutputAdapter == null && !JavaCG2FileUtil.isDirectoryExists(diffOutputDirPath, true)) {
             log.error("创建比较结果文件输出目录失败 {}", diffOutputDirPath);
             return false;
         }
         return true;
     }
 
+    // 输出适配器未指定时使用默认的文件实现，行为与原有实现一致
+    private void initOutputAdapters() {
+        if (oldOutputAdapter == null) {
+            oldOutputAdapter = new JavaCG2FileOutputAdapter(new JavaCG2OutputInfo(oldOutputDirPath, outputFileExt));
+        }
+        if (newOutputAdapter == null) {
+            newOutputAdapter = new JavaCG2FileOutputAdapter(new JavaCG2OutputInfo(newOutputDirPath, outputFileExt));
+        }
+        if (diffOutputAdapter == null) {
+            diffOutputAdapter = new JavaCG2FileOutputAdapter(new JavaCG2OutputInfo(diffOutputDirPath, outputFileExt));
+        }
+    }
+
     // 读回jar_info文件
-    private List<JarInfoLine> readJarInfo(String dirPath) throws IOException {
+    private List<JarInfoLine> readJarInfo(JavaCG2OutputAdapter outputAdapter) throws IOException {
         JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO.getSchema();
         int jarTypeIndex = schema.getColumnIndex("jar文件类型");
         int jarNumIndex = schema.getColumnIndex("jar文件序号");
         int jarPathIndex = schema.getColumnIndex("外层jar文件完整路径");
         List<JarInfoLine> jarInfoLineList = new ArrayList<>();
-        try (BufferedReader br = genBufferedReader4SourceFile(dirPath, JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO.getFileName())) {
+        try (BufferedReader br = genBufferedReader4Source(outputAdapter, JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO)) {
             if (br == null) {
                 return null;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -248,20 +300,20 @@ public class JavaCG2JarDiffRunner {
     }
 
     // 读回class_info文件
-    private Map<Integer, Map<String, ClassInfoLine>> readClassInfo(String dirPath) throws IOException {
+    private Map<Integer, Map<String, ClassInfoLine>> readClassInfo(JavaCG2OutputAdapter outputAdapter) throws IOException {
         JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO.getSchema();
         int classNameIndex = schema.getColumnIndex("完整类名");
         int classFileHashIndex = schema.getColumnIndex("类文件的HASH值");
         int jarNumIndex = schema.getColumnIndex("类所在的jar文件序号");
         int classPathInJarIndex = schema.getColumnIndex("类在jar包中的路径");
         Map<Integer, Map<String, ClassInfoLine>> classInfoMap = new HashMap<>();
-        try (BufferedReader br = genBufferedReader4SourceFile(dirPath, JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO.getFileName())) {
+        try (BufferedReader br = genBufferedReader4Source(outputAdapter, JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO)) {
             if (br == null) {
                 return null;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -279,19 +331,19 @@ public class JavaCG2JarDiffRunner {
     }
 
     // 读回旧目录的method_info文件，生成完整方法+冒号+返回类型对应方法指令HASH的Map
-    private Map<String, String> readOldMethodHashMap(String dirPath) throws IOException {
+    private Map<String, String> readOldMethodHashMap(JavaCG2OutputAdapter outputAdapter) throws IOException {
         JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getSchema();
         int fullMethodIndex = schema.getColumnIndex("完整方法");
         int returnTypeIndex = schema.getColumnIndex("返回类型类名");
         int methodInstructionsHashIndex = schema.getColumnIndex("方法指令的HASH值");
         Map<String, String> methodHashMap = new HashMap<>();
-        try (BufferedReader br = genBufferedReader4SourceFile(dirPath, JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getFileName())) {
+        try (BufferedReader br = genBufferedReader4Source(outputAdapter, JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO)) {
             if (br == null) {
                 return null;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -306,20 +358,20 @@ public class JavaCG2JarDiffRunner {
     }
 
     // 读回新目录的method_info文件，生成jar文件序号、完整类名对应方法列表的Map
-    private Map<Integer, Map<String, List<MethodInfoLine>>> readNewMethodInfo(String dirPath) throws IOException {
+    private Map<Integer, Map<String, List<MethodInfoLine>>> readNewMethodInfo(JavaCG2OutputAdapter outputAdapter) throws IOException {
         JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getSchema();
         int fullMethodIndex = schema.getColumnIndex("完整方法");
         int returnTypeIndex = schema.getColumnIndex("返回类型类名");
         int methodInstructionsHashIndex = schema.getColumnIndex("方法指令的HASH值");
         int jarNumIndex = schema.getColumnIndex("方法所在的jar文件序号");
         Map<Integer, Map<String, List<MethodInfoLine>>> methodInfoMap = new HashMap<>();
-        try (BufferedReader br = genBufferedReader4SourceFile(dirPath, JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getFileName())) {
+        try (BufferedReader br = genBufferedReader4Source(outputAdapter, JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO)) {
             if (br == null) {
                 return null;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -476,17 +528,14 @@ public class JavaCG2JarDiffRunner {
         }
     }
 
-    // 写出比较结果文件，未发现变化的类、方法时生成内容为空的文件
+    // 通过输出适配器写出比较结果文件，未发现变化的类、方法时生成内容为空的文件
     private boolean writeResultFiles() throws IOException {
         int modifiedClassCount = 0;
         int modifiedMethodCount = 0;
         int newMethodCount = 0;
 
-        String diffOutputDirPathWithSeparator = JavaCG2FileUtil.addSeparator4FilePath(diffOutputDirPath);
-        String modifiedClassesFilePath = JavaCG2FileUtil.genFilePath(diffOutputDirPathWithSeparator, FILE_NAME_JAR_DIFF_MODIFIED_CLASSES, outputFileExt);
-        String modifiedMethodsFilePath = JavaCG2FileUtil.genFilePath(diffOutputDirPathWithSeparator, FILE_NAME_JAR_DIFF_MODIFIED_METHODS, outputFileExt);
-        try (JavaCG2RecordSink modifiedClassesSink = new JavaCG2FileRecordSink(JavaCG2FileUtil.genBufferedWriter(modifiedClassesFilePath));
-             JavaCG2RecordSink modifiedMethodsSink = new JavaCG2FileRecordSink(JavaCG2FileUtil.genBufferedWriter(modifiedMethodsFilePath))
+        try (JavaCG2RecordSink modifiedClassesSink = diffOutputAdapter.genOtherRecordSink(FILE_NAME_JAR_DIFF_MODIFIED_CLASSES);
+             JavaCG2RecordSink modifiedMethodsSink = diffOutputAdapter.genOtherRecordSink(FILE_NAME_JAR_DIFF_MODIFIED_METHODS)
         ) {
             // 写出发生变化的类
             for (ModifiedJarPair modifiedJarPair : modifiedJarPairList) {
@@ -538,14 +587,20 @@ public class JavaCG2JarDiffRunner {
         return true;
     }
 
-    // 生成读回结果文件的BufferedReader对象，结果文件不存在时返回null
-    private BufferedReader genBufferedReader4SourceFile(String dirPath, String fileName) throws IOException {
-        String filePath = JavaCG2FileUtil.genFilePath(JavaCG2FileUtil.addSeparator4FilePath(dirPath), fileName, outputFileExt);
-        if (!new File(filePath).exists()) {
-            log.error("JarDiff需要读取的结果文件不存在 {} {}", fileName, filePath);
+    // 通过输出适配器生成读回结果数据的BufferedReader对象，结果数据不可用时返回null
+    private BufferedReader genBufferedReader4Source(JavaCG2OutputAdapter outputAdapter, JavaCG2OutPutFileTypeEnum fileTypeEnum) throws IOException {
+        JavaCG2RecordSource recordSource = outputAdapter.genRecordSource(fileTypeEnum);
+        if (recordSource == null) {
+            // 输出适配器不支持读回对应的结果文件
+            log.error("JarDiff需要读取的结果文件数据来源不存在 {}", fileTypeEnum.getFileName());
             return null;
         }
-        return JavaCG2FileUtil.genBufferedReader(filePath);
+        BufferedReader br = recordSource.genBufferedReader();
+        if (br == null) {
+            // 结果数据不可用（如结果文件不存在）
+            log.error("JarDiff需要读取的结果文件不存在 {}", fileTypeEnum.getFileName());
+        }
+        return br;
     }
 
     // 获取jar文件名不包含后缀及版本号的内容，与java-all-call-graph的getJarFileHead方法一致

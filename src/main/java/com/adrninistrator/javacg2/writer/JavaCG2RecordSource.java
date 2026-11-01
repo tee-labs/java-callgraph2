@@ -1,0 +1,23 @@
+package com.adrninistrator.javacg2.writer;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+
+/**
+ * @author adrninistrator
+ * @date 2026/11/1
+ * @description: 结果记录数据来源接口，按结果文件类型定位一个结果文件的数据行，用于在写出后读回结果数据（如Jar兼容性检查、JarDiff比较）
+ * 与写出侧的JavaCG2RecordSink接口对应；默认实现从输出目录中的结果文件读回（JavaCG2FileRecordSource），
+ * 内存实现从内存输出适配器收集的数据中读回（JavaCG2MemoryRecordSource），使读回逻辑与文件路径解耦
+ */
+public interface JavaCG2RecordSource {
+
+    /**
+     * 生成用于逐行读取数据行的BufferedReader对象
+     * 表头行（开启output.file.header.enable参数时写出的首行）由实现在内部跳过，调用方无需处理
+     *
+     * @return 读取数据行的BufferedReader对象，结果数据不可用时返回null（如结果文件不存在、未生成对应的结果文件）
+     * @throws IOException 读取失败时抛出异常
+     */
+    BufferedReader genBufferedReader() throws IOException;
+}

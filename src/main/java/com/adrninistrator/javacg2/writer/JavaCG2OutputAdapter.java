@@ -30,4 +30,16 @@ public interface JavaCG2OutputAdapter {
      * @throws IOException 创建失败时抛出异常
      */
     JavaCG2RecordSink genOtherRecordSink(String fileName) throws IOException;
+
+    /**
+     * 生成主结果文件对应的记录数据来源，用于在写出后读回结果数据（如Jar兼容性检查、JarDiff比较）
+     * 默认不支持读回，返回null；支持读回的实现类（如JavaCG2FileOutputAdapter、JavaCG2MemoryOutputAdapter）覆写当前方法
+     * 不支持读回时，Jar兼容性检查会跳过对应结果文件的检查
+     *
+     * @param fileTypeEnum 主结果文件类型
+     * @return 记录数据来源，不支持读回时返回null
+     */
+    default JavaCG2RecordSource genRecordSource(JavaCG2OutPutFileTypeEnum fileTypeEnum) {
+        return null;
+    }
 }

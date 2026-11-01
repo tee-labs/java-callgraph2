@@ -12,7 +12,7 @@
 - 扩展机制生成的、未在JavaCG2OutPutFileTypeEnum枚举中定义列结构的其他类型文件
 - _log_method_spend_time、_javacg2_all_config、_javacg2_used_config等无固定列结构的文件
 
-注意：开启表头后，按列位置读取结果文件的下游程序（如java-all-call-graph）需要能够跳过首行的表头行
+注意：开启表头后，按列位置读取结果文件的下游程序（如java-all-call-graph）需要能够跳过首行的表头行；java-callgraph2内部的读回逻辑（Jar兼容性检查、JarDiff比较）通过writer/JavaCG2RecordSource读回结果数据，会自动跳过表头行
 
 每个结果文件类型的列结构（列名与列数）在common/enums/JavaCG2OutPutFileTypeEnum枚举常量上定义，作为输出文件列结构的单一来源，支持列名转列下标、列下标转列名查询（参考common/JavaCG2OutputFileSchema类）
 

@@ -14,15 +14,15 @@ import com.adrninistrator.javacg2.dto.compatibility.JavaCG2CompatMethodInfo;
 import com.adrninistrator.javacg2.dto.output.JavaCG2OutputInfo;
 import com.adrninistrator.javacg2.util.JavaCG2ByteCodeUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
-import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
+import com.adrninistrator.javacg2.writer.JavaCG2FileRecordSource;
 import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -37,7 +37,9 @@ import java.util.Set;
 /**
  * @author adrninistrator
  * @date 2026/10/30
- * @description: Jar兼容性检查处理类，在解析完成后读回本次生成的结果文件，在内存中构建全集索引后进行比对检查，不依赖数据库
+ * @description: Jar兼容性检查处理类，在解析完成后读回本次生成的结果数据，在内存中构建全集索引后进行比对检查，不依赖数据库
+ * 读回的数据来源与文件路径解耦：默认从输出目录中的结果文件读回（JavaCG2FileRecordSource），
+ * 也可通过JavaCG2MemoryOutputAdapter等支持读回的输出适配器读回（JavaCG2MemoryRecordSource）
  * 检查内容包括（逻辑参考java-all-call-graph的Jar兼容性检查）：
  * 1 被引用的类不存在（读回class_reference、dup_class_reference）
  * 2 方法调用中的被调用类/方法不存在、可见性private/protected/default不允许访问、静态与非静态不一致（读回method_call）
@@ -70,7 +72,26 @@ public class JavaCG2CompatibilityChecker {
     private static final JavaCG2CompatMethodInfo METHOD_INFO_UNKNOWN = new JavaCG2CompatMethodInfo();
     private static final JavaCG2CompatFieldInfo FIELD_INFO_UNKNOWN = new JavaCG2CompatFieldInfo();
 
-    private final JavaCG2OutputInfo javaCG2OutputInfo;
+    // 检查时需要读回的结果文件类型
+    private static final JavaCG2OutPutFileTypeEnum[] CHECK_SOURCE_FILE_TYPES = new JavaCG2OutPutFileTypeEnum[]{
+            JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO,
+            JavaCG2OutPutFileTypeEnum.OPFTE_DUP_CLASS_INFO,
+            JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO,
+            JavaCG2OutPutFileTypeEnum.OPFTE_DUP_METHOD_INFO,
+            JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_INFO,
+            JavaCG2OutPutFileTypeEnum.OPFTE_DUP_FIELD_INFO,
+            JavaCG2OutPutFileTypeEnum.OPFTE_EXTENDS_IMPL,
+            JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO,
+            JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_REFERENCE,
+            JavaCG2OutPutFileTypeEnum.OPFTE_DUP_CLASS_REFERENCE,
+            JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL,
+            JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_USAGE_OTHER
+    };
+
+    // 读回结果数据来源，key为结果文件类型
+    private final Map<JavaCG2OutPutFileTypeEnum, JavaCG2RecordSource> recordSourceMap;
+
+    // 生成检查报告结果文件使用的输出适配器
     private final JavaCG2OutputAdapter outputAdapter;
 
     /*
@@ -98,9 +119,49 @@ public class JavaCG2CompatibilityChecker {
      */
     private Map<Integer, String[]> jarInfoMap;
 
+    /**
+     * 从输出目录中的结果文件读回数据，保持原有行为
+     *
+     * @param javaCG2OutputInfo 处理结果信息
+     * @param outputAdapter     生成检查报告结果文件使用的输出适配器
+     */
     public JavaCG2CompatibilityChecker(JavaCG2OutputInfo javaCG2OutputInfo, JavaCG2OutputAdapter outputAdapter) {
-        this.javaCG2OutputInfo = javaCG2OutputInfo;
+        this(genFileRecordSourceMap(javaCG2OutputInfo), outputAdapter);
+    }
+
+    /**
+     * 通过支持读回的输出适配器读回数据（如JavaCG2MemoryOutputAdapter），检查报告结果文件也通过该适配器生成
+     *
+     * @param outputAdapter 生成检查报告结果文件及提供读回数据来源使用的输出适配器
+     */
+    public JavaCG2CompatibilityChecker(JavaCG2OutputAdapter outputAdapter) {
+        this(genAdapterRecordSourceMap(outputAdapter), outputAdapter);
+    }
+
+    private JavaCG2CompatibilityChecker(Map<JavaCG2OutPutFileTypeEnum, JavaCG2RecordSource> recordSourceMap, JavaCG2OutputAdapter outputAdapter) {
+        this.recordSourceMap = recordSourceMap;
         this.outputAdapter = outputAdapter;
+    }
+
+    // 生成从输出目录中的结果文件读回数据的数据来源Map
+    private static Map<JavaCG2OutPutFileTypeEnum, JavaCG2RecordSource> genFileRecordSourceMap(JavaCG2OutputInfo javaCG2OutputInfo) {
+        Map<JavaCG2OutPutFileTypeEnum, JavaCG2RecordSource> recordSourceMap = new HashMap<>(CHECK_SOURCE_FILE_TYPES.length);
+        for (JavaCG2OutPutFileTypeEnum fileTypeEnum : CHECK_SOURCE_FILE_TYPES) {
+            recordSourceMap.put(fileTypeEnum, new JavaCG2FileRecordSource(javaCG2OutputInfo, fileTypeEnum));
+        }
+        return recordSourceMap;
+    }
+
+    // 生成从支持读回的输出适配器读回数据的数据来源Map，不支持读回的结果文件类型不放入Map中
+    private static Map<JavaCG2OutPutFileTypeEnum, JavaCG2RecordSource> genAdapterRecordSourceMap(JavaCG2OutputAdapter outputAdapter) {
+        Map<JavaCG2OutPutFileTypeEnum, JavaCG2RecordSource> recordSourceMap = new HashMap<>(CHECK_SOURCE_FILE_TYPES.length);
+        for (JavaCG2OutPutFileTypeEnum fileTypeEnum : CHECK_SOURCE_FILE_TYPES) {
+            JavaCG2RecordSource recordSource = outputAdapter.genRecordSource(fileTypeEnum);
+            if (recordSource != null) {
+                recordSourceMap.put(fileTypeEnum, recordSource);
+            }
+        }
+        return recordSourceMap;
     }
 
     // 执行Jar兼容性检查，生成检查报告结果文件（未发现问题时生成内容为空的文件）
@@ -158,13 +219,13 @@ public class JavaCG2CompatibilityChecker {
         int classFileHashIndex = schema.getColumnIndex("类文件的HASH值");
         int jarNumIndex = schema.getColumnIndex("类所在的jar文件序号");
         int classPathInJarIndex = schema.getColumnIndex("类在jar包中的路径");
-        try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO)) {
+        try (BufferedReader br = genBufferedReader4Source(JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -191,13 +252,13 @@ public class JavaCG2CompatibilityChecker {
         int classFileHashIndex = schema.getColumnIndex("类文件的HASH值");
         int jarNumIndex = schema.getColumnIndex("类所在的jar文件序号");
         int classPathInJarIndex = schema.getColumnIndex("类在jar包中的路径");
-        try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_CLASS_INFO)) {
+        try (BufferedReader br = genBufferedReader4Source(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_CLASS_INFO)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -224,13 +285,13 @@ public class JavaCG2CompatibilityChecker {
         int accessFlagsIndex = schema.getColumnIndex("方法的access_flags");
         int returnTypeIndex = schema.getColumnIndex("返回类型类名");
         int jarNumIndex = schema.getColumnIndex("方法所在的jar文件序号");
-        try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO)) {
+        try (BufferedReader br = genBufferedReader4Source(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -257,13 +318,13 @@ public class JavaCG2CompatibilityChecker {
         int accessFlagsIndex = schema.getColumnIndex("方法的access_flags");
         int returnTypeIndex = schema.getColumnIndex("返回类型类名");
         int jarNumIndex = schema.getColumnIndex("方法所在的jar文件序号");
-        try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_METHOD_INFO)) {
+        try (BufferedReader br = genBufferedReader4Source(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_METHOD_INFO)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -285,14 +346,14 @@ public class JavaCG2CompatibilityChecker {
 
     // 读回field_info
     private void buildClassFieldMap() throws IOException {
-        try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_INFO)) {
+        try (BufferedReader br = genBufferedReader4Source(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_INFO)) {
             if (br == null) {
                 return;
             }
             JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_INFO.getSchema();
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -309,14 +370,14 @@ public class JavaCG2CompatibilityChecker {
 
     // 读回dup_field_info
     private void buildDupClassFieldMap() throws IOException {
-        try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_FIELD_INFO)) {
+        try (BufferedReader br = genBufferedReader4Source(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_FIELD_INFO)) {
             if (br == null) {
                 return;
             }
             JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_DUP_FIELD_INFO.getSchema();
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -347,13 +408,13 @@ public class JavaCG2CompatibilityChecker {
         JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_EXTENDS_IMPL.getSchema();
         int classNameIndex = schema.getColumnIndex("完整类名");
         int superOrInterfaceNameIndex = schema.getColumnIndex("父类或接口的完整类名");
-        try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_EXTENDS_IMPL)) {
+        try (BufferedReader br = genBufferedReader4Source(JavaCG2OutPutFileTypeEnum.OPFTE_EXTENDS_IMPL)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -375,13 +436,13 @@ public class JavaCG2CompatibilityChecker {
         int jarNumIndex = schema.getColumnIndex("jar文件序号");
         int jarPathIndex = schema.getColumnIndex("外层jar文件完整路径");
         int innerJarPathIndex = schema.getColumnIndex("jar文件中的jar文件路径");
-        try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO)) {
+        try (BufferedReader br = genBufferedReader4Source(JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -409,13 +470,13 @@ public class JavaCG2CompatibilityChecker {
         int referencedClassNameIndex = schema.getColumnIndex("被引用的完整类名");
         int jarNumIndex = schema.getColumnIndex("类所在的jar文件序号");
         int count = 0;
-        try (BufferedReader br = genBufferedReader4SourceFile(fileTypeEnum)) {
+        try (BufferedReader br = genBufferedReader4Source(fileTypeEnum)) {
             if (br == null) {
                 return 0;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -451,14 +512,14 @@ public class JavaCG2CompatibilityChecker {
         int rawReturnTypeIndex = schema.getColumnIndex("被调用方法原始的返回类型");
         int callerJarNumIndex = schema.getColumnIndex("调用方法jar文件序号");
         int count = 0;
-        try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL)) {
+        try (BufferedReader br = genBufferedReader4Source(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL)) {
             if (br == null) {
                 return 0;
             }
             List<String> existsInstructionCallTypeList = JavaCG2CallTypeEnum.getExistsInstructionList();
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -588,13 +649,13 @@ public class JavaCG2CompatibilityChecker {
         int sourceLineIndex = schema.getColumnIndex("使用字段的源代码行号");
         int classJarNumIndex = schema.getColumnIndex("类所在的jar文件序号");
         int count = 0;
-        try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_USAGE_OTHER)) {
+        try (BufferedReader br = genBufferedReader4Source(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_USAGE_OTHER)) {
             if (br == null) {
                 return 0;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
+                if (StringUtils.isBlank(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
@@ -1044,14 +1105,19 @@ public class JavaCG2CompatibilityChecker {
         return jarPathAndInnerPath == null ? new String[]{"", ""} : jarPathAndInnerPath;
     }
 
-    // 为读取需要检查的结果文件生成BufferedReader，结果文件不存在时返回null
-    private BufferedReader genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum fileTypeEnum) throws IOException {
-        String filePath = javaCG2OutputInfo.getMainFilePath(fileTypeEnum);
-        if (!new File(filePath).exists()) {
-            // 结果文件不存在（例如使用自定义的输出适配器时），跳过对应检查
-            log.warn("Jar兼容性检查需要读取的结果文件不存在，跳过 {} {}", fileTypeEnum.getFileName(), filePath);
+    // 为读取需要检查的结果数据生成BufferedReader，结果数据不可用时返回null
+    private BufferedReader genBufferedReader4Source(JavaCG2OutPutFileTypeEnum fileTypeEnum) throws IOException {
+        JavaCG2RecordSource recordSource = recordSourceMap.get(fileTypeEnum);
+        if (recordSource == null) {
+            // 未提供对应结果文件的数据来源（例如使用不支持读回的自定义输出适配器时），跳过对应检查
+            log.warn("Jar兼容性检查需要读取的结果文件数据来源不存在，跳过 {}", fileTypeEnum.getFileName());
             return null;
         }
-        return JavaCG2FileUtil.genBufferedReader(filePath);
+        BufferedReader bufferedReader = recordSource.genBufferedReader();
+        if (bufferedReader == null) {
+            // 结果数据不可用（如结果文件不存在），跳过对应检查
+            log.warn("Jar兼容性检查需要读取的结果文件不存在，跳过 {}", fileTypeEnum.getFileName());
+        }
+        return bufferedReader;
     }
 }

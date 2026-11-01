@@ -3,6 +3,7 @@ package com.adrninistrator.javacg2.dto.output;
 import com.adrninistrator.javacg2.common.enums.JavaCG2OutPutFileTypeEnum;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,6 +24,10 @@ public class JavaCG2OutputInfo {
 
     // 保存输出文件后缀名
     private final String outputFileExt;
+
+    // 是否在结果文件首行输出表头
+    @Setter
+    private boolean outputFileHeaderEnable;
 
     /*
         保存其他文件的信息

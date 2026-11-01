@@ -342,6 +342,26 @@ EL表达式忽略数据文件的最大行数，默认10万行
 |参数默认值|false|
 |参数枚举名|CKE_CHECK_JAR_COMPATIBILITY_ENABLE|
 
+### 2.1.20. output.file.header.enable
+
+- 参数说明
+
+```
+是否在结果文件首行输出表头（各列名称，以tab分隔）
+仅为定义了列结构的结果文件输出表头，jar_info文件包含数据行之外的特殊行，始终不输出表头
+扩展机制生成的其他类型文件不输出表头
+注意：开启后结果文件首行为表头行，按列位置读取结果文件的下游程序（如旧版本java-all-call-graph）需要能够跳过表头行
+配置方式：仅支持通过代码指定（JavaCG2ConfigureWrapper的setMainConfig方法，或JavaCG2ConfigBuilder的setOutputFileHeaderEnable方法）
+```
+
+|描述|内容|
+|---|---|
+|参数类型|Boolean|
+|参数值是否必填|否|
+|当前使用参数值|false|
+|参数默认值|false|
+|参数枚举名|CKE_OUTPUT_FILE_HEADER_ENABLE|
+
 # 3. 不区分顺序的其他配置参数
 
 ## 3.1. _javacg2_config/fr_eq_conversion_method.properties

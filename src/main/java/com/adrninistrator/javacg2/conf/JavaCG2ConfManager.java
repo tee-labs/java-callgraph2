@@ -83,6 +83,13 @@ public class JavaCG2ConfManager {
         boolean useBuiltInSpringXmlTaskAopScanParser = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_USE_BUILT_IN_SPRING_XML_TASK_AOP_SCAN_PARSER);
         javaCG2ConfInfo.setUseBuiltInSpringXmlTaskAopScanParser(useBuiltInSpringXmlTaskAopScanParser);
 
+        // 处理是否在结果文件首行输出表头
+        boolean outputFileHeaderEnable = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_OUTPUT_FILE_HEADER_ENABLE);
+        if (outputFileHeaderEnable) {
+            log.info("在结果文件首行输出表头");
+        }
+        javaCG2ConfInfo.setOutputFileHeaderEnable(outputFileHeaderEnable);
+
         return javaCG2ConfInfo;
     }
 

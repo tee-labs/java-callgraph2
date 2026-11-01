@@ -1419,6 +1419,37 @@ java-callgraph2 内置了 Jar 兼容性检查（检查逻辑与 java-all-call-gr
         javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_CHECK_JAR_COMPATIBILITY_ENABLE, Boolean.TRUE.toString());
 ```
 
+### 7.2.11. 结果文件表头开关
+
+默认情况下，结果文件中不包含表头行，所有行均为数据行，各列的含义参考 docs/file_format.md
+
+每个定义了列结构的结果文件类型，其列名与列数在 common/enums/JavaCG2OutPutFileTypeEnum 枚举常量上定义（作为输出文件列结构的单一来源），并通过 common/JavaCG2OutputFileSchema 类支持列名转列下标、列下标转列名的双向查询
+
+通过配置参数 output.file.header.enable 可控制是否在结果文件首行输出表头：
+
+- 参数默认值为 false，不输出表头，默认行为无变化
+- 设置为 true 时，定义了列结构的结果文件在首行输出表头，内容为各列的名称，以 tab 分隔
+
+以下文件不会输出表头：
+
+- jar_info：文件中除数据行外还写入解析结果文件保存目录（result_dir）、最终解析的 jar 文件路径（parse_jar_path）等特殊行，输出表头会影响按列位置读取该文件的程序
+- 扩展机制生成的、未在 JavaCG2OutPutFileTypeEnum 枚举中定义列结构的其他类型文件
+- _log_method_spend_time、_javacg2_all_config、_javacg2_used_config 等无固定列结构的文件
+
+注意：开启表头后，结果文件首行为表头行，按列位置读取结果文件的下游程序（如 java-all-call-graph）需要能够跳过首行的表头行；java-callgraph2 内部的读回逻辑（Jar 兼容性检查、JarDiff 比较）会自动跳过表头行
+
+设置方式示例：
+
+```java
+        // 通过 JavaCG2ConfigBuilder 设置
+        JavaCG2ConfigBuilder.builder()
+                .setOutputFileHeaderEnable(true)
+                .build();
+
+        // 或通过 JavaCG2ConfigureWrapper 设置
+        javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_OUTPUT_FILE_HEADER_ENABLE, Boolean.TRUE.toString());
+```
+
 ## 7.3. 运行方式
 
 ### 7.3.1. 项目入口类

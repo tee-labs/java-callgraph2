@@ -74,4 +74,8 @@ public class JavaCG2ConfInfo {
     // 是否使用内置的Spring XML文件中的定时任务、AOP、组件扫描信息解析类
     @Setter
     private boolean useBuiltInSpringXmlTaskAopScanParser;
+
+    // 是否在结果文件首行输出表头
+    @Setter
+    private boolean outputFileHeaderEnable;
 }

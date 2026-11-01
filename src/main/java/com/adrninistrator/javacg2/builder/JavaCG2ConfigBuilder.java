@@ -101,6 +101,17 @@ public class JavaCG2ConfigBuilder {
     }
 
     /**
+     * 设置是否在结果文件首行输出表头
+     *
+     * @param value true: 输出表头 false: 不输出表头
+     * @return
+     */
+    public JavaCG2ConfigBuilder setOutputFileHeaderEnable(boolean value) {
+        javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_OUTPUT_FILE_HEADER_ENABLE, String.valueOf(value));
+        return this;
+    }
+
+    /**
      * 设置是否开启表达式执行调试模式，若开启会在应用日志中输出表达式执行时的详细信息
      *
      * @param value true: 开启 false: 不开启

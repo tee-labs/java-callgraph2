@@ -95,6 +95,13 @@ public enum JavaCG2ConfigKeyEnum implements MainConfigInterface {
                     "执行Jar兼容性检查时会在解析完成后读回本次生成的结果文件进行比对，会有一定的时间与内存开销"
             },
             Boolean.class, false, Boolean.FALSE.toString()),
+    CKE_OUTPUT_FILE_HEADER_ENABLE("output.file.header.enable",
+            new String[]{"是否在结果文件首行输出表头（各列名称，以tab分隔）",
+                    "仅为定义了列结构的结果文件输出表头，jar_info文件包含数据行之外的特殊行，始终不输出表头",
+                    "扩展机制生成的其他类型文件不输出表头",
+                    "注意：开启后结果文件首行为表头行，按列位置读取结果文件的下游程序（如旧版本java-all-call-graph）需要能够跳过表头行"
+            },
+            Boolean.class, false, Boolean.FALSE.toString()),
     ;
 
     // 参数key

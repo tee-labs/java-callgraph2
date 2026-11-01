@@ -2,6 +2,7 @@ package com.adrninistrator.javacg2.compatibility;
 
 import com.adrninistrator.javacg2.common.JavaCG2CommonNameConstants;
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
+import com.adrninistrator.javacg2.common.JavaCG2OutputFileSchema;
 import com.adrninistrator.javacg2.common.enums.JavaCG2CallTypeEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2ConstantTypeEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2OutPutFileTypeEnum;
@@ -151,26 +152,32 @@ public class JavaCG2CompatibilityChecker {
 
     // 读回class_info
     private void buildClassInfoMap() throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO.getSchema();
+        int classNameIndex = schema.getColumnIndex("完整类名");
+        int accessFlagsIndex = schema.getColumnIndex("类的access_flags");
+        int classFileHashIndex = schema.getColumnIndex("类文件的HASH值");
+        int jarNumIndex = schema.getColumnIndex("类所在的jar文件序号");
+        int classPathInJarIndex = schema.getColumnIndex("类在jar包中的路径");
         try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < 5) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO.getFileName(), line);
                     continue;
                 }
                 JavaCG2CompatClassInfo classInfo = new JavaCG2CompatClassInfo();
-                classInfo.setClassName(columns[0]);
-                classInfo.setAccessFlags(Integer.parseInt(columns[1]));
-                classInfo.setClassFileHash(columns[2]);
-                classInfo.setJarNum(Integer.parseInt(columns[3]));
-                classInfo.setClassPathInJar(columns[4]);
+                classInfo.setClassName(columns[classNameIndex]);
+                classInfo.setAccessFlags(Integer.parseInt(columns[accessFlagsIndex]));
+                classInfo.setClassFileHash(columns[classFileHashIndex]);
+                classInfo.setJarNum(Integer.parseInt(columns[jarNumIndex]));
+                classInfo.setClassPathInJar(columns[classPathInJarIndex]);
                 classInfoMap.put(classInfo.getClassName(), classInfo);
             }
         }
@@ -178,26 +185,32 @@ public class JavaCG2CompatibilityChecker {
 
     // 读回dup_class_info
     private void buildDupClassInfoListMap() throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_DUP_CLASS_INFO.getSchema();
+        int classNameIndex = schema.getColumnIndex("完整类名");
+        int accessFlagsIndex = schema.getColumnIndex("类的access_flags");
+        int classFileHashIndex = schema.getColumnIndex("类文件的HASH值");
+        int jarNumIndex = schema.getColumnIndex("类所在的jar文件序号");
+        int classPathInJarIndex = schema.getColumnIndex("类在jar包中的路径");
         try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_CLASS_INFO)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < 5) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_DUP_CLASS_INFO.getFileName(), line);
                     continue;
                 }
                 JavaCG2CompatClassInfo classInfo = new JavaCG2CompatClassInfo();
-                classInfo.setClassName(columns[0]);
-                classInfo.setAccessFlags(Integer.parseInt(columns[1]));
-                classInfo.setClassFileHash(columns[2]);
-                classInfo.setJarNum(Integer.parseInt(columns[3]));
-                classInfo.setClassPathInJar(columns[4]);
+                classInfo.setClassName(columns[classNameIndex]);
+                classInfo.setAccessFlags(Integer.parseInt(columns[accessFlagsIndex]));
+                classInfo.setClassFileHash(columns[classFileHashIndex]);
+                classInfo.setJarNum(Integer.parseInt(columns[jarNumIndex]));
+                classInfo.setClassPathInJar(columns[classPathInJarIndex]);
                 List<JavaCG2CompatClassInfo> dupClassInfoList = dupClassInfoListMap.computeIfAbsent(classInfo.getClassName(), k -> new ArrayList<>());
                 dupClassInfoList.add(classInfo);
             }
@@ -206,25 +219,30 @@ public class JavaCG2CompatibilityChecker {
 
     // 读回method_info
     private void buildClassMethodMap() throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getSchema();
+        int fullMethodIndex = schema.getColumnIndex("完整方法");
+        int accessFlagsIndex = schema.getColumnIndex("方法的access_flags");
+        int returnTypeIndex = schema.getColumnIndex("返回类型类名");
+        int jarNumIndex = schema.getColumnIndex("方法所在的jar文件序号");
         try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < 8) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getFileName(), line);
                     continue;
                 }
                 JavaCG2CompatMethodInfo methodInfo = new JavaCG2CompatMethodInfo();
-                methodInfo.setFullMethod(columns[0]);
-                methodInfo.setAccessFlags(Integer.parseInt(columns[1]));
-                methodInfo.setReturnType(columns[2]);
-                methodInfo.setJarNum(Integer.parseInt(columns[7]));
+                methodInfo.setFullMethod(columns[fullMethodIndex]);
+                methodInfo.setAccessFlags(Integer.parseInt(columns[accessFlagsIndex]));
+                methodInfo.setReturnType(columns[returnTypeIndex]);
+                methodInfo.setJarNum(Integer.parseInt(columns[jarNumIndex]));
                 Map<String, JavaCG2CompatMethodInfo> methodMap = classMethodMap.computeIfAbsent(
                         JavaCG2ClassMethodUtil.getClassNameFromMethod(methodInfo.getFullMethod()), k -> new HashMap<>());
                 methodMap.putIfAbsent(methodInfo.getFullMethod(), methodInfo);
@@ -234,25 +252,30 @@ public class JavaCG2CompatibilityChecker {
 
     // 读回dup_method_info
     private void buildDupClassMethodMap() throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_DUP_METHOD_INFO.getSchema();
+        int fullMethodIndex = schema.getColumnIndex("完整方法");
+        int accessFlagsIndex = schema.getColumnIndex("方法的access_flags");
+        int returnTypeIndex = schema.getColumnIndex("返回类型类名");
+        int jarNumIndex = schema.getColumnIndex("方法所在的jar文件序号");
         try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_METHOD_INFO)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < 8) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_DUP_METHOD_INFO.getFileName(), line);
                     continue;
                 }
                 JavaCG2CompatMethodInfo methodInfo = new JavaCG2CompatMethodInfo();
-                methodInfo.setFullMethod(columns[0]);
-                methodInfo.setAccessFlags(Integer.parseInt(columns[1]));
-                methodInfo.setReturnType(columns[2]);
-                methodInfo.setJarNum(Integer.parseInt(columns[7]));
+                methodInfo.setFullMethod(columns[fullMethodIndex]);
+                methodInfo.setAccessFlags(Integer.parseInt(columns[accessFlagsIndex]));
+                methodInfo.setReturnType(columns[returnTypeIndex]);
+                methodInfo.setJarNum(Integer.parseInt(columns[jarNumIndex]));
                 Map<String, JavaCG2CompatMethodInfo> methodMap = dupClassMethodMap.computeIfAbsent(
                         JavaCG2ClassMethodUtil.getClassNameFromMethod(methodInfo.getFullMethod()), k -> new HashMap<>());
                 methodMap.putIfAbsent(methodInfo.getFullMethod(), methodInfo);
@@ -266,17 +289,18 @@ public class JavaCG2CompatibilityChecker {
             if (br == null) {
                 return;
             }
+            JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_INFO.getSchema();
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < 13) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_INFO.getFileName(), line);
                     continue;
                 }
-                JavaCG2CompatFieldInfo fieldInfo = genCompatFieldInfo(columns);
+                JavaCG2CompatFieldInfo fieldInfo = genCompatFieldInfo(schema, columns);
                 Map<String, JavaCG2CompatFieldInfo> fieldMap = classFieldMap.computeIfAbsent(fieldInfo.getClassName(), k -> new HashMap<>());
                 fieldMap.putIfAbsent(genFieldKey(fieldInfo.getClassName(), fieldInfo.getFieldName()), fieldInfo);
             }
@@ -289,53 +313,57 @@ public class JavaCG2CompatibilityChecker {
             if (br == null) {
                 return;
             }
+            JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_DUP_FIELD_INFO.getSchema();
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < 13) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_DUP_FIELD_INFO.getFileName(), line);
                     continue;
                 }
-                JavaCG2CompatFieldInfo fieldInfo = genCompatFieldInfo(columns);
+                JavaCG2CompatFieldInfo fieldInfo = genCompatFieldInfo(schema, columns);
                 Map<String, JavaCG2CompatFieldInfo> fieldMap = dupClassFieldMap.computeIfAbsent(fieldInfo.getClassName(), k -> new HashMap<>());
                 fieldMap.putIfAbsent(genFieldKey(fieldInfo.getClassName(), fieldInfo.getFieldName()), fieldInfo);
             }
         }
     }
 
-    private JavaCG2CompatFieldInfo genCompatFieldInfo(String[] columns) {
+    private JavaCG2CompatFieldInfo genCompatFieldInfo(JavaCG2OutputFileSchema schema, String[] columns) {
         JavaCG2CompatFieldInfo fieldInfo = new JavaCG2CompatFieldInfo();
-        fieldInfo.setClassName(columns[0]);
-        fieldInfo.setFieldName(columns[1]);
-        fieldInfo.setFieldType(columns[2]);
-        fieldInfo.setModifiers(columns[5]);
-        fieldInfo.setStaticFlag(columns[7]);
-        fieldInfo.setJarNum(Integer.parseInt(columns[12]));
+        fieldInfo.setClassName(columns[schema.getColumnIndex("完整类名")]);
+        fieldInfo.setFieldName(columns[schema.getColumnIndex("字段名称")]);
+        fieldInfo.setFieldType(columns[schema.getColumnIndex("字段类型")]);
+        fieldInfo.setModifiers(columns[schema.getColumnIndex("字段修饰符")]);
+        fieldInfo.setStaticFlag(columns[schema.getColumnIndex("static标志")]);
+        fieldInfo.setJarNum(Integer.parseInt(columns[schema.getColumnIndex("字段所在的jar文件序号")]));
         return fieldInfo;
     }
 
     // 读回extends_impl
     private void buildSuperClassesAndInterfacesMap() throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_EXTENDS_IMPL.getSchema();
+        int classNameIndex = schema.getColumnIndex("完整类名");
+        int superOrInterfaceNameIndex = schema.getColumnIndex("父类或接口的完整类名");
         try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_EXTENDS_IMPL)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < 4) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_EXTENDS_IMPL.getFileName(), line);
                     continue;
                 }
-                List<String> superClassList = superClassesAndInterfacesMap.computeIfAbsent(columns[0], k -> new ArrayList<>());
-                if (!superClassList.contains(columns[3])) {
-                    superClassList.add(columns[3]);
+                List<String> superClassList = superClassesAndInterfacesMap.computeIfAbsent(columns[classNameIndex], k -> new ArrayList<>());
+                if (!superClassList.contains(columns[superOrInterfaceNameIndex])) {
+                    superClassList.add(columns[superOrInterfaceNameIndex]);
                 }
             }
         }
@@ -343,21 +371,25 @@ public class JavaCG2CompatibilityChecker {
 
     // 读回jar_info
     private void buildJarInfoMap() throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO.getSchema();
+        int jarNumIndex = schema.getColumnIndex("jar文件序号");
+        int jarPathIndex = schema.getColumnIndex("外层jar文件完整路径");
+        int innerJarPathIndex = schema.getColumnIndex("jar文件中的jar文件路径");
         try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO)) {
             if (br == null) {
                 return;
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < 4) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO.getFileName(), line);
                     continue;
                 }
-                jarInfoMap.put(Integer.parseInt(columns[1]), new String[]{columns[2], columns[3]});
+                jarInfoMap.put(Integer.parseInt(columns[jarNumIndex]), new String[]{columns[jarPathIndex], columns[innerJarPathIndex]});
             }
         }
     }
@@ -372,6 +404,10 @@ public class JavaCG2CompatibilityChecker {
 
     // 检查一个类引用关系结果文件中被引用的类是否存在
     private int checkOneClassReferenceFile(JavaCG2OutPutFileTypeEnum fileTypeEnum, JavaCG2RecordSink sink, Set<String> recordedKeySet) throws IOException {
+        JavaCG2OutputFileSchema schema = fileTypeEnum.getSchema();
+        int classNameIndex = schema.getColumnIndex("引用的完整类名");
+        int referencedClassNameIndex = schema.getColumnIndex("被引用的完整类名");
+        int jarNumIndex = schema.getColumnIndex("类所在的jar文件序号");
         int count = 0;
         try (BufferedReader br = genBufferedReader4SourceFile(fileTypeEnum)) {
             if (br == null) {
@@ -379,16 +415,16 @@ public class JavaCG2CompatibilityChecker {
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < 3) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", fileTypeEnum.getFileName(), line);
                     continue;
                 }
-                String className = columns[0];
-                String referencedClassName = columns[1];
+                String className = columns[classNameIndex];
+                String referencedClassName = columns[referencedClassNameIndex];
                 if (existsClass(referencedClassName) || skipCheckClass(referencedClassName)) {
                     continue;
                 }
@@ -397,8 +433,8 @@ public class JavaCG2CompatibilityChecker {
                 if (!recordedKeySet.add(key)) {
                     continue;
                 }
-                String[] jarPathAndInnerPath = queryJarPathAndInnerPath(columns[2]);
-                sink.writeRow(className, referencedClassName, columns[2], jarPathAndInnerPath[0], jarPathAndInnerPath[1]);
+                String[] jarPathAndInnerPath = queryJarPathAndInnerPath(columns[jarNumIndex]);
+                sink.writeRow(className, referencedClassName, columns[jarNumIndex], jarPathAndInnerPath[0], jarPathAndInnerPath[1]);
                 count++;
             }
         }
@@ -407,6 +443,13 @@ public class JavaCG2CompatibilityChecker {
 
     // 检查方法调用中的被调用类/方法是否存在、可见性、静态与非静态一致性
     private int checkMethodCall(JavaCG2RecordSink sink) throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL.getSchema();
+        int enabledIndex = schema.getColumnIndex("是否启用");
+        int callerFullMethodIndex = schema.getColumnIndex("调用方完整方法");
+        int calleeWithCallTypeIndex = schema.getColumnIndex("方法调用类型及被调用方完整方法");
+        int sourceLineIndex = schema.getColumnIndex("调用方法源代码行号");
+        int rawReturnTypeIndex = schema.getColumnIndex("被调用方法原始的返回类型");
+        int callerJarNumIndex = schema.getColumnIndex("调用方法jar文件序号");
         int count = 0;
         try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL)) {
             if (br == null) {
@@ -415,26 +458,30 @@ public class JavaCG2CompatibilityChecker {
             List<String> existsInstructionCallTypeList = JavaCG2CallTypeEnum.getExistsInstructionList();
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
+                /*
+                    历史代码仅校验12列，method_call文件实际为13列，为保持现有行为不变，此处继续使用12列的校验
+                    （实际写出的方法调用行均为13列，不会出现12列的行，该校验不会影响正常结果文件的检查）
+                 */
                 if (columns.length < 12) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL.getFileName(), line);
                     continue;
                 }
-                if (!JavaCG2YesNoEnum.isYes(columns[1])) {
+                if (!JavaCG2YesNoEnum.isYes(columns[enabledIndex])) {
                     // 未启用的方法调用不检查
                     continue;
                 }
-                // 第4列为"(方法调用类型)被调用方，完整方法"
-                String calleeWithCallType = columns[3];
+                // "(方法调用类型)被调用方，完整方法"
+                String calleeWithCallType = columns[calleeWithCallTypeIndex];
                 String callType = StringUtils.substringBetween(calleeWithCallType, JavaCG2Constants.FLAG_LEFT_BRACKET, JavaCG2Constants.FLAG_RIGHT_BRACKET);
                 if (!existsInstructionCallTypeList.contains(callType)) {
                     // 仅检查存在指令的方法调用类型
                     continue;
                 }
-                String callerFullMethod = columns[2];
+                String callerFullMethod = columns[callerFullMethodIndex];
                 String calleeFullMethod = StringUtils.substringAfter(calleeWithCallType, JavaCG2Constants.FLAG_RIGHT_BRACKET);
                 String calleeClassName = JavaCG2ClassMethodUtil.getClassNameFromMethod(calleeFullMethod);
                 if (calleeClassName.contains(JavaCG2Constants.FLAG_ARRAY)) {
@@ -447,7 +494,8 @@ public class JavaCG2CompatibilityChecker {
 
                 // 检查被调用类是否存在
                 if (!existsClass(calleeClassName)) {
-                    recordMethodCallProblem(sink, "方法调用中的被调用类未找到", callerFullMethod, columns[4], callType, calleeFullMethod, columns[8], columns[10], null);
+                    recordMethodCallProblem(sink, "方法调用中的被调用类未找到", callerFullMethod, columns[sourceLineIndex], callType, calleeFullMethod, columns[rawReturnTypeIndex],
+                            columns[callerJarNumIndex], null);
                     count++;
                     continue;
                 }
@@ -460,12 +508,14 @@ public class JavaCG2CompatibilityChecker {
                     continue;
                 }
                 if (methodInfo == null) {
-                    recordMethodCallProblem(sink, "未找到被调用方法", callerFullMethod, columns[4], callType, calleeFullMethod, columns[8], columns[10], null);
+                    recordMethodCallProblem(sink, "未找到被调用方法", callerFullMethod, columns[sourceLineIndex], callType, calleeFullMethod, columns[rawReturnTypeIndex],
+                            columns[callerJarNumIndex], null);
                     count++;
                     continue;
                 }
                 // 检查存在的方法
-                count += checkExistedMethod(sink, callerFullMethod, columns[4], callType, calleeFullMethod, columns[8], columns[10], methodInfo);
+                count += checkExistedMethod(sink, callerFullMethod, columns[sourceLineIndex], callType, calleeFullMethod, columns[rawReturnTypeIndex], columns[callerJarNumIndex],
+                        methodInfo);
             }
         }
         return count;
@@ -528,6 +578,15 @@ public class JavaCG2CompatibilityChecker {
 
     // 检查被使用的字段是否存在、可见性、静态与非静态一致性
     private int checkFieldUsage(JavaCG2RecordSink sink) throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_USAGE_OTHER.getSchema();
+        int callerFullMethodIndex = schema.getColumnIndex("完整方法");
+        int staticFlagIndex = schema.getColumnIndex("static标志");
+        int getOrPutIndex = schema.getColumnIndex("使用字段时get还是put");
+        int fieldInClassNameIndex = schema.getColumnIndex("被使用的字段所在的类名");
+        int fieldNameIndex = schema.getColumnIndex("被使用的字段名称");
+        int fieldTypeIndex = schema.getColumnIndex("被使用的字段类型");
+        int sourceLineIndex = schema.getColumnIndex("使用字段的源代码行号");
+        int classJarNumIndex = schema.getColumnIndex("类所在的jar文件序号");
         int count = 0;
         try (BufferedReader br = genBufferedReader4SourceFile(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_USAGE_OTHER)) {
             if (br == null) {
@@ -535,16 +594,16 @@ public class JavaCG2CompatibilityChecker {
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < 10) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_USAGE_OTHER.getFileName(), line);
                     continue;
                 }
-                String callerFullMethod = columns[0];
-                String fieldInClassName = columns[4];
+                String callerFullMethod = columns[callerFullMethodIndex];
+                String fieldInClassName = columns[fieldInClassNameIndex];
                 if (fieldInClassName.contains(JavaCG2Constants.FLAG_ARRAY)) {
                     // 被使用的字段所在类为数组形式时不检查
                     continue;
@@ -555,41 +614,42 @@ public class JavaCG2CompatibilityChecker {
 
                 // 检查字段所在的类是否存在
                 if (!existsClass(fieldInClassName)) {
-                    recordFieldUsageProblem(sink, "被使用字段所在的类未找到", callerFullMethod, columns[3], fieldInClassName, columns[5], columns[6], columns[8], null);
+                    recordFieldUsageProblem(sink, "被使用字段所在的类未找到", callerFullMethod, columns[getOrPutIndex], fieldInClassName, columns[fieldNameIndex],
+                            columns[fieldTypeIndex], columns[classJarNumIndex], null);
                     count++;
                     continue;
                 }
 
                 // 检查被使用的字段是否存在
-                JavaCG2CompatFieldInfo fieldInfo = findFieldInHierarchy(fieldInClassName, columns[5], JavaCG2ClassMethodUtil.removeAllArrayFlag(columns[6]));
+                JavaCG2CompatFieldInfo fieldInfo = findFieldInHierarchy(fieldInClassName, columns[fieldNameIndex], JavaCG2ClassMethodUtil.removeAllArrayFlag(columns[fieldTypeIndex]));
                 if (fieldInfo == FIELD_INFO_UNKNOWN) {
                     // 继承链中存在无法解析的类（JDK类或不在结果文件中的类），不判断字段是否存在
                     continue;
                 }
                 if (fieldInfo == null) {
-                    recordFieldUsageProblem(sink, "未找到被使用的字段", callerFullMethod, columns[3], fieldInClassName, columns[5], columns[6], columns[8], null);
+                    recordFieldUsageProblem(sink, "未找到被使用的字段", callerFullMethod, columns[getOrPutIndex], fieldInClassName, columns[fieldNameIndex], columns[fieldTypeIndex],
+                            columns[classJarNumIndex], null);
                     count++;
                     continue;
                 }
                 // 检查存在的字段
-                count += checkExistedField(sink, callerFullMethod, columns, fieldInfo);
+                count += checkExistedField(sink, callerFullMethod, columns[staticFlagIndex], columns[getOrPutIndex], fieldInClassName, columns[fieldNameIndex],
+                        columns[fieldTypeIndex], columns[classJarNumIndex], fieldInfo);
             }
         }
         return count;
     }
 
     // 检查存在的字段
-    private int checkExistedField(JavaCG2RecordSink sink, String callerFullMethod, String[] columns, JavaCG2CompatFieldInfo fieldInfo) throws IOException {
+    private int checkExistedField(JavaCG2RecordSink sink, String callerFullMethod, String staticFlag, String getOrPut, String fieldInClassName, String fieldName, String fieldType,
+                                  String classJarNum, JavaCG2CompatFieldInfo fieldInfo) throws IOException {
         int count = 0;
         String callerClassName = JavaCG2ClassMethodUtil.getClassNameFromMethod(callerFullMethod);
-        String fieldInClassName = columns[4];
-        String fieldName = columns[5];
-        String fieldType = columns[6];
 
         // 检查字段可见性
         if (JavaCG2ByteCodeUtil.isPrivate(fieldInfo.getModifiers())) {
             if (!callerClassName.equals(fieldInClassName) && !checkInnerClassRelated(callerClassName, fieldInClassName)) {
-                recordFieldUsageProblem(sink, "被使用的字段为private字段，无法被其他类使用", callerFullMethod, columns[3], fieldInClassName, fieldName, fieldType, columns[8], fieldInfo);
+                recordFieldUsageProblem(sink, "被使用的字段为private字段，无法被其他类使用", callerFullMethod, getOrPut, fieldInClassName, fieldName, fieldType, classJarNum, fieldInfo);
                 count++;
             }
         } else if (JavaCG2ByteCodeUtil.isProtected(fieldInfo.getModifiers())) {
@@ -597,24 +657,24 @@ public class JavaCG2CompatibilityChecker {
                     && !JavaCG2ClassMethodUtil.checkSamePackage(callerClassName, fieldInfo.getClassName())
                     && !checkExtendsImplClass(fieldInClassName, callerClassName)
                     && !checkExtendsImplClass(fieldInfo.getClassName(), callerClassName)) {
-                recordFieldUsageProblem(sink, "被使用的字段为protected字段，使用字段的类不满足以下任意情况：1、相同的类，2、相同包中的类，3、子类或实现类", callerFullMethod, columns[3],
-                        fieldInClassName, fieldName, fieldType, columns[8], fieldInfo);
+                recordFieldUsageProblem(sink, "被使用的字段为protected字段，使用字段的类不满足以下任意情况：1、相同的类，2、相同包中的类，3、子类或实现类", callerFullMethod, getOrPut,
+                        fieldInClassName, fieldName, fieldType, classJarNum, fieldInfo);
                 count++;
             }
         } else if (!JavaCG2ByteCodeUtil.isPublic(fieldInfo.getModifiers())) {
             if (!callerClassName.equals(fieldInClassName) && !JavaCG2ClassMethodUtil.checkSamePackage(callerClassName, fieldInClassName)) {
-                recordFieldUsageProblem(sink, "被使用的字段修饰符为default，使用字段的类不满足以下任意情况：1、相同的类，2、相同包中的类", callerFullMethod, columns[3], fieldInClassName, fieldName,
-                        fieldType, columns[8], fieldInfo);
+                recordFieldUsageProblem(sink, "被使用的字段修饰符为default，使用字段的类不满足以下任意情况：1、相同的类，2、相同包中的类", callerFullMethod, getOrPut, fieldInClassName, fieldName,
+                        fieldType, classJarNum, fieldInfo);
                 count++;
             }
         }
 
         // 检查字段是否静态/非静态
-        if (!columns[2].equals(fieldInfo.getStaticFlag())) {
-            if (JavaCG2YesNoEnum.isYes(columns[2])) {
-                recordFieldUsageProblem(sink, "被使用的字段编译时属于静态字段，但目前是非静态字段", callerFullMethod, columns[3], fieldInClassName, fieldName, fieldType, columns[8], fieldInfo);
+        if (!staticFlag.equals(fieldInfo.getStaticFlag())) {
+            if (JavaCG2YesNoEnum.isYes(staticFlag)) {
+                recordFieldUsageProblem(sink, "被使用的字段编译时属于静态字段，但目前是非静态字段", callerFullMethod, getOrPut, fieldInClassName, fieldName, fieldType, classJarNum, fieldInfo);
             } else {
-                recordFieldUsageProblem(sink, "被使用的字段编译时属于非静态字段，但目前是静态字段", callerFullMethod, columns[3], fieldInClassName, fieldName, fieldType, columns[8], fieldInfo);
+                recordFieldUsageProblem(sink, "被使用的字段编译时属于非静态字段，但目前是静态字段", callerFullMethod, getOrPut, fieldInClassName, fieldName, fieldType, classJarNum, fieldInfo);
             }
             count++;
         }

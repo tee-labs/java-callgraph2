@@ -427,6 +427,8 @@ public class JavaCG2Entry {
         String outputFileExt = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_OUTPUT_FILE_EXT);
         // 处理结果信息相关
         JavaCG2OutputInfo javaCG2OutputInfo = new JavaCG2OutputInfo(javaCG2ConfInfo.getOutputDirPath(), outputFileExt);
+        // 记录是否在结果文件首行输出表头，由输出适配器在生成记录Sink时使用
+        javaCG2OutputInfo.setOutputFileHeaderEnable(javaCG2ConfInfo.isOutputFileHeaderEnable());
 
         JavaCG2OtherRunResult javaCG2OtherRunResult = new JavaCG2OtherRunResult();
         javaCG2InputAndOutput.setJavaCG2ConfInfo(javaCG2ConfInfo);

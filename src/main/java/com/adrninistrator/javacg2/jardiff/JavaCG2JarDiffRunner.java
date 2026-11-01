@@ -2,6 +2,7 @@ package com.adrninistrator.javacg2.jardiff;
 
 import com.adrninistrator.javacg2.common.JavaCG2CommonNameConstants;
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
+import com.adrninistrator.javacg2.common.JavaCG2OutputFileSchema;
 import com.adrninistrator.javacg2.common.enums.JavaCG2OutPutFileTypeEnum;
 import com.adrninistrator.javacg2.dto.jardiff.JavaCG2JarDiffModifiedClassInfo;
 import com.adrninistrator.javacg2.dto.jardiff.JavaCG2JarDiffModifiedMethodInfo;
@@ -70,15 +71,6 @@ public class JavaCG2JarDiffRunner {
     // 发生变化的类的变更类型，M:class文件HASH发生变化的类，N:新增的类
     private static final String CLASS_CHANGE_TYPE_MODIFIED = "M";
     private static final String CLASS_CHANGE_TYPE_NEW = "N";
-
-    // jar_info文件各列的列数
-    private static final int JAR_INFO_COLUMN_NUM = 4;
-
-    // class_info文件各列的列数
-    private static final int CLASS_INFO_COLUMN_NUM = 5;
-
-    // method_info文件各列的列数
-    private static final int METHOD_INFO_COLUMN_NUM = 8;
 
     // 发生变化的类的结果文件名
     public static final String FILE_NAME_JAR_DIFF_MODIFIED_CLASSES = "jar_diff_modified_classes";
@@ -228,6 +220,10 @@ public class JavaCG2JarDiffRunner {
 
     // 读回jar_info文件
     private List<JarInfoLine> readJarInfo(String dirPath) throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO.getSchema();
+        int jarTypeIndex = schema.getColumnIndex("jar文件类型");
+        int jarNumIndex = schema.getColumnIndex("jar文件序号");
+        int jarPathIndex = schema.getColumnIndex("外层jar文件完整路径");
         List<JarInfoLine> jarInfoLineList = new ArrayList<>();
         try (BufferedReader br = genBufferedReader4SourceFile(dirPath, JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO.getFileName())) {
             if (br == null) {
@@ -235,15 +231,15 @@ public class JavaCG2JarDiffRunner {
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < JAR_INFO_COLUMN_NUM) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO.getFileName(), line);
                     continue;
                 }
-                jarInfoLineList.add(new JarInfoLine(columns[0], Integer.parseInt(columns[1]), columns[2]));
+                jarInfoLineList.add(new JarInfoLine(columns[jarTypeIndex], Integer.parseInt(columns[jarNumIndex]), columns[jarPathIndex]));
             }
         }
         // 按jar文件序号排序，保证处理顺序稳定
@@ -253,6 +249,11 @@ public class JavaCG2JarDiffRunner {
 
     // 读回class_info文件
     private Map<Integer, Map<String, ClassInfoLine>> readClassInfo(String dirPath) throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO.getSchema();
+        int classNameIndex = schema.getColumnIndex("完整类名");
+        int classFileHashIndex = schema.getColumnIndex("类文件的HASH值");
+        int jarNumIndex = schema.getColumnIndex("类所在的jar文件序号");
+        int classPathInJarIndex = schema.getColumnIndex("类在jar包中的路径");
         Map<Integer, Map<String, ClassInfoLine>> classInfoMap = new HashMap<>();
         try (BufferedReader br = genBufferedReader4SourceFile(dirPath, JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO.getFileName())) {
             if (br == null) {
@@ -260,15 +261,16 @@ public class JavaCG2JarDiffRunner {
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < CLASS_INFO_COLUMN_NUM) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO.getFileName(), line);
                     continue;
                 }
-                ClassInfoLine classInfoLine = new ClassInfoLine(columns[0], columns[2], Integer.parseInt(columns[3]), columns[4]);
+                ClassInfoLine classInfoLine = new ClassInfoLine(columns[classNameIndex], columns[classFileHashIndex], Integer.parseInt(columns[jarNumIndex]),
+                        columns[classPathInJarIndex]);
                 Map<String, ClassInfoLine> jarClassInfoMap = classInfoMap.computeIfAbsent(classInfoLine.jarNum, k -> new HashMap<>());
                 jarClassInfoMap.put(classInfoLine.className, classInfoLine);
             }
@@ -278,6 +280,10 @@ public class JavaCG2JarDiffRunner {
 
     // 读回旧目录的method_info文件，生成完整方法+冒号+返回类型对应方法指令HASH的Map
     private Map<String, String> readOldMethodHashMap(String dirPath) throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getSchema();
+        int fullMethodIndex = schema.getColumnIndex("完整方法");
+        int returnTypeIndex = schema.getColumnIndex("返回类型类名");
+        int methodInstructionsHashIndex = schema.getColumnIndex("方法指令的HASH值");
         Map<String, String> methodHashMap = new HashMap<>();
         try (BufferedReader br = genBufferedReader4SourceFile(dirPath, JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getFileName())) {
             if (br == null) {
@@ -285,15 +291,15 @@ public class JavaCG2JarDiffRunner {
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < METHOD_INFO_COLUMN_NUM) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getFileName(), line);
                     continue;
                 }
-                methodHashMap.put(genMethodHashKey(columns[0], columns[2]), columns[6]);
+                methodHashMap.put(genMethodHashKey(columns[fullMethodIndex], columns[returnTypeIndex]), columns[methodInstructionsHashIndex]);
             }
         }
         return methodHashMap;
@@ -301,6 +307,11 @@ public class JavaCG2JarDiffRunner {
 
     // 读回新目录的method_info文件，生成jar文件序号、完整类名对应方法列表的Map
     private Map<Integer, Map<String, List<MethodInfoLine>>> readNewMethodInfo(String dirPath) throws IOException {
+        JavaCG2OutputFileSchema schema = JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getSchema();
+        int fullMethodIndex = schema.getColumnIndex("完整方法");
+        int returnTypeIndex = schema.getColumnIndex("返回类型类名");
+        int methodInstructionsHashIndex = schema.getColumnIndex("方法指令的HASH值");
+        int jarNumIndex = schema.getColumnIndex("方法所在的jar文件序号");
         Map<Integer, Map<String, List<MethodInfoLine>>> methodInfoMap = new HashMap<>();
         try (BufferedReader br = genBufferedReader4SourceFile(dirPath, JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getFileName())) {
             if (br == null) {
@@ -308,15 +319,16 @@ public class JavaCG2JarDiffRunner {
             }
             String line;
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isBlank(line)) {
+                if (StringUtils.isBlank(line) || schema.isHeaderLine(line)) {
                     continue;
                 }
                 String[] columns = StringUtils.splitPreserveAllTokens(line, JavaCG2Constants.FLAG_TAB);
-                if (columns.length < METHOD_INFO_COLUMN_NUM) {
+                if (columns.length < schema.getMinColumnNum()) {
                     log.warn("结果文件中一行的列数小于预期 {} {}", JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO.getFileName(), line);
                     continue;
                 }
-                MethodInfoLine methodInfoLine = new MethodInfoLine(columns[0], columns[2], columns[6], Integer.parseInt(columns[7]));
+                MethodInfoLine methodInfoLine = new MethodInfoLine(columns[fullMethodIndex], columns[returnTypeIndex], columns[methodInstructionsHashIndex],
+                        Integer.parseInt(columns[jarNumIndex]));
                 String className = JavaCG2ClassMethodUtil.getClassNameFromMethod(methodInfoLine.fullMethod);
                 Map<String, List<MethodInfoLine>> classMethodInfoMap = methodInfoMap.computeIfAbsent(methodInfoLine.jarNum, k -> new HashMap<>());
                 List<MethodInfoLine> methodInfoLineList = classMethodInfoMap.computeIfAbsent(className, k -> new ArrayList<>());

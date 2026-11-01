@@ -1,5 +1,26 @@
 # 1. 输出文件格式
 
+## 1.0. 表头说明
+
+默认情况下，输出文件中不包含表头行，所有行均为数据行
+
+通过配置参数 output.file.header.enable（参考7.2.11）开启表头后，定义了列结构的结果文件在首行输出表头，内容为各列的名称，以tab分隔；后续各章中“文件各列内容说明”的“说明”列即对应的表头列名
+
+以下文件不输出表头：
+
+- jar_info：文件中除数据行外还写入解析结果文件保存目录、最终解析的jar文件路径等特殊行
+- 扩展机制生成的、未在JavaCG2OutPutFileTypeEnum枚举中定义列结构的其他类型文件
+- _log_method_spend_time、_javacg2_all_config、_javacg2_used_config等无固定列结构的文件
+
+注意：开启表头后，按列位置读取结果文件的下游程序（如java-all-call-graph）需要能够跳过首行的表头行
+
+每个结果文件类型的列结构（列名与列数）在common/enums/JavaCG2OutPutFileTypeEnum枚举常量上定义，作为输出文件列结构的单一来源，支持列名转列下标、列下标转列名查询（参考common/JavaCG2OutputFileSchema类）
+
+以下文件中部分行的列数可能少于表中列出的列数：
+
+- class_annotation、field_annotation、method_annotation、method_arg_annotation：注解没有属性值时，省略“注解属性名称”“注解属性值”两列
+- lambda_method_info：未找到下一个被调用方法时，省略最后一列
+
 ## 1.1. 类的注解
 
 - 文件名

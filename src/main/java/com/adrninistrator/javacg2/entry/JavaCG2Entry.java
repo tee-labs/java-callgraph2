@@ -46,6 +46,7 @@ import com.adrninistrator.javacg2.util.JavaCG2Util;
 import com.adrninistrator.javacg2.writer.JavaCG2FileOutputAdapter;
 import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSinkHolder;
 import com.adrninistrator.javacg2.writer.WriterSupportSkip;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -180,129 +181,28 @@ public class JavaCG2Entry {
         // 记录java-callgraph2组件使用的配置参数是否成功
         boolean configRecordSuccess = false;
 
-        try (JavaCG2RecordSink classAnnotationSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_ANNOTATION);
-             JavaCG2RecordSink javaCG2ConfigSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_JAVACG2_CONFIG);
-             JavaCG2RecordSink classInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_INFO);
-             JavaCG2RecordSink dupClassInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_CLASS_INFO);
-             JavaCG2RecordSink classReferenceSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_REFERENCE);
-             JavaCG2RecordSink dupClassReferenceSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_CLASS_REFERENCE);
-             JavaCG2RecordSink classSignatureGenericsTypeSink = outputAdapter.genMainRecordSink(
-                     JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_SIGNATURE_GENERICS_TYPE);
-             JavaCG2RecordSink classExtImplGenericsTypeSink = outputAdapter.genMainRecordSink(
-                     JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_EXT_IMPL_GENERICS_TYPE);
-             JavaCG2RecordSink extendsImplSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_EXTENDS_IMPL);
-             JavaCG2RecordSink fieldAnnotationSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_ANNOTATION);
-             JavaCG2RecordSink fieldInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_INFO);
-             JavaCG2RecordSink fieldGenericsTypeSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_GENERICS_TYPE);
-             JavaCG2RecordSink fieldRelationshipSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_RELATIONSHIP);
-             JavaCG2RecordSink fieldUsageOtherSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_USAGE_OTHER);
-             JavaCG2RecordSink getMethodSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_GET_METHOD);
-             JavaCG2RecordSink innerClassSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_INNER_CLASS);
-             JavaCG2RecordSink jarInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO);
-             JavaCG2RecordSink lambdaMethodInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_LAMBDA_METHOD_INFO);
-             JavaCG2RecordSink methodAnnotationSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_ANNOTATION);
-             JavaCG2RecordSink methodArgumentSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_ARGUMENT);
-             JavaCG2RecordSink methodArgAnnotationSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_ARG_ANNOTATION);
-             JavaCG2RecordSink methodArgGenericsTypeSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_ARG_GENERICS_TYPE);
-             JavaCG2RecordSink methodCallInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_INFO);
-             JavaCG2RecordSink methodCallMethodCallReturnSink = outputAdapter.genMainRecordSink(
-                     JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_METHOD_CALL_RETURN);
-             JavaCG2RecordSink methodCallStaticFieldSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_STATIC_FIELD);
-             JavaCG2RecordSink methodCallNonStaticFieldSink = outputAdapter.genMainRecordSink(
-                     JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_NON_STATIC_FIELD);
-             JavaCG2RecordSink methodCallFieldActualTypeSink = outputAdapter.genMainRecordSink(
-                     JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_FIELD_ACTUAL_TYPE);
-             JavaCG2RecordSink methodCallStaticFieldMCRSink = outputAdapter.genMainRecordSink(
-                     JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_STATIC_FIELD_MCR);
-             JavaCG2RecordSink methodReturnArgSeqSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_RETURN_ARG_SEQ);
-             JavaCG2RecordSink methodReturnCallIdSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_RETURN_CALL_ID);
-             JavaCG2RecordSink methodReturnConstValueSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_RETURN_CONST_VALUE);
-             JavaCG2RecordSink methodReturnFieldInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_RETURN_FIELD_INFO);
-             JavaCG2RecordSink methodCallSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL);
-             JavaCG2RecordSink methodCallRawCalleeSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_RAW_CALLEE);
-             JavaCG2RecordSink methodInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO);
-             JavaCG2RecordSink dupMethodInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_METHOD_INFO);
-             JavaCG2RecordSink dupFieldInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_FIELD_INFO);
-             JavaCG2RecordSink enumInitArgFieldSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_ENUM_INIT_ARG_FIELD);
-             JavaCG2RecordSink enumInitAssignInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_ENUM_INIT_ASSIGN_INFO);
-             JavaCG2RecordSink methodLineNumberSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_LINE_NUMBER);
-             JavaCG2RecordSink methodReturnGenericsTypeSink = outputAdapter.genMainRecordSink(
-                     JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_RETURN_GENERICS_TYPE);
-             JavaCG2RecordSink methodCatchSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CATCH);
-             JavaCG2RecordSink methodFinallySink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_FINALLY);
-             JavaCG2RecordSink methodThrowSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_THROW);
-             JavaCG2RecordSink packageInfoSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_PACKAGE_INFO);
-             JavaCG2RecordSink setMethodSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SET_METHOD);
-             JavaCG2RecordSink springBeanSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_BEAN);
-             JavaCG2RecordSink springScanPackageSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_SCAN_PACKAGE_JAVA);
-             JavaCG2RecordSink springAopAspectSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_AOP_ASPECT_JAVA);
-             JavaCG2RecordSink springAopPointcutSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_AOP_POINTCUT_JAVA);
-             JavaCG2RecordSink springAopAdviceSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_AOP_ADVICE_JAVA);
-             JavaCG2RecordSink springDIFieldSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_DI_FIELD);
-             JavaCG2RecordSink springControllerSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_CONTROLLER);
-             JavaCG2RecordSink springTaskJavaSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_TASK_JAVA);
-             JavaCG2RecordSink staticFinalFieldMethodCallIdSink = outputAdapter.genMainRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SF_FIELD_METHOD_CALL);
+        /*
+            经输出适配器批量创建全部主结果文件的记录Sink并登记到持有器中
+            持有器在try-with-resources中关闭，全部记录Sink的打开与关闭仍仅在当前方法中执行
+         */
+        try (JavaCG2RecordSinkHolder recordSinkHolder = JavaCG2RecordSinkHolder.genMainRecordSinkHolder(outputAdapter);
              WriterSupportSkip logMethodSpendTimeWriter = new WriterSupportSkip(javaCG2OutputInfo.getMainFilePath(JavaCG2OutPutFileTypeEnum.OPFTE_LOG_METHOD_SPEND_TIME), false)
         ) {
-            jarEntryHandleParser.setClassAnnotationSink(classAnnotationSink);
-            jarEntryHandleParser.setClassInfoSink(classInfoSink);
-            jarEntryHandleParser.setDupClassInfoSink(dupClassInfoSink);
-            jarEntryHandleParser.setClassReferenceSink(classReferenceSink);
-            jarEntryHandleParser.setDupClassReferenceSink(dupClassReferenceSink);
-            jarEntryHandleParser.setClassSignatureGenericsTypeSink(classSignatureGenericsTypeSink);
-            jarEntryHandleParser.setClassExtImplGenericsTypeSink(classExtImplGenericsTypeSink);
-            jarEntryHandleParser.setExtendsImplSink(extendsImplSink);
-            jarEntryHandleParser.setFieldAnnotationSink(fieldAnnotationSink);
-            jarEntryHandleParser.setFieldInfoSink(fieldInfoSink);
-            jarEntryHandleParser.setFieldGenericsTypeSink(fieldGenericsTypeSink);
-            jarEntryHandleParser.setFieldRelationshipSink(fieldRelationshipSink);
-            jarEntryHandleParser.setFieldUsageOtherSink(fieldUsageOtherSink);
-            jarEntryHandleParser.setSpringDIFieldSink(springDIFieldSink);
-            jarEntryHandleParser.setGetMethodSink(getMethodSink);
-            jarEntryHandleParser.setInnerClassSink(innerClassSink);
-            jarEntryHandleParser.setLambdaMethodInfoSink(lambdaMethodInfoSink);
-            jarEntryHandleParser.setMethodAnnotationSink(methodAnnotationSink);
-            jarEntryHandleParser.setMethodArgumentSink(methodArgumentSink);
-            jarEntryHandleParser.setMethodArgAnnotationSink(methodArgAnnotationSink);
-            jarEntryHandleParser.setMethodArgGenericsTypeSink(methodArgGenericsTypeSink);
-            jarEntryHandleParser.setMethodCallInfoSink(methodCallInfoSink);
-            jarEntryHandleParser.setMethodCallMethodCallReturnSink(methodCallMethodCallReturnSink);
-            jarEntryHandleParser.setMethodCallStaticFieldSink(methodCallStaticFieldSink);
-            jarEntryHandleParser.setMethodCallNonStaticFieldSink(methodCallNonStaticFieldSink);
-            jarEntryHandleParser.setMethodCallFieldActualTypeSink(methodCallFieldActualTypeSink);
-            jarEntryHandleParser.setMethodCallStaticFieldMCRSink(methodCallStaticFieldMCRSink);
-            jarEntryHandleParser.setMethodReturnArgSeqSink(methodReturnArgSeqSink);
-            jarEntryHandleParser.setMethodReturnCallIdSink(methodReturnCallIdSink);
-            jarEntryHandleParser.setMethodReturnConstValueSink(methodReturnConstValueSink);
-            jarEntryHandleParser.setMethodReturnFieldInfoSink(methodReturnFieldInfoSink);
-            jarEntryHandleParser.setMethodCallSink(methodCallSink);
-            jarEntryHandleParser.setMethodCallRawCalleeSink(methodCallRawCalleeSink);
-            jarEntryHandleParser.setMethodInfoSink(methodInfoSink);
-            jarEntryHandleParser.setDupMethodInfoSink(dupMethodInfoSink);
-            jarEntryHandleParser.setDupFieldInfoSink(dupFieldInfoSink);
-            jarEntryHandleParser.setEnumInitArgFieldSink(enumInitArgFieldSink);
-            jarEntryHandleParser.setEnumInitAssignInfoSink(enumInitAssignInfoSink);
-            jarEntryHandleParser.setMethodLineNumberSink(methodLineNumberSink);
-            jarEntryHandleParser.setMethodReturnGenericsTypeSink(methodReturnGenericsTypeSink);
-            jarEntryHandleParser.setMethodCatchSink(methodCatchSink);
-            jarEntryHandleParser.setMethodFinallySink(methodFinallySink);
-            jarEntryHandleParser.setMethodThrowSink(methodThrowSink);
-            jarEntryHandleParser.setPackageInfoSink(packageInfoSink);
-            jarEntryHandleParser.setSetMethodSink(setMethodSink);
-            jarEntryHandleParser.setStaticFinalFieldMethodCallIdSink(staticFinalFieldMethodCallIdSink);
+            // 仅向解析类传递持有器，各处理类按需取用需要的记录Sink
+            jarEntryHandleParser.recordRecordSinkHolder(recordSinkHolder);
 
             jarEntryHandleParser.setLogMethodSpendTimeWriter(logMethodSpendTimeWriter);
 
             String mergeJarFilePath = JavaCG2FileUtil.getCanonicalPath(mergeJarResult.getMergeJarFile());
             // 处理jar文件
-            if (!handleJar(mergeJarFilePath, methodCallSink, springBeanSink, springScanPackageSink, springAopAspectSink, springAopPointcutSink, springAopAdviceSink,
-                    springControllerSink, springTaskJavaSink, javaCG2ElManager)
+            if (!handleJar(mergeJarFilePath, recordSinkHolder, javaCG2ElManager)
                     || failCounter.getCount() > 0) {
                 log.error("处理失败，出错次数 {}", failCounter.getCount());
                 return false;
             }
 
             // 记录处理的jar文件信息
+            JavaCG2RecordSink jarInfoSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_JAR_INFO);
             int maxJarNum = 0;
             Map<Integer, String> jarNumPathMap = new HashMap<>(jarPathNumMap.size());
             for (Map.Entry<String, Integer> entry : jarPathNumMap.entrySet()) {
@@ -343,7 +243,7 @@ public class JavaCG2Entry {
             }
 
             // 记录java-callgraph2组件使用的配置参数
-            configRecordSuccess = recordJavaCG2Config(javaCG2ConfigSink);
+            configRecordSuccess = recordJavaCG2Config(recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_JAVACG2_CONFIG));
         } catch (Exception e) {
             log.error("出现异常 ", e);
             return false;
@@ -627,9 +527,16 @@ public class JavaCG2Entry {
     }
 
     // 处理一个jar文件
-    private boolean handleJar(String jarFilePath, JavaCG2RecordSink methodCallSink, JavaCG2RecordSink springBeanSink, JavaCG2RecordSink springScanPackageSink, JavaCG2RecordSink springAopAspectSink,
-                              JavaCG2RecordSink springAopPointcutSink, JavaCG2RecordSink springAopAdviceSink, JavaCG2RecordSink springControllerSink,
-                              JavaCG2RecordSink springTaskJavaSink, JavaCG2ElManager javaCG2ElManager) {
+    private boolean handleJar(String jarFilePath, JavaCG2RecordSinkHolder recordSinkHolder, JavaCG2ElManager javaCG2ElManager) {
+        // 从持有器中取用当前方法需要写入的记录Sink
+        JavaCG2RecordSink methodCallSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL);
+        JavaCG2RecordSink springBeanSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_BEAN);
+        JavaCG2RecordSink springScanPackageSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_SCAN_PACKAGE_JAVA);
+        JavaCG2RecordSink springAopAspectSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_AOP_ASPECT_JAVA);
+        JavaCG2RecordSink springAopPointcutSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_AOP_POINTCUT_JAVA);
+        JavaCG2RecordSink springAopAdviceSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_AOP_ADVICE_JAVA);
+        JavaCG2RecordSink springControllerSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_CONTROLLER);
+        JavaCG2RecordSink springTaskJavaSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_TASK_JAVA);
         try {
             // 对Class进行预处理
             if (!preHandleClasses1(jarFilePath)) {
@@ -647,7 +554,7 @@ public class JavaCG2Entry {
             }
 
             // 处理继承及实现相关的方法
-            extendsImplHandler.setMethodCallSink(methodCallSink);
+            extendsImplHandler.recordRecordSinkHolder(recordSinkHolder);
             extendsImplHandler.handle();
 
             // 记录Spring Bean的名称及类型

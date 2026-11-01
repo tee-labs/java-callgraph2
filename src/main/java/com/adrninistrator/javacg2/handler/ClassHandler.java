@@ -3,6 +3,7 @@ package com.adrninistrator.javacg2.handler;
 import com.adrninistrator.javacg2.common.JavaCG2CommonNameConstants;
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.common.enums.JavaCG2ConstantTypeEnum;
+import com.adrninistrator.javacg2.common.enums.JavaCG2OutPutFileTypeEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2YesNoEnum;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfInfo;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
@@ -26,6 +27,7 @@ import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2GenericsTypeUtil;
 import com.adrninistrator.javacg2.writer.WriterSupportSkip;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSinkHolder;
 import copy.javassist.bytecode.BadBytecode;
 import copy.javassist.bytecode.SignatureAttribute;
 import lombok.Setter;
@@ -114,84 +116,23 @@ public class ClassHandler {
     @Setter
     private JavaCG2Counter fieldRelationshipCounter;
 
-    @Setter
+    // 当前类需要写入的记录Sink，经recordRecordSinkHolder方法从持有器中取用
     private JavaCG2RecordSink classAnnotationSink;
-    @Setter
     private JavaCG2RecordSink classReferenceSink;
-    @Setter
     private JavaCG2RecordSink dupClassReferenceSink;
-    @Setter
     private JavaCG2RecordSink dupMethodInfoSink;
-    @Setter
     private JavaCG2RecordSink dupFieldInfoSink;
-    @Setter
-    private JavaCG2RecordSink enumInitArgFieldSink;
-    @Setter
-    private JavaCG2RecordSink enumInitAssignInfoSink;
-    @Setter
     private JavaCG2RecordSink fieldAnnotationSink;
-    @Setter
     private JavaCG2RecordSink fieldGenericsTypeSink;
-    @Setter
     private JavaCG2RecordSink fieldInfoSink;
-    @Setter
-    private JavaCG2RecordSink fieldRelationshipSink;
-    @Setter
-    private JavaCG2RecordSink fieldUsageOtherSink;
-    @Setter
     private JavaCG2RecordSink springDIFieldSink;
-    @Setter
-    private JavaCG2RecordSink getMethodSink;
-    @Setter
-    private JavaCG2RecordSink lambdaMethodInfoSink;
-    @Setter
-    private JavaCG2RecordSink methodAnnotationSink;
-    @Setter
-    private JavaCG2RecordSink methodArgAnnotationSink;
-    @Setter
     private JavaCG2RecordSink methodArgGenericsTypeSink;
-    @Setter
     private JavaCG2RecordSink methodArgumentSink;
-    @Setter
-    private JavaCG2RecordSink methodCallInfoSink;
-    @Setter
-    private JavaCG2RecordSink methodCallMethodCallReturnSink;
-    @Setter
-    private JavaCG2RecordSink methodCallStaticFieldSink;
-    @Setter
-    private JavaCG2RecordSink methodCallNonStaticFieldSink;
-    @Setter
-    private JavaCG2RecordSink methodCallFieldActualTypeSink;
-    @Setter
-    private JavaCG2RecordSink methodCallStaticFieldMCRSink;
-    @Setter
-    private JavaCG2RecordSink methodCallSink;
-    @Setter
-    private JavaCG2RecordSink methodCallRawCalleeSink;
-    @Setter
-    private JavaCG2RecordSink methodCatchSink;
-    @Setter
-    private JavaCG2RecordSink methodFinallySink;
-    @Setter
     private JavaCG2RecordSink methodInfoSink;
-    @Setter
-    private JavaCG2RecordSink methodLineNumberSink;
-    @Setter
-    private JavaCG2RecordSink methodReturnArgSeqSink;
-    @Setter
-    private JavaCG2RecordSink methodReturnCallIdSink;
-    @Setter
-    private JavaCG2RecordSink methodReturnConstValueSink;
-    @Setter
-    private JavaCG2RecordSink methodReturnFieldInfoSink;
-    @Setter
     private JavaCG2RecordSink methodReturnGenericsTypeSink;
-    @Setter
-    private JavaCG2RecordSink methodThrowSink;
-    @Setter
-    private JavaCG2RecordSink setMethodSink;
-    @Setter
-    private JavaCG2RecordSink staticFinalFieldMethodCallIdSink;
+
+    // 主结果文件记录Sink统一持有器，传递给MethodHandler4Invoke等处理类按需取用
+    private JavaCG2RecordSinkHolder recordSinkHolder;
 
     @Setter
     private WriterSupportSkip logMethodSpendTimeWriter;
@@ -640,36 +581,12 @@ public class ClassHandler {
         methodHandler4Invoke.setTransactionCallbackWithoutResultChildClassMap(transactionCallbackWithoutResultChildClassMap);
         methodHandler4Invoke.setThreadChildClassMap(threadChildClassMap);
         methodHandler4Invoke.setExtensionsManager(extensionsManager);
-        methodHandler4Invoke.setMethodCallSink(methodCallSink);
-        methodHandler4Invoke.setMethodCallRawCalleeSink(methodCallRawCalleeSink);
-        methodHandler4Invoke.setLambdaMethodInfoSink(lambdaMethodInfoSink);
-        methodHandler4Invoke.setMethodAnnotationSink(methodAnnotationSink);
+        methodHandler4Invoke.recordRecordSinkHolder(recordSinkHolder);
         methodHandler4Invoke.setSpringDefineControllerTaskHandler(springDefineControllerTaskHandler);
-        methodHandler4Invoke.setMethodArgAnnotationSink(methodArgAnnotationSink);
-        methodHandler4Invoke.setMethodLineNumberSink(methodLineNumberSink);
         methodHandler4Invoke.setClassAndJarNum(classAndJarNum);
-        methodHandler4Invoke.setFieldUsageOtherSink(fieldUsageOtherSink);
 
         if (javaCG2ConfInfo.isParseMethodCallTypeValue()) {
             methodHandler4Invoke.setParseMethodCallTypeValueFlag(true);
-            methodHandler4Invoke.setEnumInitArgFieldSink(enumInitArgFieldSink);
-            methodHandler4Invoke.setEnumInitAssignInfoSink(enumInitAssignInfoSink);
-            methodHandler4Invoke.setMethodCallInfoSink(methodCallInfoSink);
-            methodHandler4Invoke.setMethodCallMethodCallReturnSink(methodCallMethodCallReturnSink);
-            methodHandler4Invoke.setMethodCallStaticFieldSink(methodCallStaticFieldSink);
-            methodHandler4Invoke.setMethodCallNonStaticFieldSink(methodCallNonStaticFieldSink);
-            methodHandler4Invoke.setMethodCallFieldActualTypeSink(methodCallFieldActualTypeSink);
-            methodHandler4Invoke.setMethodCallStaticFieldMCRSink(methodCallStaticFieldMCRSink);
-            methodHandler4Invoke.setMethodReturnArgSeqSink(methodReturnArgSeqSink);
-            methodHandler4Invoke.setMethodReturnCallIdSink(methodReturnCallIdSink);
-            methodHandler4Invoke.setMethodCatchSink(methodCatchSink);
-            methodHandler4Invoke.setMethodFinallySink(methodFinallySink);
-            methodHandler4Invoke.setMethodThrowSink(methodThrowSink);
-            methodHandler4Invoke.setStaticFinalFieldMethodCallIdSink(staticFinalFieldMethodCallIdSink);
-            methodHandler4Invoke.setGetMethodSink(getMethodSink);
-            methodHandler4Invoke.setSetMethodSink(setMethodSink);
-            methodHandler4Invoke.setMethodReturnConstValueSink(methodReturnConstValueSink);
-            methodHandler4Invoke.setMethodReturnFieldInfoSink(methodReturnFieldInfoSink);
             methodHandler4Invoke.setRecordedSetMethodSet(recordedSetMethodSet);
             methodHandler4Invoke.setNonStaticFieldNameTypeMap(nonStaticFieldNameTypeMap);
             methodHandler4Invoke.setNonStaticFieldNameGenericsTypeMap(nonStaticFieldNameGenericsTypeMap);
@@ -685,7 +602,6 @@ public class ClassHandler {
                 methodHandler4Invoke.setNonStaticFieldPossibleTypes(nonStaticFieldPossibleTypes);
             }
             if (javaCG2ConfInfo.isAnalyseFieldRelationship()) {
-                methodHandler4Invoke.setFieldRelationshipSink(fieldRelationshipSink);
                 methodHandler4Invoke.setFieldRelationshipCounter(fieldRelationshipCounter);
             }
         }
@@ -852,5 +768,23 @@ public class ClassHandler {
     public void recordExtensionsManager(ExtensionsManager extensionsManager) {
         this.extensionsManager = extensionsManager;
         annotationAttributesFormatter = extensionsManager.getAnnotationAttributesFormatter();
+    }
+
+    // 记录主结果文件记录Sink统一持有器，并从持有器中取用当前类需要写入的记录Sink
+    public void recordRecordSinkHolder(JavaCG2RecordSinkHolder recordSinkHolder) {
+        this.recordSinkHolder = recordSinkHolder;
+        classAnnotationSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_ANNOTATION);
+        classReferenceSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_CLASS_REFERENCE);
+        dupClassReferenceSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_CLASS_REFERENCE);
+        dupMethodInfoSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_METHOD_INFO);
+        dupFieldInfoSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_DUP_FIELD_INFO);
+        fieldAnnotationSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_ANNOTATION);
+        fieldGenericsTypeSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_GENERICS_TYPE);
+        fieldInfoSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_INFO);
+        springDIFieldSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SPRING_DI_FIELD);
+        methodArgGenericsTypeSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_ARG_GENERICS_TYPE);
+        methodArgumentSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_ARGUMENT);
+        methodInfoSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_INFO);
+        methodReturnGenericsTypeSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_RETURN_GENERICS_TYPE);
     }
 }

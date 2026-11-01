@@ -3,6 +3,7 @@ package com.adrninistrator.javacg2.handler;
 import com.adrninistrator.javacg2.common.JavaCG2CommonNameConstants;
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.common.enums.JavaCG2FieldRelationshipTypeEnum;
+import com.adrninistrator.javacg2.common.enums.JavaCG2OutPutFileTypeEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2YesNoEnum;
 import com.adrninistrator.javacg2.dto.branch.BranchStackEntry;
 import com.adrninistrator.javacg2.dto.call.MethodCallPossibleInfo;
@@ -47,6 +48,7 @@ import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2InstructionUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSinkHolder;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.bcel.Const;
@@ -1398,5 +1400,15 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
                 }
             }
         }
+    }
+
+    // 记录主结果文件记录Sink统一持有器，并从持有器中取用当前类需要写入的记录Sink
+    public void recordRecordSinkHolder(JavaCG2RecordSinkHolder recordSinkHolder) {
+        enumInitArgFieldSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_ENUM_INIT_ARG_FIELD);
+        enumInitAssignInfoSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_ENUM_INIT_ASSIGN_INFO);
+        getMethodSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_GET_METHOD);
+        setMethodSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SET_METHOD);
+        methodReturnConstValueSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_RETURN_CONST_VALUE);
+        methodReturnFieldInfoSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_RETURN_FIELD_INFO);
     }
 }

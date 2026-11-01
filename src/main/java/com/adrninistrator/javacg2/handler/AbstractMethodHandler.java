@@ -80,17 +80,12 @@ public abstract class AbstractMethodHandler {
     @Setter
     protected JavaCG2Counter failCounter;
 
-    @Setter
+    // 子类需要写入的记录Sink，经子类的recordRecordSinkHolder方法从持有器中取用
     protected JavaCG2RecordSink enumInitArgFieldSink;
-    @Setter
     protected JavaCG2RecordSink enumInitAssignInfoSink;
-    @Setter
     protected JavaCG2RecordSink getMethodSink;
-    @Setter
     protected JavaCG2RecordSink setMethodSink;
-    @Setter
     protected JavaCG2RecordSink methodReturnConstValueSink;
-    @Setter
     protected JavaCG2RecordSink methodReturnFieldInfoSink;
 
     // 非静态字段字段所有可能的类型

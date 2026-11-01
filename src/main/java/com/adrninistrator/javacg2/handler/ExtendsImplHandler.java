@@ -2,6 +2,7 @@ package com.adrninistrator.javacg2.handler;
 
 import com.adrninistrator.javacg2.common.JavaCG2Constants;
 import com.adrninistrator.javacg2.common.enums.JavaCG2CallTypeEnum;
+import com.adrninistrator.javacg2.common.enums.JavaCG2OutPutFileTypeEnum;
 import com.adrninistrator.javacg2.comparator.Comparator4MethodArgReturnTypes;
 import com.adrninistrator.javacg2.dto.accessflag.JavaCG2AccessFlags;
 import com.adrninistrator.javacg2.dto.call.MethodCall;
@@ -18,6 +19,7 @@ import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSinkHolder;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,11 +66,16 @@ public class ExtendsImplHandler {
     @Setter
     private ClassAndJarNum classAndJarNum;
 
-    @Setter
+    // 当前类需要写入的记录Sink，经recordRecordSinkHolder方法从持有器中取用
     private JavaCG2RecordSink methodCallSink;
 
     public ExtendsImplHandler(JavaCG2InputAndOutput javaCG2InputAndOutput) {
         javaCG2ElManager = javaCG2InputAndOutput.getJavaCG2ElManager();
+    }
+
+    // 记录主结果文件记录Sink统一持有器，并从持有器中取用当前类需要写入的记录Sink
+    public void recordRecordSinkHolder(JavaCG2RecordSinkHolder recordSinkHolder) {
+        methodCallSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL);
     }
 
     public void handle() throws IOException {

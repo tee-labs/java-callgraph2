@@ -6,6 +6,7 @@ import com.adrninistrator.javacg2.common.TypeConstants;
 import com.adrninistrator.javacg2.common.enums.JavaCG2CallTypeEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2CalleeObjTypeEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2MethodCallInfoTypeEnum;
+import com.adrninistrator.javacg2.common.enums.JavaCG2OutPutFileTypeEnum;
 import com.adrninistrator.javacg2.common.enums.JavaCG2YesNoEnum;
 import com.adrninistrator.javacg2.dto.call.MethodCall;
 import com.adrninistrator.javacg2.dto.call.MethodCallList;
@@ -41,6 +42,7 @@ import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2InstructionUtil;
 import com.adrninistrator.javacg2.util.JavaCG2Util;
 import com.adrninistrator.javacg2.writer.JavaCG2RecordSink;
+import com.adrninistrator.javacg2.writer.JavaCG2RecordSinkHolder;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.bcel.Const;
@@ -139,46 +141,30 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
     @Setter
     private SpringDefineControllerTaskHandler springDefineControllerTaskHandler;
 
-    @Setter
+    // 当前类需要写入的记录Sink，经recordRecordSinkHolder方法从持有器中取用
     private JavaCG2RecordSink lambdaMethodInfoSink;
-    @Setter
     private JavaCG2RecordSink methodCallSink;
-    @Setter
     private JavaCG2RecordSink methodCallRawCalleeSink;
-    @Setter
     private JavaCG2RecordSink methodAnnotationSink;
-    @Setter
     private JavaCG2RecordSink methodArgAnnotationSink;
-    @Setter
     private JavaCG2RecordSink methodLineNumberSink;
-    @Setter
     private JavaCG2RecordSink methodCallInfoSink;
-    @Setter
     private JavaCG2RecordSink methodCallMethodCallReturnSink;
-    @Setter
     private JavaCG2RecordSink methodCallStaticFieldSink;
-    @Setter
     private JavaCG2RecordSink methodCallNonStaticFieldSink;
-    @Setter
     private JavaCG2RecordSink methodCallFieldActualTypeSink;
-    @Setter
     private JavaCG2RecordSink methodCallStaticFieldMCRSink;
-    @Setter
     private JavaCG2RecordSink methodReturnArgSeqSink;
-    @Setter
     private JavaCG2RecordSink methodReturnCallIdSink;
-    @Setter
     private JavaCG2RecordSink methodCatchSink;
-    @Setter
     private JavaCG2RecordSink methodFinallySink;
-    @Setter
     private JavaCG2RecordSink methodThrowSink;
-    @Setter
     private JavaCG2RecordSink staticFinalFieldMethodCallIdSink;
-    @Setter
     private JavaCG2RecordSink fieldRelationshipSink;
-    @Setter
     private JavaCG2RecordSink fieldUsageOtherSink;
+
+    // 主结果文件记录Sink统一持有器，传递给MethodHandler4TypeAndValue等处理类按需取用
+    private JavaCG2RecordSinkHolder recordSinkHolder;
 
     @Setter
     private ClassAndJarNum classAndJarNum;
@@ -296,12 +282,7 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
         methodHandler4TypeAndValue = new MethodHandler4TypeAndValue(method, mg, javaClass, callerFullMethod, javaCG2InputAndOutput);
         methodHandler4TypeAndValue.setFailCounter(failCounter);
         methodHandler4TypeAndValue.setParseMethodCallTypeValueFlag(true);
-        methodHandler4TypeAndValue.setEnumInitArgFieldSink(enumInitArgFieldSink);
-        methodHandler4TypeAndValue.setEnumInitAssignInfoSink(enumInitAssignInfoSink);
-        methodHandler4TypeAndValue.setGetMethodSink(getMethodSink);
-        methodHandler4TypeAndValue.setSetMethodSink(setMethodSink);
-        methodHandler4TypeAndValue.setMethodReturnConstValueSink(methodReturnConstValueSink);
-        methodHandler4TypeAndValue.setMethodReturnFieldInfoSink(methodReturnFieldInfoSink);
+        methodHandler4TypeAndValue.recordRecordSinkHolder(recordSinkHolder);
         methodHandler4TypeAndValue.setRecordedSetMethodSet(recordedSetMethodSet);
         methodHandler4TypeAndValue.setNonStaticFieldNameTypeMap(nonStaticFieldNameTypeMap);
         methodHandler4TypeAndValue.setNonStaticFieldNameGenericsTypeMap(nonStaticFieldNameGenericsTypeMap);
@@ -1999,5 +1980,30 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
     public void setExtensionsManager(ExtensionsManager extensionsManager) {
         this.extensionsManager = extensionsManager;
         annotationAttributesFormatter = extensionsManager.getAnnotationAttributesFormatter();
+    }
+
+    // 记录主结果文件记录Sink统一持有器，并从持有器中取用当前类需要写入的记录Sink
+    public void recordRecordSinkHolder(JavaCG2RecordSinkHolder recordSinkHolder) {
+        this.recordSinkHolder = recordSinkHolder;
+        lambdaMethodInfoSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_LAMBDA_METHOD_INFO);
+        methodCallSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL);
+        methodCallRawCalleeSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_RAW_CALLEE);
+        methodAnnotationSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_ANNOTATION);
+        methodArgAnnotationSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_ARG_ANNOTATION);
+        methodLineNumberSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_LINE_NUMBER);
+        methodCallInfoSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_INFO);
+        methodCallMethodCallReturnSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_METHOD_CALL_RETURN);
+        methodCallStaticFieldSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_STATIC_FIELD);
+        methodCallNonStaticFieldSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_NON_STATIC_FIELD);
+        methodCallFieldActualTypeSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_FIELD_ACTUAL_TYPE);
+        methodCallStaticFieldMCRSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CALL_STATIC_FIELD_MCR);
+        methodReturnArgSeqSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_RETURN_ARG_SEQ);
+        methodReturnCallIdSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_RETURN_CALL_ID);
+        methodCatchSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_CATCH);
+        methodFinallySink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_FINALLY);
+        methodThrowSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_METHOD_THROW);
+        staticFinalFieldMethodCallIdSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_SF_FIELD_METHOD_CALL);
+        fieldRelationshipSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_RELATIONSHIP);
+        fieldUsageOtherSink = recordSinkHolder.getRecordSink(JavaCG2OutPutFileTypeEnum.OPFTE_FIELD_USAGE_OTHER);
     }
 }

@@ -931,3 +931,43 @@ java-callgraph2 仅作为库使用，在代码中通过入口类 JavaCG2Entry �
 ### 1.35.3. 支持 JavaCG2ConfigWriter 生成配置文件
 
 假如确需使用配置文件，可通过 com.adrninistrator.javacg2.conf.writer.JavaCG2ConfigWriter 生成全套默认配置文件，按需修改后使用
+
+## 1.36. (1.1.0)
+
+### 1.36.1. 表达式开关 Builder 仅保留原始表达式文本设置方式（破坏性变更）
+
+移除 JavaCG2ParseSwitchBuilder、JavaCG2MergeFileSwitchBuilder、JavaCG2XmlSwitchBuilder 中的语义化方法（如 ignoreClassByClassName 等），每个表达式配置枚举仅保留一个原始 Aviator 表达式文本设置入口（如 setIgnoreClassExpression、setIgnoreJarInDirExpression），其中 JavaCG2MergeFileSwitchBuilder 为原本无原始表达式入口的 7 个枚举新增了对应的设置方法
+
+变更理由：语义化方法对表达式能力的覆盖不完整（如 string.containsIC、method_arg_num 等仍需回落到原始表达式），且同一枚举多次设置为整体替换语义，与链式调用的组合直觉冲突
+
+### 1.36.2. 新增解析开关包含（白名单）表达式
+
+为解析类、方法、方法调用及方法调用类型值解析的 4 个开关新增与忽略（黑名单）对称的包含（白名单）表达式
+
+- JavaCG2ElConfigEnum 新增 ECE_PARSE_INCLUDE_CLASS、ECE_PARSE_INCLUDE_METHOD、ECE_PARSE_INCLUDE_METHOD_CALL、ECE_PARSE_INCLUDE_METHOD_CALL_TYPE_VALUE_CALLER 枚举（默认空白不生效）
+- JavaCG2ParseSwitchBuilder 新增对应的 setIncludeXxxExpression 方法
+
+语义：包含表达式为空白时不生效、全部解析；非空白时结果为 true 解析、false 跳过（方向与忽略表达式相反）。两道判断串联，先判断包含后判断忽略，包含未命中直接跳过且不再判断忽略表达式，即跳过 =（包含已设置且未命中）或（忽略命中）
+
+## 1.37. (1.2.0，未发布)
+
+### 1.37.1. 输出文件列结构（schema）化，支持可选表头行
+
+- 新增 JavaCG2OutputFileSchema：列名数组 + 最小列数 + 表头支持标记，支持列名转列下标、列下标转列名的双向查询，作为结果文件列结构的单一来源；64 个文件类型常量在 JavaCG2OutPutFileTypeEnum 枚举上挂载 schema
+- 新增配置参数 output.file.header.enable（默认 false，默认行为不变），开启时在定义了列结构的结果文件首行输出表头；jar_info 文件包含数据行之外的特殊行，定义了 schema 但不输出表头
+- 注解类文件（注解没有属性值时省略最后两列）与 lambda_method_info（未找到下一个被调用方法时省略最后一列）的可变行宽通过 minColumnNum 表达
+
+### 1.37.2. 新增内存输出适配器，读回侧经 RecordSource 与文件路径解耦
+
+- 新增 JavaCG2RecordSource 读回接口（按文件类型定位数据行）及文件、内存两种实现，表头行的跳过统一处理；结果数据可收集在内存中供同进程直接消费
+- JavaCG2OutputAdapter 新增 genRecordSource 方法，默认返回 null 不影响第三方实现；Jar 兼容性检查与 JarDiff 比较改为持 RecordSource 读回，保留原有目录/OutputInfo 构造器向后兼容
+
+### 1.37.3. RecordSink 注入链收敛为统一持有器
+
+- 新增 JavaCG2RecordSinkHolder，以文件类型枚举到记录 Sink 的有序映射在 Entry 与解析处理类之间传递，替代逐个 setter 注入；新增输出文件的改动位置从至少 4 处收敛为 3 处（枚举常量、持有器登记、最终消费方取用）
+- 持有器不拥有 Sink 生命周期：Entry 的 try-with-resources 仍是唯一开关点，close 按登记逆序关闭并聚合异常
+
+### 1.37.4. 新增输出文件列结构导出 API 与文档一致性保障
+
+- 新增 JavaCG2OutputFileSchemaExporter（common 包）：遍历 JavaCG2OutPutFileTypeEnum 枚举，为每个定义了列结构的文件类型生成结构化信息（文件名、中文描述、列数、最小列数、是否允许表头、带下标的列名列表）与 markdown 格式文档内容，支持写出到文件；未定义列结构的文件类型跳过
+- 新增测试 TestFileFormatDocConsistency：遍历所有定义了列结构的文件类型，解析 docs/file_format.md 对应节，校验文档中的列名序列、列数与 schema 完全一致，任一漂移导致测试失败并打印差异明细

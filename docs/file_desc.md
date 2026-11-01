@@ -67,3 +67,5 @@
 |63|JarDiff比较-发生变化的方法（通过独立API对两次解析的输出目录比较生成，参考docs/file_format.md中的jar_diff_modified_methods）|
 |64|Spring Controller信息（由当前项目内置解析生成）|
 |65|Spring定时任务信息，在Java代码中通过注解定义（由当前项目内置解析生成）|
+|66|方法调用被调用对象为非静态字段时的实际类型（运行时多态）|
+|67|Spring依赖注入字段信息|

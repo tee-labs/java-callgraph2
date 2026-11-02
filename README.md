@@ -40,6 +40,8 @@ java-callgraph2 项目用于对 Java 代码（编译生成的 class、jar、war�
 
 生成的具体文件格式见 [生成文件格式](docs/file_format.md) ，有部分文件需要使用 java-all-call-graph 组件时支持生成
 
+从 com.github.adrninistrator:java-callgraph2 4.1.0 及更早版本迁移到当前版本（结果文件列结构差异对照、按列名读回、表头参数等）见 [下游迁移说明](docs/downstream_migration.md)
+
 以下为会生成的文件包含的信息
 
 ## 3.2. jar 文件、类、方法、字段基本信息

@@ -23,6 +23,12 @@ public abstract class JavaCG2AbstractRecordSource implements JavaCG2RecordSource
         this.schema = schema;
     }
 
+    @Override
+    public JavaCG2OutputFileSchema getSchema() {
+        // 实现类持有文件名而非文件类型枚举（如扩展文件读回），或文件类型未定义列结构时，schema为null
+        return schema;
+    }
+
     // 对生成的BufferedReader跳过首部的表头行，首行不是表头行时通过reset回退，保证数据行不丢失
     protected BufferedReader skipHeaderLine(BufferedReader bufferedReader) throws IOException {
         if (schema == null) {

@@ -976,3 +976,9 @@ java-callgraph2 仅作为库使用，在代码中通过入口类 JavaCG2Entry �
 
 - 扩展解析器（经 ExtensionsManager.addCodeParser 注册的实现，含内置的 Spring XML 定时任务/AOP/组件扫描信息解析类 JavaCG2SpringXmlTaskAopScanParser 写出的 spring_task_xml、spring_aop_pointcut_xml、spring_aop_aspect_xml、spring_aop_advice_xml、spring_scan_package_xml 文件）与 Jar 兼容性检查报告文件均确认经输出适配器写出（genOtherRecordSink/genMainRecordSink），文件、内存双模式自动生效，文件实现行为不变
 - 新增测试 TestMemoryOutputExtensions：在纯内存输出模式下验证扩展解析器写出的每个结果文件可从内存读回（getOtherRecordContent、genOtherRecordSource），覆盖内置的 Spring XML 解析类写出的 5 个文件与通过 addCodeParser 注册的自定义扩展解析器写出的文件，并验证生成的文件名登记在处理结果信息中
+
+### 1.37.6. RecordSource 新增 getSchema 支持按列名读取，提供下游迁移文档
+
+- JavaCG2RecordSource 接口新增 getSchema 方法，返回结果文件对应的列结构（JavaCG2OutputFileSchema），下游可将读回的数据行以 tab 分隔后按 getColumnIndex(列名) 取列、用 checkColumnNumValid 校验行宽、用 isHeaderLine 兜底自写解析器的表头跳过；文件（JavaCG2FileRecordSource）与内存（JavaCG2MemoryRecordSource）两个实现经基类 JavaCG2AbstractRecordSource 统一实现，返回各自文件类型枚举上定义的 schema；扩展文件（持有文件名而非文件类型枚举）与未定义列结构的文件类型返回 null
+- 新增测试 TestRecordSourceReadByColumn：验证文件、内存两个实现的 getSchema 返回正确列结构，并演示、断言“按列名取列”端到端可用——表头开关开启与关闭两种场景下按列名取列结果一致（文件模式经 JavaCG2FileOutputAdapter 生成表头开、关两组产物对比同一行数据）；覆盖可变行宽文件（class_annotation）的列数校验、经输出适配器 genRecordSource 读回、扩展文件 getSchema 返回 null、以及自写裸读器（isHeaderLine 跳表头 + checkColumnNumValid 校验）场景
+- 新增 docs/downstream_migration.md：面向 java-all-call-graph 维护者的迁移文档，包含 Maven 坐标与版本切换（com.github.adrninistrator:4.1.0 → io.github.mccxj:1.1.x/1.2.0）、与上游 4.1.0 的结果文件列结构差异对照（重点为 4 个注解类文件的注解属性 2 列结构与 minColumnNum 可变行宽语义，及本 fork 新增输出的 spring_controller、spring_task_*、spring_aop_*_xml、spring_scan_package_xml、compatibility_* 文件）、JavaCG2RecordSource 按列名读回与自写裸读器的 Java 8 代码示例、表头参数行为说明、JavaCG2OutputFileSchemaExporter 列结构导出 API、配置方式变化提示与嵌入式内存模式简介；README 的 3.1 节增加指向该文档的链接

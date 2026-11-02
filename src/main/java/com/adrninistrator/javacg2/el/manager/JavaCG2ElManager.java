@@ -7,6 +7,7 @@ import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
 import com.adrninistrator.javacg2.el.enums.interfaces.ElConfigInterface;
 import com.adrninistrator.javacg2.el.handler.ElHandler;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
+import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,16 @@ public class JavaCG2ElManager extends CommonElManager {
 
     public JavaCG2ElManager(BaseConfigureWrapper configureWrapper, ElConfigInterface[] elConfigInterfaces, String outputDirPath) {
         super(configureWrapper, elConfigInterfaces, outputDirPath);
+    }
+
+    /**
+     * @param configureWrapper   配置参数包装类对象
+     * @param elConfigInterfaces 需要使用的表达式配置数组
+     * @param outputDirPath      输出目录路径，为null代表检查模式
+     * @param outputAdapter      输出适配器，非null时表达式忽略数据经输出适配器写出（纯内存输出适配器时写入内存缓冲，不写文件）
+     */
+    public JavaCG2ElManager(BaseConfigureWrapper configureWrapper, ElConfigInterface[] elConfigInterfaces, String outputDirPath, JavaCG2OutputAdapter outputAdapter) {
+        super(configureWrapper, elConfigInterfaces, outputDirPath, outputAdapter);
     }
 
     @Override

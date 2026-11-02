@@ -86,6 +86,17 @@ public class JavaCG2OutputInfo {
         return JavaCG2FileUtil.genFilePath(outputDirPath, javaCG2OutPutFileTypeEnum.getFileName(), outputFileExt);
     }
 
+    /**
+     * 获取指定类型的生成文件的文件名（包含后缀名）
+     * 与getMainFilePath方法使用相同的文件名解析规则，用于通过输出适配器生成自由格式文本文件时指定文件名
+     *
+     * @param javaCG2OutPutFileTypeEnum
+     * @return
+     */
+    public String getMainFileName(JavaCG2OutPutFileTypeEnum javaCG2OutPutFileTypeEnum) {
+        return javaCG2OutPutFileTypeEnum.getFileName() + outputFileExt;
+    }
+
     public void addFrameSnapshotNumExceedMethod(String frameSnapshotNumExceedMethod) {
         frameSnapshotNumExceedMethodSet.add(frameSnapshotNumExceedMethod);
     }

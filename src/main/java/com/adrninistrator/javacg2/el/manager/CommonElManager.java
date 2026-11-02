@@ -6,6 +6,7 @@ import com.adrninistrator.javacg2.el.enums.JavaCG2ElAllowedVariableEnum;
 import com.adrninistrator.javacg2.el.enums.interfaces.ElConfigInterface;
 import com.adrninistrator.javacg2.el.handler.ElHandler;
 import com.adrninistrator.javacg2.util.JavaCG2ClassMethodUtil;
+import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -18,6 +19,10 @@ import java.util.Map;
 public abstract class CommonElManager extends AbstractElManager {
     protected CommonElManager(BaseConfigureWrapper configureWrapper, ElConfigInterface[] elConfigInterfaces, String outputDirPath) {
         super(configureWrapper, elConfigInterfaces, outputDirPath);
+    }
+
+    protected CommonElManager(BaseConfigureWrapper configureWrapper, ElConfigInterface[] elConfigInterfaces, String outputDirPath, JavaCG2OutputAdapter outputAdapter) {
+        super(configureWrapper, elConfigInterfaces, outputDirPath, outputAdapter);
     }
 
     /**

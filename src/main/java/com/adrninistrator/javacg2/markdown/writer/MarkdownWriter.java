@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,8 +53,20 @@ public class MarkdownWriter implements AutoCloseable {
      * @throws FileNotFoundException
      */
     public MarkdownWriter(String mdFilePath, boolean showTitleSeq) throws FileNotFoundException {
+        this(JavaCG2FileUtil.genBufferedWriter(mdFilePath), showTitleSeq);
+    }
+
+    /**
+     * @param writer       用于写出markdown内容的Writer类，close时会执行close操作
+     * @param showTitleSeq 标题是否显示数字序号，如1. 2.3.
+     */
+    public MarkdownWriter(Writer writer, boolean showTitleSeq) {
         this.showTitleSeq = showTitleSeq;
-        writer = JavaCG2FileUtil.genBufferedWriter(mdFilePath);
+        if (writer instanceof BufferedWriter) {
+            this.writer = (BufferedWriter) writer;
+        } else {
+            this.writer = new BufferedWriter(writer);
+        }
         if (showTitleSeq) {
             titleLevelSeqMap = new HashMap<>();
         }

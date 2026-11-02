@@ -551,7 +551,12 @@ public class MergeJarHandler {
         if (StringUtils.isNotBlank(outputRootPath)) {
             // 若有指定output.root.path参数，则生成在对应目录中
             rootDirPath = JavaCG2FileUtil.addSeparator4FilePath(outputRootPath);
-            return new File(rootDirPath + firstJarFile.getName() + jarFlag);
+            File newJarFile = new File(rootDirPath + firstJarFile.getName() + jarFlag);
+            if (JavaCG2FileUtil.isDirectoryExists(newJarFile.getParentFile(), true)) {
+                return newJarFile;
+            }
+            // 指定的输出根目录不可用（如纯内存输出模式下指定了无效的output.root.path参数），回退为生成在第一个jar、war文件或目录所在的目录
+            log.warn("指定的输出根目录不可用，合并后的jar文件生成在第一个jar、war文件或目录所在的目录 {}", rootDirPath);
         }
 
         // 默认生成在第一个jar、war文件，或目录所在的目录

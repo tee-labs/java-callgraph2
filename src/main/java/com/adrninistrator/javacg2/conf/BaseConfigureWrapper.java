@@ -781,8 +781,13 @@ public abstract class BaseConfigureWrapper {
     public boolean printUsedConfigInfo(String simpleClassName, String outputDirPath, String fileName) {
         String configMdFilePath = JavaCG2FileUtil.addSeparator4FilePath(outputDirPath) + fileName;
         log.info("{} 使用的配置参数保存到以下文件 {}", simpleClassName, configMdFilePath);
-        // 打印使用的配置参数
-        return printConfigInfo(simpleClassName, configMdFilePath, false);
+        try (Writer writer = JavaCG2FileUtil.genBufferedWriter(configMdFilePath)) {
+            // 打印使用的配置参数
+            return printConfigInfo(simpleClassName, writer, false);
+        } catch (Exception e) {
+            log.error("{} error ", simpleClassName, e);
+            return false;
+        }
     }
 
     /**
@@ -795,23 +800,52 @@ public abstract class BaseConfigureWrapper {
     public boolean printAllConfigInfo(String simpleClassName, String outputDirPath, String fileName) {
         String configMdFilePath = JavaCG2FileUtil.addSeparator4FilePath(outputDirPath) + fileName;
         log.info("{} 所有配置参数保存到以下文件 {}", simpleClassName, configMdFilePath);
+        try (Writer writer = JavaCG2FileUtil.genBufferedWriter(configMdFilePath)) {
+            // 打印所有配置参数
+            return printConfigInfo(simpleClassName, writer, true);
+        } catch (Exception e) {
+            log.error("{} error ", simpleClassName, e);
+            return false;
+        }
+    }
+
+    /**
+     * 执行完毕时打印当前使用的配置参数，通过调用方提供的Writer写出（如经输出适配器生成的自由格式文本文件）
+     *
+     * @param simpleClassName
+     * @param writer          用于写出配置参数信息的Writer类
+     * @return
+     */
+    public boolean printUsedConfigInfo(String simpleClassName, Writer writer) {
         // 打印使用的配置参数
-        return printConfigInfo(simpleClassName, configMdFilePath, true);
+        return printConfigInfo(simpleClassName, writer, false);
+    }
+
+    /**
+     * 执行完毕时打印当前所有配置参数，通过调用方提供的Writer写出（如经输出适配器生成的自由格式文本文件）
+     *
+     * @param simpleClassName
+     * @param writer          用于写出配置参数信息的Writer类
+     * @return
+     */
+    public boolean printAllConfigInfo(String simpleClassName, Writer writer) {
+        // 打印所有配置参数
+        return printConfigInfo(simpleClassName, writer, true);
     }
 
     /**
      * 打印配置参数
      *
      * @param simpleClassName
-     * @param configMdFilePath
+     * @param writer             用于写出配置参数信息的Writer类，close时会执行close操作
      * @param printAllConfigInfo true: 打印所有的配置参数 false: 打印使用的配置参数
      */
-    private boolean printConfigInfo(String simpleClassName, String configMdFilePath, boolean printAllConfigInfo) {
+    private boolean printConfigInfo(String simpleClassName, Writer writer, boolean printAllConfigInfo) {
         // 当前文件可能会写多次，最后一次写的内容覆盖前面的内容，所有使用过当前配置类的类名都会被记录
         if (!useThisSimpleClassNameList.contains(simpleClassName)) {
             useThisSimpleClassNameList.add(simpleClassName);
         }
-        try (MarkdownWriter markdownWriter = new MarkdownWriter(configMdFilePath, true)) {
+        try (MarkdownWriter markdownWriter = new MarkdownWriter(writer, true)) {
             // 添加公共的说明
             addCommonDesc(markdownWriter);
 

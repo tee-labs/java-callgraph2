@@ -11,11 +11,12 @@ import com.adrninistrator.javacg2.exceptions.JavaCG2RuntimeException;
 import com.adrninistrator.javacg2.thread.ThreadFactory4TPE;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 import com.adrninistrator.javacg2.util.JavaCG2ThreadUtil;
+import com.adrninistrator.javacg2.writer.JavaCG2OutputAdapter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
 import java.io.Closeable;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,12 +73,29 @@ public abstract class AbstractElManager implements Closeable {
      * @param outputDirPath      输出目录路径，为null代表检查模式
      */
     protected AbstractElManager(BaseConfigureWrapper configureWrapper, ElConfigInterface[] elConfigInterfaces, String outputDirPath) {
+        this(configureWrapper, elConfigInterfaces, outputDirPath, null);
+    }
+
+    /**
+     *
+     * @param configureWrapper   配置参数包装类对象
+     * @param elConfigInterfaces 需要使用的表达式配置数组
+     * @param outputDirPath      输出目录路径，为null代表检查模式
+     * @param outputAdapter      输出适配器，非null时表达式忽略数据经输出适配器写出（纯内存输出适配器时写入内存缓冲，不写文件）
+     */
+    protected AbstractElManager(BaseConfigureWrapper configureWrapper, ElConfigInterface[] elConfigInterfaces, String outputDirPath, JavaCG2OutputAdapter outputAdapter) {
         if (outputDirPath != null) {
-            String elIgnoreDataFilePath = JavaCG2FileUtil.addSeparator4FilePath(outputDirPath) + JavaCG2Constants.EL_IGNORE_DATA_LOG_FILE_NAME;
-            log.info("保存表达式忽略数据的文件路径 {}", elIgnoreDataFilePath);
             try {
-                elIgnoreDataWriter = JavaCG2FileUtil.genBufferedWriter(elIgnoreDataFilePath);
-            } catch (FileNotFoundException e) {
+                if (outputAdapter != null) {
+                    // 经输出适配器生成自由格式文本文件对应的Writer
+                    elIgnoreDataWriter = outputAdapter.genOtherFileWriter(JavaCG2Constants.EL_IGNORE_DATA_LOG_FILE_NAME);
+                    log.info("表达式忽略数据经输出适配器写出 {}", outputAdapter.getClass().getSimpleName());
+                } else {
+                    String elIgnoreDataFilePath = JavaCG2FileUtil.addSeparator4FilePath(outputDirPath) + JavaCG2Constants.EL_IGNORE_DATA_LOG_FILE_NAME;
+                    log.info("保存表达式忽略数据的文件路径 {}", elIgnoreDataFilePath);
+                    elIgnoreDataWriter = JavaCG2FileUtil.genBufferedWriter(elIgnoreDataFilePath);
+                }
+            } catch (IOException e) {
                 log.error("出现异常 ", e);
                 throw new JavaCG2RuntimeException();
             }

@@ -5,6 +5,7 @@ import com.adrninistrator.javacg2.dto.output.JavaCG2OutputInfo;
 import com.adrninistrator.javacg2.util.JavaCG2FileUtil;
 
 import java.io.IOException;
+import java.io.Writer;
 
 /**
  * @author adrninistrator
@@ -42,6 +43,13 @@ public class JavaCG2FileOutputAdapter extends JavaCG2AbstractOutputAdapter {
             writeHeaderIfEnable(recordSink, fileTypeEnum.getSchema());
         }
         return recordSink;
+    }
+
+    @Override
+    public Writer genOtherFileWriter(String fileName) throws IOException {
+        // 自由格式文本文件生成在输出目录中，文件名包含后缀名，不在其后拼接结果文件后缀
+        String filePath = javaCG2OutputInfo.getOutputDirPath() + fileName;
+        return JavaCG2FileUtil.genBufferedWriter(filePath);
     }
 
     @Override

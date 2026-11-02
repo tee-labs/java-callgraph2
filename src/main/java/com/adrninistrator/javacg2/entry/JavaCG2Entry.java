@@ -143,7 +143,14 @@ public class JavaCG2Entry {
         }
 
         javaCG2ConfInfo.setOutputDirPath(outputDirPath);
-        try (JavaCG2ElManager javaCG2ElManager = new JavaCG2ElManager(javaCG2ConfigureWrapper, JavaCG2ElConfigEnum.values(), outputDirPath)) {
+
+        /*
+            创建处理结果信息对象，并初始化输出适配器（未指定时使用将记录写入文件的实现）
+            需要在EL表达式管理类创建之前完成，使EL表达式忽略数据文件等自由格式文本文件也经输出适配器创建
+         */
+        JavaCG2OutputInfo javaCG2OutputInfo = genOutputInfo(javaCG2ConfInfo);
+
+        try (JavaCG2ElManager javaCG2ElManager = new JavaCG2ElManager(javaCG2ConfigureWrapper, JavaCG2ElConfigEnum.values(), outputDirPath, outputAdapter)) {
             JavaCG2Counter jarNumCounter = new JavaCG2Counter(JavaCG2Constants.JAR_NUM_MIN_BEFORE);
 
             // 处理参数中指定的jar文件
@@ -156,10 +163,10 @@ public class JavaCG2Entry {
                 boolean success1 = parse(mergeJarResult, javaCG2ElManager, javaCG2ConfInfo);
                 log.info("执行完毕，处理数量，类： {} 方法: {} 方法调用: {} 耗时: {} 秒", classNumCounter.getCount(), methodNumCounter.getCount(), callIdCounter.getCount(),
                         JavaCG2Util.getSpendSeconds(startTime));
-                // 打印所有的配置参数
-                boolean success2 = javaCG2ConfigureWrapper.printAllConfigInfo(SIMPLE_CLASS_NAME, outputDirPath, JavaCG2Constants.FILE_JAVACG2_ALL_CONFIG_MD);
-                // 打印当前使用的配置参数
-                boolean success3 = javaCG2ConfigureWrapper.printUsedConfigInfo(SIMPLE_CLASS_NAME, outputDirPath, JavaCG2Constants.FILE_JAVACG2_USED_CONFIG_MD);
+                // 经输出适配器生成自由格式文本文件对应的Writer，写出所有的配置参数
+                boolean success2 = javaCG2ConfigureWrapper.printAllConfigInfo(SIMPLE_CLASS_NAME, outputAdapter.genOtherFileWriter(JavaCG2Constants.FILE_JAVACG2_ALL_CONFIG_MD));
+                // 经输出适配器生成自由格式文本文件对应的Writer，写出当前使用的配置参数
+                boolean success3 = javaCG2ConfigureWrapper.printUsedConfigInfo(SIMPLE_CLASS_NAME, outputAdapter.genOtherFileWriter(JavaCG2Constants.FILE_JAVACG2_USED_CONFIG_MD));
                 return success1 && success2 && success3;
             } catch (Exception e) {
                 log.error("error ", e);
@@ -186,7 +193,8 @@ public class JavaCG2Entry {
             持有器在try-with-resources中关闭，全部记录Sink的打开与关闭仍仅在当前方法中执行
          */
         try (JavaCG2RecordSinkHolder recordSinkHolder = JavaCG2RecordSinkHolder.genMainRecordSinkHolder(outputAdapter);
-             WriterSupportSkip logMethodSpendTimeWriter = new WriterSupportSkip(javaCG2OutputInfo.getMainFilePath(JavaCG2OutPutFileTypeEnum.OPFTE_LOG_METHOD_SPEND_TIME), false)
+             // 方法处理耗时日志文件为无列结构的自由格式文本文件，经输出适配器创建Writer，未写入时不创建文件（或内存缓冲）
+             WriterSupportSkip logMethodSpendTimeWriter = new WriterSupportSkip(outputAdapter, javaCG2OutputInfo.getMainFileName(JavaCG2OutPutFileTypeEnum.OPFTE_LOG_METHOD_SPEND_TIME), false)
         ) {
             // 仅向解析类传递持有器，各处理类按需取用需要的记录Sink
             jarEntryHandleParser.recordRecordSinkHolder(recordSinkHolder);
@@ -292,10 +300,32 @@ public class JavaCG2Entry {
         }
         log.info("当前输出的根目录: {}", outputDirPath);
         if (!JavaCG2FileUtil.isDirectoryExists(outputDirPath, true)) {
-            log.error("创建输出目录失败 {}", outputRootPath);
-            return null;
+            if (outputAdapter != null && outputAdapter.isMemoryOnly()) {
+                // 纯内存输出模式不写文件，输出目录无法创建不作为错误
+                log.warn("当前使用纯内存输出的输出适配器，输出目录无法创建，不影响处理 {}", outputDirPath);
+            } else {
+                log.error("创建输出目录失败 {}", outputRootPath);
+                return null;
+            }
         }
         return outputDirPath;
+    }
+
+    // 创建处理结果信息对象，并初始化输出适配器
+    private JavaCG2OutputInfo genOutputInfo(JavaCG2ConfInfo javaCG2ConfInfo) {
+        String outputFileExt = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_OUTPUT_FILE_EXT);
+        // 处理结果信息相关
+        JavaCG2OutputInfo javaCG2OutputInfo = new JavaCG2OutputInfo(javaCG2ConfInfo.getOutputDirPath(), outputFileExt);
+        // 记录是否在结果文件首行输出表头，由输出适配器在生成记录Sink时使用
+        javaCG2OutputInfo.setOutputFileHeaderEnable(javaCG2ConfInfo.isOutputFileHeaderEnable());
+        javaCG2InputAndOutput.setJavaCG2OutputInfo(javaCG2OutputInfo);
+
+        // 初始化输出适配器，未指定时使用将记录写入文件的实现
+        if (outputAdapter == null) {
+            outputAdapter = new JavaCG2FileOutputAdapter(javaCG2OutputInfo);
+        }
+        extensionsManager.setOutputAdapter(outputAdapter);
+        return javaCG2OutputInfo;
     }
 
     // 处理配置参数中指定的jar文件
@@ -324,24 +354,11 @@ public class JavaCG2Entry {
         // 检查方法调用枚举类型是否重复定义
         JavaCG2CallTypeEnum.checkRepeat();
 
-        String outputFileExt = javaCG2ConfigureWrapper.getMainConfig(JavaCG2ConfigKeyEnum.CKE_OUTPUT_FILE_EXT);
-        // 处理结果信息相关
-        JavaCG2OutputInfo javaCG2OutputInfo = new JavaCG2OutputInfo(javaCG2ConfInfo.getOutputDirPath(), outputFileExt);
-        // 记录是否在结果文件首行输出表头，由输出适配器在生成记录Sink时使用
-        javaCG2OutputInfo.setOutputFileHeaderEnable(javaCG2ConfInfo.isOutputFileHeaderEnable());
-
         JavaCG2OtherRunResult javaCG2OtherRunResult = new JavaCG2OtherRunResult();
         javaCG2InputAndOutput.setJavaCG2ConfInfo(javaCG2ConfInfo);
         javaCG2InputAndOutput.setJavaCG2ConfigureWrapper(javaCG2ConfigureWrapper);
         javaCG2InputAndOutput.setJavaCG2ElManager(javaCG2ElManager);
-        javaCG2InputAndOutput.setJavaCG2OutputInfo(javaCG2OutputInfo);
         javaCG2InputAndOutput.setJavaCG2OtherRunResult(javaCG2OtherRunResult);
-
-        // 初始化输出适配器，未指定时使用将记录写入文件的实现
-        if (outputAdapter == null) {
-            outputAdapter = new JavaCG2FileOutputAdapter(javaCG2OutputInfo);
-        }
-        extensionsManager.setOutputAdapter(outputAdapter);
 
         // 扩展类管理类初始化
         extensionsManager.setJavaCG2InputAndOutput(javaCG2InputAndOutput);

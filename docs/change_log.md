@@ -971,3 +971,8 @@ java-callgraph2 仅作为库使用，在代码中通过入口类 JavaCG2Entry �
 
 - 新增 JavaCG2OutputFileSchemaExporter（common 包）：遍历 JavaCG2OutPutFileTypeEnum 枚举，为每个定义了列结构的文件类型生成结构化信息（文件名、中文描述、列数、最小列数、是否允许表头、带下标的列名列表）与 markdown 格式文档内容，支持写出到文件；未定义列结构的文件类型跳过
 - 新增测试 TestFileFormatDocConsistency：遍历所有定义了列结构的文件类型，解析 docs/file_format.md 对应节，校验文档中的列名序列、列数与 schema 完全一致，任一漂移导致测试失败并打印差异明细
+
+### 1.37.5. 扩展解析器输出通道确认统一经输出适配器，补齐纯内存模式覆盖
+
+- 扩展解析器（经 ExtensionsManager.addCodeParser 注册的实现，含内置的 Spring XML 定时任务/AOP/组件扫描信息解析类 JavaCG2SpringXmlTaskAopScanParser 写出的 spring_task_xml、spring_aop_pointcut_xml、spring_aop_aspect_xml、spring_aop_advice_xml、spring_scan_package_xml 文件）与 Jar 兼容性检查报告文件均确认经输出适配器写出（genOtherRecordSink/genMainRecordSink），文件、内存双模式自动生效，文件实现行为不变
+- 新增测试 TestMemoryOutputExtensions：在纯内存输出模式下验证扩展解析器写出的每个结果文件可从内存读回（getOtherRecordContent、genOtherRecordSource），覆盖内置的 Spring XML 解析类写出的 5 个文件与通过 addCodeParser 注册的自定义扩展解析器写出的文件，并验证生成的文件名登记在处理结果信息中

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  黄金基线夹具：Spring XML文件，随golden-fixture.jar提交入库
+  覆盖内置Spring XML扩展的解析：Bean定义（JavaCG2SpringXmlBeanParser）、
+  定时任务/AOP/组件扫描（JavaCG2SpringXmlTaskAopScanParser）
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context">
+
+    <!-- Bean定义，指向夹具类 -->
+    <bean id="goldenChildService" class="golden.core.GoldenChildService"/>
+    <bean id="goldenAnnotatedService" class="golden.anno.GoldenAnnotatedService"/>
+
+    <!-- 嵌套beans元素，带profile -->
+    <beans profile="dev">
+        <bean id="goldenDevBean" class="golden.dto.GoldenDtoUser"/>
+    </beans>
+
+    <!-- 定时任务 -->
+    <task:scheduled-tasks>
+        <task:scheduled ref="goldenChildService" method="calcWithBase"/>
+    </task:scheduled-tasks>
+
+    <!-- AOP配置 -->
+    <aop:config>
+        <!-- aop:config元素下直接定义的pointcut -->
+        <aop:pointcut id="goldenXmlPointcut" expression="execution(* golden.core.GoldenChildService.*(..))"/>
+
+        <!-- 指定order属性的aspect，含pointcut-ref与内联pointcut两种advice -->
+        <aop:aspect id="goldenXmlAspect" ref="goldenChildService" order="1">
+            <aop:before method="throwIfNegative" pointcut-ref="goldenXmlPointcut"/>
+            <aop:after-returning method="exec" pointcut="within(golden..*)"/>
+        </aop:aspect>
+    </aop:config>
+
+    <!-- 组件扫描 -->
+    <context:component-scan base-package="golden.core, golden.dto"/>
+</beans>

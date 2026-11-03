@@ -94,6 +94,14 @@ public class InstructionHandler {
 
     private final MethodGen mg;
 
+    /*
+        当前方法是否为静态方法，与当前方法的参数类型数组
+        当前类的实例在处理每个方法时创建，在构造时缓存以上信息，避免处理每条LOAD指令时重复解析方法签名
+    */
+    private final boolean staticMethod;
+
+    private final Type[] argumentTypes;
+
     private final ConstantPoolGen cpg;
 
     private final String callerFullMethod;
@@ -158,6 +166,8 @@ public class InstructionHandler {
                               FieldInformationMap staticFieldInfoMap) {
         this.frEqConversionMethodMap = javaCG2InputAndOutput.getJavaCG2ConfInfo().getFrEqConversionMethodMap();
         this.mg = mg;
+        this.staticMethod = mg.isStatic();
+        this.argumentTypes = mg.getArgumentTypes();
         this.cpg = mg.getConstantPool();
         this.callerFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(mg.getClassName(), mg.getName(), mg.getArgumentTypes());
         this.callerMethodReturnType = mg.getReturnType().toString();
@@ -671,7 +681,7 @@ public class InstructionHandler {
         if (locals.size() > loadIndex) {
             LocalVariableElement local = locals.get(loadIndex);
             // 获取LOAD指令对应的方法参数序号
-            int argIndex = JavaCG2ByteCodeUtil.getArgIndexInMethod(mg, loadIndex);
+            int argIndex = getArgIndexInMethod(loadIndex);
             if (argIndex >= 0) {
                 // 当前LOAD指令是获取方法参数
                 VariableDataSourceMethodArg variableDataSourceMethodArg = new VariableDataSourceMethodArg(JavaCG2Constants.METHOD_CALL_ARGUMENTS_START_SEQ + argIndex,
@@ -684,6 +694,17 @@ public class InstructionHandler {
         }
 
         throw new JavaCG2RuntimeException("本地变量不存在 " + loadIndex);
+    }
+
+    /**
+     * 获取指定的变量序号在当前方法中的参数序号，使用构造时缓存的当前方法是否为静态方法与参数类型数组，避免重复解析方法签名
+     *
+     * @param variableIndex 变量序号
+     * @return -1: 不是获取方法参数 >=0: 方法参数序号（从0开始）
+     */
+    private int getArgIndexInMethod(int variableIndex) {
+        int argIndex = variableIndex - (staticMethod ? 0 : 1);
+        return argIndex < argumentTypes.length ? argIndex : -1;
     }
 
     // 处理数组获取值

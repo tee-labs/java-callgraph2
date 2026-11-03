@@ -668,7 +668,234 @@ JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX
 
 ```
 
-## 5.9. _javacg2_parse_class_method_switch/parse_ignore_class.av
+## 5.9. _javacg2_merge_file_switch/include_jar_in_dir.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_IN_DIR
+
+- 参数说明
+
+指定仅合并目录中的哪些jar文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+
+与ignore_jar_in_dir.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|file_path|String|目录中的文件绝对路径<br>以斜杠/为分隔符|D:/a/b.jar<br>/tmp/a/b.jar|
+|file_dir_path|String|目录中的文件所在目录绝对路径<br>以斜杠/为分隔符，不以分隔符结尾|D:/a<br>/tmp/a|
+|file_name|String|文件名称|a.class<br>a.xml|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.10. _javacg2_merge_file_switch/include_war_in_dir.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_WAR_IN_DIR
+
+- 参数说明
+
+指定仅合并目录中的哪些war文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+
+与ignore_war_in_dir.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|file_path|String|目录中的文件绝对路径<br>以斜杠/为分隔符|D:/a/b.jar<br>/tmp/a/b.jar|
+|file_dir_path|String|目录中的文件所在目录绝对路径<br>以斜杠/为分隔符，不以分隔符结尾|D:/a<br>/tmp/a|
+|file_name|String|文件名称|a.class<br>a.xml|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.11. _javacg2_merge_file_switch/include_class_in_dir.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_CLASS_IN_DIR
+
+- 参数说明
+
+指定仅合并目录中的哪些class文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+
+与ignore_class_in_dir.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|file_path|String|目录中的文件绝对路径<br>以斜杠/为分隔符|D:/a/b.jar<br>/tmp/a/b.jar|
+|file_dir_path|String|目录中的文件所在目录绝对路径<br>以斜杠/为分隔符，不以分隔符结尾|D:/a<br>/tmp/a|
+|file_name|String|文件名称|a.class<br>a.xml|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.12. _javacg2_merge_file_switch/include_other_in_dir.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_OTHER_IN_DIR
+
+- 参数说明
+
+指定仅合并目录中的哪些非jar、war、class文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+
+与ignore_other_in_dir.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|file_path|String|目录中的文件绝对路径<br>以斜杠/为分隔符|D:/a/b.jar<br>/tmp/a/b.jar|
+|file_dir_path|String|目录中的文件所在目录绝对路径<br>以斜杠/为分隔符，不以分隔符结尾|D:/a<br>/tmp/a|
+|file_name|String|文件名称|a.class<br>a.xml|
+|file_ext|String|非jar、war、class文件后缀<br>以.开头|.xml<br>.properties|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.13. _javacg2_merge_file_switch/include_jar_in_jar_war.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_IN_JAR_WAR
+
+- 参数说明
+
+指定仅合并jar、war中的哪些jar文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+
+与ignore_jar_in_jar_war.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+仅当本表达式（白名单）命中后才会继续判断ignore_jar_in_jar_war.av
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|file_path|String|jar/war文件中的文件相对路径<br>相对根目录的路径<br>以斜杠/为分隔符，不以分隔符开头|a/b/c.jar<br>a/b/c.xml|
+|file_dir_path|String|jar/war文件中的文件所在目录相对路径<br>相对根目录的路径<br>以斜杠/为分隔符，不以分隔符开头或结尾|a<br>a/b|
+|file_name|String|文件名称|a.class<br>a.xml|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.14. _javacg2_merge_file_switch/include_class_in_jar_war.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_CLASS_IN_JAR_WAR
+
+- 参数说明
+
+指定仅合并jar、war中的哪些class文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+
+与ignore_class_in_jar_war.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+仅当本表达式（白名单）命中后才会继续判断ignore_class_in_jar_war.av
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|file_path|String|jar/war文件中的文件相对路径<br>相对根目录的路径<br>以斜杠/为分隔符，不以分隔符开头|a/b/c.jar<br>a/b/c.xml|
+|file_dir_path|String|jar/war文件中的文件所在目录相对路径<br>相对根目录的路径<br>以斜杠/为分隔符，不以分隔符开头或结尾|a<br>a/b|
+|file_name|String|文件名称|a.class<br>a.xml|
+|class_file_path|String|jar/war文件中的class文件的相对路径<br>相对根目录，或WEB-INF/classes、BOOT-INF/classes目录的路径<br>以斜杠/为分隔符，不以分隔符开头|a/b/c.class|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.15. _javacg2_merge_file_switch/include_other_in_jar_war.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_OTHER_IN_JAR_WAR
+
+- 参数说明
+
+指定仅合并jar、war中的哪些非jar、war、class文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+
+与ignore_other_in_jar_war.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）
+
+仅当本表达式（白名单）命中后才会继续判断ignore_other_in_jar_war.av
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|file_path|String|jar/war文件中的文件相对路径<br>相对根目录的路径<br>以斜杠/为分隔符，不以分隔符开头|a/b/c.jar<br>a/b/c.xml|
+|file_dir_path|String|jar/war文件中的文件所在目录相对路径<br>相对根目录的路径<br>以斜杠/为分隔符，不以分隔符开头或结尾|a<br>a/b|
+|file_name|String|文件名称|a.class<br>a.xml|
+|file_ext|String|非jar、war、class文件后缀<br>以.开头|.xml<br>.properties|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.16. _javacg2_merge_file_switch/include_jar_war_by_class_dir_prefix.av
+
+- 配置文件枚举类名与常量名
+
+JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_WAR_BY_CLASS_DIR_PREFIX
+
+- 参数说明
+
+通过class文件对应指定层级的目录路径判断仅合并哪些jar、war文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+
+相当于通过jar、war文件中类的包名控制仅合并哪些jar、war文件
+
+与ignore_jar_war_by_class_dir_prefix.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单），仅当本表达式（白名单）命中后才会继续判断ignore_jar_war_by_class_dir_prefix.av
+
+以下参数为jar、war文件中的class文件对应指定层级的目录路径集合。在表达式中可通过"include"方法判断集合中是否包含指定元素
+
+集合中的元素类型为字符串，以/作为分隔符，不会以分隔符开头或结尾
+
+例如jar文件中有a1/c1.class、a2/b2/c2.class，则该jar文件中的class文件目录1级路径有a1、a2，2级路径有a2/b2，没有层级大于2级的路径
+
+在使用以下 class_dir_prefix_level_ 参数时，需要以 class_dir_prefix_level_ 开头，后续通过数字指定class文件路径层级
+
+例如 class_dir_prefix_level_3 代表第3级class文件路径集合
+
+- 允许使用的变量
+
+|变量名称|变量类型|变量描述|变量值示例|
+|---|---|---|---|
+|class_dir_prefix_level_|Set|jar/war文件中的class文件对应指定层级的目录路径集合|集合：('a')<br>集合：('a', 'a/b')|
+
+- 当前使用参数值
+
+```
+
+```
+
+## 5.17. _javacg2_parse_class_method_switch/parse_ignore_class.av
 
 - 配置文件枚举类名与常量名
 
@@ -692,7 +919,7 @@ JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS
 
 ```
 
-## 5.10. _javacg2_parse_class_method_switch/parse_include_class.av
+## 5.18. _javacg2_parse_class_method_switch/parse_include_class.av
 
 - 配置文件枚举类名与常量名
 
@@ -718,7 +945,7 @@ JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_CLASS
 
 ```
 
-## 5.11. _javacg2_parse_class_method_switch/parse_ignore_method.av
+## 5.19. _javacg2_parse_class_method_switch/parse_ignore_method.av
 
 - 配置文件枚举类名与常量名
 
@@ -745,7 +972,7 @@ JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD
 string.endsWithAny(full_method, 'hashCode()', 'equals(java.lang.Object)')
 ```
 
-## 5.12. _javacg2_parse_class_method_switch/parse_include_method.av
+## 5.20. _javacg2_parse_class_method_switch/parse_include_method.av
 
 - 配置文件枚举类名与常量名
 
@@ -774,7 +1001,7 @@ JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD
 
 ```
 
-## 5.13. _javacg2_parse_method_call_switch/parse_ignore_method_call.av
+## 5.21. _javacg2_parse_method_call_switch/parse_ignore_method_call.av
 
 - 配置文件枚举类名与常量名
 
@@ -808,7 +1035,7 @@ JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL
 
 ```
 
-## 5.14. _javacg2_parse_method_call_switch/parse_include_method_call.av
+## 5.22. _javacg2_parse_method_call_switch/parse_include_method_call.av
 
 - 配置文件枚举类名与常量名
 
@@ -846,7 +1073,7 @@ JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL
 
 ```
 
-## 5.15. _javacg2_parse_method_call_switch/parse_ignore_method_call_type_value_caller.av
+## 5.23. _javacg2_parse_method_call_switch/parse_ignore_method_call_type_value_caller.av
 
 - 配置文件枚举类名与常量名
 
@@ -873,7 +1100,7 @@ JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL_TYPE_VALUE_CALLER
 
 ```
 
-## 5.16. _javacg2_parse_method_call_switch/parse_include_method_call_type_value_caller.av
+## 5.24. _javacg2_parse_method_call_switch/parse_include_method_call_type_value_caller.av
 
 - 配置文件枚举类名与常量名
 
@@ -904,7 +1131,7 @@ JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL_TYPE_VALUE_CALLER
 
 ```
 
-## 5.17. _javacg2_handle_xml_switch/handle_ignore_spring_bean_in_xml.av
+## 5.25. _javacg2_handle_xml_switch/handle_ignore_spring_bean_in_xml.av
 
 - 配置文件枚举类名与常量名
 

@@ -132,6 +132,15 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     private boolean checkIgnoreMergeJarWarInDir(String fileCanonicalPath, boolean jarOrWarFile) {
+        if (jarOrWarFile) {
+            if (checkNotIncludeMergeJarInDir(fileCanonicalPath)) {
+                return true;
+            }
+        } else {
+            if (checkNotIncludeMergeWarInDir(fileCanonicalPath)) {
+                return true;
+            }
+        }
         ElHandler elHandler;
         if (jarOrWarFile) {
             elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_JAR_IN_DIR);
@@ -147,6 +156,40 @@ public class JavaCG2ElManager extends CommonElManager {
         return elHandler.runExpression(usedVariableMap, displayMap);
     }
 
+    // 检查是否未命中仅合并目录中的jar文件（白名单）表达式，未命中时需要跳过合并
+    private boolean checkNotIncludeMergeJarInDir(String fileCanonicalPath) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_IN_DIR)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_IN_DIR);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        mergeFileAddData4FileInDir(elHandler, usedVariableMap, displayMap, fileCanonicalPath);
+        return !elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
+    // 检查是否未命中仅合并目录中的war文件（白名单）表达式，未命中时需要跳过合并
+    private boolean checkNotIncludeMergeWarInDir(String fileCanonicalPath) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_WAR_IN_DIR)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_WAR_IN_DIR);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        mergeFileAddData4FileInDir(elHandler, usedVariableMap, displayMap, fileCanonicalPath);
+        return !elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
     /**
      * 检查是否需要跳过合并目录中的class文件
      *
@@ -154,6 +197,9 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     private boolean checkIgnoreMergeClassInDir(String fileCanonicalPath) {
+        if (checkNotIncludeMergeClassInDir(fileCanonicalPath)) {
+            return true;
+        }
         ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_CLASS_IN_DIR);
         Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
         if (usedVariableMap == null) {
@@ -164,6 +210,23 @@ public class JavaCG2ElManager extends CommonElManager {
         return elHandler.runExpression(usedVariableMap, displayMap);
     }
 
+    // 检查是否未命中仅合并目录中的class文件（白名单）表达式，未命中时需要跳过合并
+    private boolean checkNotIncludeMergeClassInDir(String fileCanonicalPath) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_CLASS_IN_DIR)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_CLASS_IN_DIR);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        mergeFileAddData4FileInDir(elHandler, usedVariableMap, displayMap, fileCanonicalPath);
+        return !elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
     /**
      * 检查是否需要跳过合并目录中非jar、war、class文件
      *
@@ -171,6 +234,9 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     private boolean checkIgnoreMergeOtherInDir(String fileCanonicalPath) {
+        if (checkNotIncludeMergeOtherInDir(fileCanonicalPath)) {
+            return true;
+        }
         ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_OTHER_IN_DIR);
         Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
         if (usedVariableMap == null) {
@@ -187,6 +253,29 @@ public class JavaCG2ElManager extends CommonElManager {
         return elHandler.runExpression(usedVariableMap, displayMap);
     }
 
+    // 检查是否未命中仅合并目录中的非jar、war、class文件（白名单）表达式，未命中时需要跳过合并
+    private boolean checkNotIncludeMergeOtherInDir(String fileCanonicalPath) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_OTHER_IN_DIR)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_OTHER_IN_DIR);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        mergeFileAddData4FileInDir(elHandler, usedVariableMap, displayMap, fileCanonicalPath);
+
+        String fileExt = JavaCG2FileUtil.getFileExt(fileCanonicalPath);
+        displayMap.put(JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT.getVariableName(), fileExt);
+        if (elHandler.checkVariableNameSpecified(JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT)) {
+            usedVariableMap.put(JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT.getVariableName(), fileExt);
+        }
+        return !elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
     /**
      * 检查是否需要跳过合并jar/war文件中的jar文件
      *
@@ -194,6 +283,9 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     private boolean checkIgnoreMergeJarInJarWar(String filePath) {
+        if (checkNotIncludeMergeJarInJarWar(filePath)) {
+            return true;
+        }
         ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_JAR_IN_JAR_WAR);
         Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
         if (usedVariableMap == null) {
@@ -204,6 +296,23 @@ public class JavaCG2ElManager extends CommonElManager {
         return elHandler.runExpression(usedVariableMap, displayMap);
     }
 
+    // 检查是否未命中仅合并jar、war文件中的jar文件（白名单）表达式，未命中时需要跳过合并
+    private boolean checkNotIncludeMergeJarInJarWar(String filePath) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_IN_JAR_WAR)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_IN_JAR_WAR);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        mergeFileAddData4FileInJarWar(elHandler, usedVariableMap, displayMap, filePath);
+        return !elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
     /**
      * 检查是否需要跳过合并jar/war文件中的class文件
      *
@@ -211,6 +320,9 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     private boolean checkIgnoreMergeClassInJarWar(String filePath) {
+        if (checkNotIncludeMergeClassInJarWar(filePath)) {
+            return true;
+        }
         ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_CLASS_IN_JAR_WAR);
         Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
         if (usedVariableMap == null) {
@@ -227,6 +339,29 @@ public class JavaCG2ElManager extends CommonElManager {
         return elHandler.runExpression(usedVariableMap, displayMap);
     }
 
+    // 检查是否未命中仅合并jar、war文件中的class文件（白名单）表达式，未命中时需要跳过合并
+    private boolean checkNotIncludeMergeClassInJarWar(String filePath) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_CLASS_IN_JAR_WAR)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_CLASS_IN_JAR_WAR);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        mergeFileAddData4FileInJarWar(elHandler, usedVariableMap, displayMap, filePath);
+        // 处理class文件路径
+        String classFileRelativelyPath = JavaCG2FileUtil.getClassFileRelativelyPathInJar(filePath);
+        displayMap.put(JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_FILE_PATH_IN_JAR_WAR.getVariableName(), classFileRelativelyPath);
+        if (elHandler.checkVariableNameSpecified(JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_FILE_PATH_IN_JAR_WAR)) {
+            usedVariableMap.put(JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_FILE_PATH_IN_JAR_WAR.getVariableName(), classFileRelativelyPath);
+        }
+        return !elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
     /**
      * 检查是否需要跳过合并jar/war文件中的非jar、war、class文件
      *
@@ -234,6 +369,9 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     private boolean checkIgnoreMergeOtherInJarWar(String filePath) {
+        if (checkNotIncludeMergeOtherInJarWar(filePath)) {
+            return true;
+        }
         ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_OTHER_IN_JAR_WAR);
         Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
         if (usedVariableMap == null) {
@@ -247,6 +385,28 @@ public class JavaCG2ElManager extends CommonElManager {
             usedVariableMap.put(JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT.getVariableName(), fileExt);
         }
         return elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
+    // 检查是否未命中仅合并jar、war文件中的非jar、war、class文件（白名单）表达式，未命中时需要跳过合并
+    private boolean checkNotIncludeMergeOtherInJarWar(String filePath) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_OTHER_IN_JAR_WAR)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_OTHER_IN_JAR_WAR);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+        Map<String, Object> displayMap = new HashMap<>();
+        mergeFileAddData4FileInJarWar(elHandler, usedVariableMap, displayMap, filePath);
+        String fileExt = JavaCG2FileUtil.getFileExt(filePath);
+        displayMap.put(JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT.getVariableName(), fileExt);
+        if (elHandler.checkVariableNameSpecified(JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT)) {
+            usedVariableMap.put(JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT.getVariableName(), fileExt);
+        }
+        return !elHandler.runExpression(usedVariableMap, displayMap);
     }
 
     /**
@@ -423,12 +583,43 @@ public class JavaCG2ElManager extends CommonElManager {
     }
 
     /**
+     * 检查是否需要通过class文件对应指定层级的目录路径判断是否仅合并当前的jar/war文件（白名单）
+     *
+     * @return
+     */
+    public boolean checkNeedIncludeJarWarByClassDirPrefix() {
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_WAR_BY_CLASS_DIR_PREFIX);
+        if (elHandler.checkExpressionTextFixedTrue()) {
+            return true;
+        }
+        if (elHandler.checkVariableNamePrefixWithNumSpecified(JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL)) {
+            return true;
+        }
+        if (elHandler.checkVariableNameSpecified(JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME)) {
+            return true;
+        }
+        return elHandler.checkVariableNameSpecified(JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_DIR_PATH_IN_DIR);
+    }
+
+    /**
+     * 检查是否需要通过class文件对应指定层级的目录路径判断是否跳过合并/仅合并当前的jar/war文件，对忽略（黑名单）与包含（白名单）两道表达式的need判断进行合并
+     *
+     * @return
+     */
+    public boolean checkNeedJarWarByClassDirPrefix() {
+        return checkNeedIgnoreJarWarByClassDirPrefix() || checkNeedIncludeJarWarByClassDirPrefix();
+    }
+
+    /**
      * 通过class文件对应指定层级的目录路径判断是否跳过合并当前的jar/war文件
      *
      * @param classDirPrefixMap key class文件目录层级 value class文件目录对应层级的路径前缀，以/作为分隔符，不会以分隔符开头或结尾
      * @return
      */
     public boolean checkIgnoreJarWarByClassDirPrefix(Map<Integer, Set<String>> classDirPrefixMap) {
+        if (checkNotIncludeJarWarByClassDirPrefix(classDirPrefixMap)) {
+            return true;
+        }
         ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX);
         Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
         if (usedVariableMap == null) {
@@ -445,6 +636,31 @@ public class JavaCG2ElManager extends CommonElManager {
             }
         }
         return elHandler.runExpression(usedVariableMap, displayMap);
+    }
+
+    // 检查是否未命中通过class文件对应指定层级的目录路径判断仅合并当前的jar/war文件（白名单）表达式，未命中时需要跳过合并
+    private boolean checkNotIncludeJarWarByClassDirPrefix(Map<Integer, Set<String>> classDirPrefixMap) {
+        if (!checkElHandlerExists(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_WAR_BY_CLASS_DIR_PREFIX)) {
+            // 包含表达式处理类尚未注册（初始化阶段检查其他表达式枚举时），不生效
+            return false;
+        }
+        ElHandler elHandler = getElHandlerMap(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_WAR_BY_CLASS_DIR_PREFIX);
+        Map<String, Object> usedVariableMap = elHandler.genMap4ElExecute();
+        if (usedVariableMap == null) {
+            // 未设置包含表达式，不生效
+            return false;
+        }
+
+        Map<String, Object> displayMap = new HashMap<>();
+        for (Map.Entry<Integer, Set<String>> entry : classDirPrefixMap.entrySet()) {
+            Integer level = entry.getKey();
+            Set<String> classDirPrefixSet = entry.getValue();
+            displayMap.put(JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL.getVariableName() + level, classDirPrefixSet);
+            if (elHandler.checkVariableNamePrefixWithNumSpecified(JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL, level)) {
+                usedVariableMap.put(JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL.getVariableName() + level, classDirPrefixSet);
+            }
+        }
+        return !elHandler.runExpression(usedVariableMap, displayMap);
     }
 
     /**

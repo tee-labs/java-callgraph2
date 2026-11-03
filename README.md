@@ -1669,7 +1669,7 @@ mvn package -DskipTests -Ptest_gen_jar
 |类名称|对应配置参数|作用|
 |---|---|---|
 |com.adrninistrator.javacg2.builder.JavaCG2FrEqConversionMethodBuilder|等值转换方法|指定方法返回值与被调用对象或参数认为是等值转换的方法|
-|com.adrninistrator.javacg2.builder.JavaCG2MergeFileSwitchBuilder|合并 jar、war 文件时跳过文件的忽略表达式|指定合并 jar、war 文件时跳过文件的忽略表达式|
+|com.adrninistrator.javacg2.builder.JavaCG2MergeFileSwitchBuilder|合并 jar、war 文件时跳过文件的忽略（黑名单）表达式与仅合并文件的包含（白名单）表达式|指定合并 jar、war 文件时跳过文件的忽略（黑名单）表达式与仅合并文件的包含（白名单）表达式|
 
 JavaCG2FrEqConversionMethodBuilder 用于指定配置参数的方法如下
 
@@ -1683,15 +1683,23 @@ JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下，均通�
 |方法名称|方法作用|
 |---|---|
 |setIgnoreJarInDirExpression|通过原始表达式文本设置跳过合并目录中的 jar 文件的表达式|
+|setIncludeJarInDirExpression|通过原始表达式文本设置仅合并目录中的哪些 jar 文件（白名单）的表达式|
 |setIgnoreWarInDirExpression|通过原始表达式文本设置跳过合并目录中的 war 文件的表达式|
+|setIncludeWarInDirExpression|通过原始表达式文本设置仅合并目录中的哪些 war 文件（白名单）的表达式|
 |setIgnoreClassInDirExpression|通过原始表达式文本设置跳过合并目录中的 class 文件的表达式|
+|setIncludeClassInDirExpression|通过原始表达式文本设置仅合并目录中的哪些 class 文件（白名单）的表达式|
 |setIgnoreOtherInDirExpression|通过原始表达式文本设置跳过合并目录中的非 jar、war、class 文件的表达式|
+|setIncludeOtherInDirExpression|通过原始表达式文本设置仅合并目录中的哪些非 jar、war、class 文件（白名单）的表达式|
 |setIgnoreJarInJarWarExpression|通过原始表达式文本设置跳过合并 jar、war 文件中的 jar 文件的表达式|
+|setIncludeJarInJarWarExpression|通过原始表达式文本设置仅合并 jar、war 文件中的哪些 jar 文件（白名单）的表达式|
 |setIgnoreClassInJarWarExpression|通过原始表达式文本设置跳过合并 jar、war 文件中的 class 文件的表达式|
+|setIncludeClassInJarWarExpression|通过原始表达式文本设置仅合并 jar、war 文件中的哪些 class 文件（白名单）的表达式|
 |setIgnoreOtherInJarWarExpression|通过原始表达式文本设置跳过合并 jar、war 文件中的非 jar、war、class 文件的表达式|
+|setIncludeOtherInJarWarExpression|通过原始表达式文本设置仅合并 jar、war 文件中的哪些非 jar、war、class 文件（白名单）的表达式|
 |setIgnoreJarWarByClassDirPrefixExpression|通过原始表达式文本设置通过 class 文件对应指定层级的目录路径判断是否跳过合并当前 jar、war 文件的表达式|
+|setIncludeJarWarByClassDirPrefixExpression|通过原始表达式文本设置通过 class 文件对应指定层级的目录路径判断仅合并哪些 jar、war 文件（白名单）的表达式|
 
-参考示例方法 test.builder.TestFrEqConversionMethodBuilder:testAddKeepDefault 与 test.builder.TestMergeFileSwitchBuilder:testIgnoreNotMatch
+参考示例方法 test.builder.TestFrEqConversionMethodBuilder:testAddKeepDefault、test.builder.TestMergeFileSwitchBuilder:testIgnoreNotMatch 与 test.builder.TestMergeFileSwitchBuilder:testIncludeJarInDirEndToEnd
 
 示例方法代码如下：
 
@@ -1701,7 +1709,8 @@ JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下，均通�
                         .addFrEqConversionMethod("test.callgraph.dto.TestDto1", "copy", 1))
                 .setMergeFileSwitch(JavaCG2MergeFileSwitchBuilder.builder()
                         .setIgnoreJarInDirExpression("string.equalsAny(file_name, 'not_needed.jar')")
-                        .setIgnoreOtherInDirExpression("string.equalsAny(file_ext, '.xml', '.properties')"))
+                        .setIgnoreOtherInDirExpression("string.equalsAny(file_ext, '.xml', '.properties')")
+                        .setIncludeJarInJarWarExpression("string.startsWithAny(file_path, 'lib/business/')"))
                 .addJarOrDir(JAR_TEST_JAR)
                 .build();
         Assert.assertTrue(javaCG2Entry.run());
@@ -1713,7 +1722,13 @@ JavaCG2MergeFileSwitchBuilder 用于指定配置参数的方法如下，均通�
 - JavaCG2FrEqConversionMethodBuilder 的 add 方法与 set 方法的效果互斥，以后调用的方法为准；add 方法为追加语义，保留枚举默认条目，set 方法为整体覆盖语义，不保留枚举默认条目
 - JavaCG2FrEqConversionMethodBuilder 支持以“完整类名、方法名、序号”的方式指定条目，也支持以完整格式“完整类名:方法名=序号”的字符串方式指定，方法名允许为空（例如 java.math.BigDecimal:=0）
 - JavaCG2MergeFileSwitchBuilder 的各方法通过原始 Aviator 表达式文本设置，字符串参数需要以单引号包裹；同一个表达式配置枚举对应的方法多次调用时，以后调用的为准；多种判断条件需要在同一个表达式中通过 \|\| 等逻辑运算符组合
-- 忽略目录中文件的表达式可使用变量 file\_path、file\_dir\_path、file\_name（忽略非 jar、war、class 文件时还可使用 file\_ext，取值以“.”开头）；忽略 jar、war 文件中文件的表达式可使用变量 file\_path、file\_dir\_path、file\_name（忽略 class 文件时还可使用 class\_file\_path，忽略非 jar、war、class 文件时还可使用 file\_ext）；每个表达式允许使用的变量以枚举 JavaCG2ElConfigEnum 中的定义及各方法 Javadoc 为准
+- 包含（白名单）表达式的判断方向与忽略（黑名单）表达式相反：包含表达式执行结果为 true 时合并（及解析）对应文件，为 false 时跳过；未设置（空白）时不生效，即全部合并；忽略表达式执行结果为 true 时跳过对应文件
+- 包含表达式与忽略表达式同时设置时两道判断串联：先判断包含表达式，后判断忽略表达式；包含表达式未命中时直接跳过合并且不再判断忽略表达式；即跳过合并 =（包含表达式已设置且未命中）或（忽略表达式命中）
+- 被跳过的文件不会进入合并生成的 jar 文件，即被排除出本次分析
+- 包含表达式与忽略表达式可同时设置，实现“白名单圈定范围 + 黑名单剔除”；包含表达式未设置时不影响忽略表达式的行为
+- 白名单的影响范围是整个输入集（指定的文件与目录中相关的全部文件），假如包含表达式误配（例如文件名写错），会将全部输入静默排除（合并生成的 jar 文件中没有任何条目），因此包含表达式建议在测试环境验证后再使用；上方示例中的表达式可直接复制后按需修改
+- 忽略目录中文件的表达式可使用变量 file\_path、file\_dir\_path、file\_name（忽略非 jar、war、class 文件时还可使用 file\_ext，取值以“.”开头）；忽略 jar、war 文件中文件的表达式可使用变量 file\_path、file\_dir\_path、file\_name（忽略 class 文件时还可使用 class\_file\_path，忽略非 jar、war、class 文件时还可使用 file\_ext）；仅合并（白名单）文件的表达式可使用的变量与对应的忽略表达式相同；每个表达式允许使用的变量以枚举 JavaCG2ElConfigEnum 中的定义及各方法 Javadoc 为准
+- 目录中文件的表达式使用的 file\_path、file\_dir\_path 为规范路径，其中的反斜杠已替换为斜杠（Windows 系统下也使用斜杠/作为分隔符）；jar、war 文件中文件的表达式使用的 file\_path、file\_dir\_path 为相对 jar、war 文件根目录的相对路径（以斜杠/为分隔符，不以斜杠开头）
 
 ### 7.4.4. 通过 Builder 方式指定解析类、方法、方法调用的忽略与包含表达式
 

@@ -11,8 +11,10 @@ import java.util.Set;
 /**
  * @author adrninistrator
  * @date 2026/10/28
- * @description: 合并jar、war文件、目录相关开关对应的Builder，通过代码以链式方式指定合并jar、war文件时使用的忽略表达式
- * 每个表达式配置枚举对应一个设置方法，通过原始Aviator表达式文本指定（字符串参数需要以单引号包裹，不以分号结尾），表达式执行结果为true时跳过合并（及解析）对应的文件
+ * @description: 合并jar、war文件、目录相关开关对应的Builder，通过代码以链式方式指定合并jar、war文件时使用的忽略（黑名单）与包含（白名单）表达式
+ * 每个表达式配置枚举对应一个设置方法，通过原始Aviator表达式文本指定（字符串参数需要以单引号包裹，不以分号结尾），忽略表达式执行结果为true时跳过合并（及解析）对应的文件，包含表达式执行结果为true时合并（及解析），为false时跳过
+ * 包含（白名单）与忽略（黑名单）表达式可同时生效，两道判断串联：先判断包含表达式，未命中时直接跳过合并且不再判断忽略表达式；命中后再判断忽略表达式，即跳过合并 =（包含表达式已设置且未命中）或（忽略表达式命中）
+ * 包含（白名单）表达式未设置（空白）时不生效，即全部合并
  * 同一个表达式配置枚举对应的方法多次调用时，以后调用的为准（表达式文本整体替换），多种判断条件需要在同一个表达式中通过||等逻辑运算符组合
  * 未通过当前类设置的表达式配置使用枚举中定义的默认值（默认为空白，即不生效）
  * 当前类的实例只能通过applyTo方法应用到一个JavaCG2ConfigureWrapper对象，假如需要应用多个，请创建当前类的多个实例
@@ -123,6 +125,118 @@ public class JavaCG2MergeFileSwitchBuilder {
      */
     public JavaCG2MergeFileSwitchBuilder setIgnoreJarWarByClassDirPrefixExpression(String elText) {
         elSwitchConfigHolder.putRaw(JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX, elText);
+        return this;
+    }
+
+    /**
+     * 通过原始表达式文本设置仅合并目录中jar文件的表达式（白名单）
+     * 表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+     * 与setIgnoreJarInDirExpression同时生效，先判断包含（白名单）表达式，后判断忽略（黑名单）表达式；包含表达式未命中时跳过合并，且不再判断忽略表达式
+     * 允许使用的变量为JavaCG2ElAllowedVariableEnum中以EAVE_MF_开头且说明为目录中文件相关的枚举常量：file_path、file_dir_path、file_name（file_path、file_dir_path为规范路径，其中的反斜杠已替换为斜杠）
+     *
+     * @param elText 原始表达式文本，如"string.startsWithAny(file_path, '/data/lib/business')"、"string.equalsAny(file_name, 'a.jar')"，null不允许，空白表示不生效（全部合并）
+     * @return
+     */
+    public JavaCG2MergeFileSwitchBuilder setIncludeJarInDirExpression(String elText) {
+        elSwitchConfigHolder.putRaw(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_IN_DIR, elText);
+        return this;
+    }
+
+    /**
+     * 通过原始表达式文本设置仅合并目录中war文件的表达式（白名单）
+     * 表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+     * 与setIgnoreWarInDirExpression同时生效，先判断包含（白名单）表达式，后判断忽略（黑名单）表达式；包含表达式未命中时跳过合并，且不再判断忽略表达式
+     * 允许使用的变量为JavaCG2ElAllowedVariableEnum中以EAVE_MF_开头且说明为目录中文件相关的枚举常量：file_path、file_dir_path、file_name（file_path、file_dir_path为规范路径，其中的反斜杠已替换为斜杠）
+     *
+     * @param elText 原始表达式文本，如"string.startsWithAny(file_path, '/data/app/business')"、"string.equalsAny(file_name, 'a.war')"，null不允许，空白表示不生效（全部合并）
+     * @return
+     */
+    public JavaCG2MergeFileSwitchBuilder setIncludeWarInDirExpression(String elText) {
+        elSwitchConfigHolder.putRaw(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_WAR_IN_DIR, elText);
+        return this;
+    }
+
+    /**
+     * 通过原始表达式文本设置仅合并目录中class文件的表达式（白名单）
+     * 表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+     * 与setIgnoreClassInDirExpression同时生效，先判断包含（白名单）表达式，后判断忽略（黑名单）表达式；包含表达式未命中时跳过合并，且不再判断忽略表达式
+     * 允许使用的变量为JavaCG2ElAllowedVariableEnum中以EAVE_MF_开头且说明为目录中文件相关的枚举常量：file_path、file_dir_path、file_name（file_path、file_dir_path为规范路径，其中的反斜杠已替换为斜杠）
+     *
+     * @param elText 原始表达式文本，如"string.startsWithAny(file_dir_path, '/data/classes/com/business')"、"string.equalsAny(file_name, 'Test1.class')"，null不允许，空白表示不生效（全部合并）
+     * @return
+     */
+    public JavaCG2MergeFileSwitchBuilder setIncludeClassInDirExpression(String elText) {
+        elSwitchConfigHolder.putRaw(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_CLASS_IN_DIR, elText);
+        return this;
+    }
+
+    /**
+     * 通过原始表达式文本设置仅合并目录中非jar、war、class文件的表达式（白名单）
+     * 表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+     * 与setIgnoreOtherInDirExpression同时生效，先判断包含（白名单）表达式，后判断忽略（黑名单）表达式；包含表达式未命中时跳过合并，且不再判断忽略表达式
+     * 允许使用的变量为JavaCG2ElAllowedVariableEnum中以EAVE_MF_开头且说明为目录中文件相关的枚举常量：file_path、file_dir_path、file_name、file_ext（file_path、file_dir_path为规范路径，其中的反斜杠已替换为斜杠）
+     *
+     * @param elText 原始表达式文本，如"string.equalsAny(file_ext, '.xml', '.properties')"，null不允许，空白表示不生效（全部合并）
+     * @return
+     */
+    public JavaCG2MergeFileSwitchBuilder setIncludeOtherInDirExpression(String elText) {
+        elSwitchConfigHolder.putRaw(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_OTHER_IN_DIR, elText);
+        return this;
+    }
+
+    /**
+     * 通过原始表达式文本设置仅合并jar、war文件中jar文件的表达式（白名单）
+     * 表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+     * 与setIgnoreJarInJarWarExpression同时生效，先判断包含（白名单）表达式，后判断忽略（黑名单）表达式；包含表达式未命中时跳过合并，且不再判断忽略表达式
+     * 允许使用的变量为JavaCG2ElAllowedVariableEnum中以EAVE_MF_开头且说明为jar、war文件中文件相关的枚举常量：file_path、file_dir_path、file_name（file_path、file_dir_path为相对jar、war文件根目录的相对路径）
+     *
+     * @param elText 原始表达式文本，如"string.startsWithAny(file_path, 'lib/business/')"、"string.equalsAny(file_name, 'a.jar')"，null不允许，空白表示不生效（全部合并）
+     * @return
+     */
+    public JavaCG2MergeFileSwitchBuilder setIncludeJarInJarWarExpression(String elText) {
+        elSwitchConfigHolder.putRaw(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_IN_JAR_WAR, elText);
+        return this;
+    }
+
+    /**
+     * 通过原始表达式文本设置仅合并jar、war文件中class文件的表达式（白名单）
+     * 表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+     * 与setIgnoreClassInJarWarExpression同时生效，先判断包含（白名单）表达式，后判断忽略（黑名单）表达式；包含表达式未命中时跳过合并，且不再判断忽略表达式
+     * 允许使用的变量为JavaCG2ElAllowedVariableEnum中以EAVE_MF_开头且说明为jar、war文件中文件相关的枚举常量：file_path、file_dir_path、file_name、class_file_path（file_path、file_dir_path为相对jar、war文件根目录的相对路径）
+     *
+     * @param elText 原始表达式文本，如"string.startsWithAny(class_file_path, 'com/business/')"，null不允许，空白表示不生效（全部合并）
+     * @return
+     */
+    public JavaCG2MergeFileSwitchBuilder setIncludeClassInJarWarExpression(String elText) {
+        elSwitchConfigHolder.putRaw(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_CLASS_IN_JAR_WAR, elText);
+        return this;
+    }
+
+    /**
+     * 通过原始表达式文本设置仅合并jar、war文件中非jar、war、class文件的表达式（白名单）
+     * 表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+     * 与setIgnoreOtherInJarWarExpression同时生效，先判断包含（白名单）表达式，后判断忽略（黑名单）表达式；包含表达式未命中时跳过合并，且不再判断忽略表达式
+     * 允许使用的变量为JavaCG2ElAllowedVariableEnum中以EAVE_MF_开头且说明为jar、war文件中文件相关的枚举常量：file_path、file_dir_path、file_name、file_ext（file_path、file_dir_path为相对jar、war文件根目录的相对路径）
+     *
+     * @param elText 原始表达式文本，如"string.equalsAny(file_ext, '.xml')"，null不允许，空白表示不生效（全部合并）
+     * @return
+     */
+    public JavaCG2MergeFileSwitchBuilder setIncludeOtherInJarWarExpression(String elText) {
+        elSwitchConfigHolder.putRaw(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_OTHER_IN_JAR_WAR, elText);
+        return this;
+    }
+
+    /**
+     * 通过原始表达式文本设置“通过class文件对应指定层级的目录路径判断仅合并哪些jar、war文件（白名单）”的表达式
+     * 表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并
+     * 与setIgnoreJarWarByClassDirPrefixExpression同时生效，先判断包含（白名单）表达式，后判断忽略（黑名单）表达式；包含表达式未命中时跳过合并，且不再判断忽略表达式
+     * 允许使用的变量为class_dir_prefix_level_N，N为数字，代表class文件路径层级，变量类型为Set，需要通过include方法判断集合中是否包含指定元素
+     *
+     * @param elText 原始表达式文本，如"include(class_dir_prefix_level_2, 'com/adrninistrator')"，null不允许，空白表示不生效（全部合并）
+     * @return
+     */
+    public JavaCG2MergeFileSwitchBuilder setIncludeJarWarByClassDirPrefixExpression(String elText) {
+        elSwitchConfigHolder.putRaw(JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_WAR_BY_CLASS_DIR_PREFIX, elText);
         return this;
     }
 

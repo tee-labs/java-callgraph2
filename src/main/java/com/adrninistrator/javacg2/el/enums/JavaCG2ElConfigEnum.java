@@ -24,56 +24,25 @@ public enum JavaCG2ElConfigEnum implements ElConfigInterface {
     ECE_EXAMPLE(JavaCG2DirEnum.IDE_EL_EXAMPLE.getDirName() + "/el_usage" + JavaCG2Constants.EXT_MD, new String[]{"表达式示例文件"}, null, null, false, ""),
     ECE_MERGE_FILE_IGNORE_JAR_IN_DIR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/ignore_jar_in_dir.av",
             new String[]{"指定是否跳过合并目录中的jar文件"},
-            new ElAllowedVariableInterface[]{
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_PATH_IN_DIR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_DIR_PATH_IN_DIR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME
-            }, JavaCG2ElChecker4MergeFileInDir.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_DIR, JavaCG2ElChecker4MergeFileInDir.class, true, ""),
     ECE_MERGE_FILE_IGNORE_WAR_IN_DIR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/ignore_war_in_dir.av",
             new String[]{"指定是否跳过合并目录中的war文件"},
-            new ElAllowedVariableInterface[]{
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_PATH_IN_DIR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_DIR_PATH_IN_DIR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME
-            }, JavaCG2ElChecker4MergeFileInDir.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_DIR, JavaCG2ElChecker4MergeFileInDir.class, true, ""),
     ECE_MERGE_FILE_IGNORE_CLASS_IN_DIR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/ignore_class_in_dir.av",
             new String[]{"指定是否跳过合并目录中的class文件"},
-            new ElAllowedVariableInterface[]{
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_PATH_IN_DIR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_DIR_PATH_IN_DIR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME
-            }, JavaCG2ElChecker4MergeFileInDir.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_DIR, JavaCG2ElChecker4MergeFileInDir.class, true, ""),
     ECE_MERGE_FILE_IGNORE_OTHER_IN_DIR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/ignore_other_in_dir.av",
             new String[]{"指定是否跳过合并目录中的非jar、war、class文件"},
-            new ElAllowedVariableInterface[]{
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_PATH_IN_DIR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_DIR_PATH_IN_DIR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT
-            }, JavaCG2ElChecker4MergeFileInDir.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_DIR_OTHER, JavaCG2ElChecker4MergeFileInDir.class, true, ""),
     ECE_MERGE_FILE_IGNORE_JAR_IN_JAR_WAR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/ignore_jar_in_jar_war.av",
             new String[]{"指定是否跳过合并jar、war中的jar文件"},
-            new ElAllowedVariableInterface[]{
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_PATH_IN_JAR_WAR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_DIR_PATH_IN_JAR_WAR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME
-            }, JavaCG2ElChecker4MergeFileInJarWar.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_JAR_WAR, JavaCG2ElChecker4MergeFileInJarWar.class, true, ""),
     ECE_MERGE_FILE_IGNORE_CLASS_IN_JAR_WAR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/ignore_class_in_jar_war.av",
             new String[]{"指定是否跳过合并jar、war中的class文件"},
-            new ElAllowedVariableInterface[]{
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_PATH_IN_JAR_WAR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_DIR_PATH_IN_JAR_WAR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_FILE_PATH_IN_JAR_WAR
-            }, JavaCG2ElChecker4MergeFileInJarWar.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_JAR_WAR_CLASS, JavaCG2ElChecker4MergeFileInJarWar.class, true, ""),
     ECE_MERGE_FILE_IGNORE_OTHER_IN_JAR_WAR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/ignore_other_in_jar_war.av",
             new String[]{"指定是否跳过合并jar、war中的非jar、war、class文件"},
-            new ElAllowedVariableInterface[]{
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_PATH_IN_JAR_WAR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_DIR_PATH_IN_JAR_WAR,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME,
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT
-            }, JavaCG2ElChecker4MergeFileInJarWar.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_JAR_WAR_OTHER, JavaCG2ElChecker4MergeFileInJarWar.class, true, ""),
     ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/ignore_jar_war_by_class_dir_prefix.av",
             new String[]{"通过class文件对应指定层级的目录路径判断是否跳过合并当前jar、war文件",
                     "相当于通过jar、war文件中类的包名控制是否跳过合并当前jar、war文件",
@@ -82,9 +51,48 @@ public enum JavaCG2ElConfigEnum implements ElConfigInterface {
                     "例如jar文件中有a1/c1.class、a2/b2/c2.class，则该jar文件中的class文件目录1级路径有a1、a2，2级路径有a2/b2，没有层级大于2级的路径",
                     "在使用以下 " + JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL.getVariableName() + " 参数时，需要以 " + JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL.getVariableName() + " 开头，后续通过数字指定class文件路径层级",
                     "例如 " + JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL.getVariableName() + "3 代表第3级class文件路径集合"},
-            new ElAllowedVariableInterface[]{
-                    JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL
-            }, JavaCG2ElChecker4MergeFileInJarWar.class, true, ""),
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_CLASS_DIR_PREFIX, JavaCG2ElChecker4MergeFileInJarWar.class, true, ""),
+    ECE_MERGE_FILE_INCLUDE_JAR_IN_DIR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/include_jar_in_dir.av",
+            new String[]{"指定仅合并目录中的哪些jar文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并",
+                    "与ignore_jar_in_dir.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_DIR, JavaCG2ElChecker4MergeFileInDir.class, false, ""),
+    ECE_MERGE_FILE_INCLUDE_WAR_IN_DIR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/include_war_in_dir.av",
+            new String[]{"指定仅合并目录中的哪些war文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并",
+                    "与ignore_war_in_dir.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_DIR, JavaCG2ElChecker4MergeFileInDir.class, false, ""),
+    ECE_MERGE_FILE_INCLUDE_CLASS_IN_DIR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/include_class_in_dir.av",
+            new String[]{"指定仅合并目录中的哪些class文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并",
+                    "与ignore_class_in_dir.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_DIR, JavaCG2ElChecker4MergeFileInDir.class, false, ""),
+    ECE_MERGE_FILE_INCLUDE_OTHER_IN_DIR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/include_other_in_dir.av",
+            new String[]{"指定仅合并目录中的哪些非jar、war、class文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并",
+                    "与ignore_other_in_dir.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_DIR_OTHER, JavaCG2ElChecker4MergeFileInDir.class, false, ""),
+    ECE_MERGE_FILE_INCLUDE_JAR_IN_JAR_WAR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/include_jar_in_jar_war.av",
+            new String[]{"指定仅合并jar、war中的哪些jar文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并",
+                    "与ignore_jar_in_jar_war.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）",
+                    "仅当本表达式（白名单）命中后才会继续判断ignore_jar_in_jar_war.av"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_JAR_WAR, JavaCG2ElChecker4MergeFileInJarWar.class, false, ""),
+    ECE_MERGE_FILE_INCLUDE_CLASS_IN_JAR_WAR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/include_class_in_jar_war.av",
+            new String[]{"指定仅合并jar、war中的哪些class文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并",
+                    "与ignore_class_in_jar_war.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）",
+                    "仅当本表达式（白名单）命中后才会继续判断ignore_class_in_jar_war.av"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_JAR_WAR_CLASS, JavaCG2ElChecker4MergeFileInJarWar.class, false, ""),
+    ECE_MERGE_FILE_INCLUDE_OTHER_IN_JAR_WAR(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/include_other_in_jar_war.av",
+            new String[]{"指定仅合并jar、war中的哪些非jar、war、class文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并",
+                    "与ignore_other_in_jar_war.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单）",
+                    "仅当本表达式（白名单）命中后才会继续判断ignore_other_in_jar_war.av"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_IN_JAR_WAR_OTHER, JavaCG2ElChecker4MergeFileInJarWar.class, false, ""),
+    ECE_MERGE_FILE_INCLUDE_JAR_WAR_BY_CLASS_DIR_PREFIX(JavaCG2DirEnum.IDE_MERGE_FILE_SWITCH.getDirName() + "/include_jar_war_by_class_dir_prefix.av",
+            new String[]{"通过class文件对应指定层级的目录路径判断仅合并哪些jar、war文件（白名单），表达式执行结果为true时合并，为false时跳过，未设置（空白）时全部合并",
+                    "相当于通过jar、war文件中类的包名控制仅合并哪些jar、war文件",
+                    "与ignore_jar_war_by_class_dir_prefix.av同时生效，先判断本表达式（包含/白名单），后判断忽略表达式（忽略/黑名单），仅当本表达式（白名单）命中后才会继续判断ignore_jar_war_by_class_dir_prefix.av",
+                    "以下参数为jar、war文件中的class文件对应指定层级的目录路径集合。在表达式中可通过\"include\"方法判断集合中是否包含指定元素",
+                    "集合中的元素类型为字符串，以/作为分隔符，不会以分隔符开头或结尾",
+                    "例如jar文件中有a1/c1.class、a2/b2/c2.class，则该jar文件中的class文件目录1级路径有a1、a2，2级路径有a2/b2，没有层级大于2级的路径",
+                    "在使用以下 " + JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL.getVariableName() + " 参数时，需要以 " + JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL.getVariableName() + " 开头，后续通过数字指定class文件路径层级",
+                    "例如 " + JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL.getVariableName() + "3 代表第3级class文件路径集合"},
+            ElConfigEnumHolder.ALLOWED_VARIABLES_4_MERGE_FILE_CLASS_DIR_PREFIX, JavaCG2ElChecker4MergeFileInJarWar.class, false, ""),
     ECE_PARSE_IGNORE_CLASS(JavaCG2DirEnum.IDE_PARSE_CLASS_METHOD_SWITCH.getDirName() + "/parse_ignore_class.av",
             new String[]{"指定是否跳过解析类"},
             ElConfigEnumHolder.ALLOWED_VARIABLES_4_PARSE_CLASS, JavaCG2ElChecker4ParseClass.class, true, ""),
@@ -199,6 +207,49 @@ public enum JavaCG2ElConfigEnum implements ElConfigInterface {
                 CommonElAllowedVariableEnum.EAVE_MC_ER_METHOD_NAME,
                 CommonElAllowedVariableEnum.EAVE_MC_ER_METHOD_ARG_NUM,
                 CommonElAllowedVariableEnum.EAVE_MC_ER_FULL_METHOD
+        };
+
+        // 合并目录中的jar、war、class文件的表达式允许使用的变量
+        private static final ElAllowedVariableInterface[] ALLOWED_VARIABLES_4_MERGE_FILE_IN_DIR = {
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_PATH_IN_DIR,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_DIR_PATH_IN_DIR,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME
+        };
+
+        // 合并目录中的非jar、war、class文件的表达式允许使用的变量
+        private static final ElAllowedVariableInterface[] ALLOWED_VARIABLES_4_MERGE_FILE_IN_DIR_OTHER = {
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_PATH_IN_DIR,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_ABSOLUTE_FILE_DIR_PATH_IN_DIR,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT
+        };
+
+        // 合并jar、war文件中的jar、war、class文件的表达式允许使用的变量
+        private static final ElAllowedVariableInterface[] ALLOWED_VARIABLES_4_MERGE_FILE_IN_JAR_WAR = {
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_PATH_IN_JAR_WAR,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_DIR_PATH_IN_JAR_WAR,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME
+        };
+
+        // 合并jar、war文件中的class文件的表达式允许使用的变量
+        private static final ElAllowedVariableInterface[] ALLOWED_VARIABLES_4_MERGE_FILE_IN_JAR_WAR_CLASS = {
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_PATH_IN_JAR_WAR,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_DIR_PATH_IN_JAR_WAR,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_FILE_PATH_IN_JAR_WAR
+        };
+
+        // 合并jar、war文件中的非jar、war、class文件的表达式允许使用的变量
+        private static final ElAllowedVariableInterface[] ALLOWED_VARIABLES_4_MERGE_FILE_IN_JAR_WAR_OTHER = {
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_PATH_IN_JAR_WAR,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_DIR_PATH_IN_JAR_WAR,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_FILE_NAME,
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_OTHER_FILE_EXT
+        };
+
+        // 通过class文件对应指定层级的目录路径判断是否合并jar、war文件的表达式允许使用的变量
+        private static final ElAllowedVariableInterface[] ALLOWED_VARIABLES_4_MERGE_FILE_CLASS_DIR_PREFIX = {
+                JavaCG2ElAllowedVariableEnum.EAVE_MF_CLASS_DIR_PREFIX_LEVEL
         };
     }
 

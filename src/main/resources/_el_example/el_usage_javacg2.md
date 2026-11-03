@@ -12,6 +12,14 @@
 |指定是否跳过合并jar、war中的class文件|_javacg2_merge_file_switch/ignore_class_in_jar_war.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_CLASS_IN_JAR_WAR|
 |指定是否跳过合并jar、war中的非jar、war、class文件|_javacg2_merge_file_switch/ignore_other_in_jar_war.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_OTHER_IN_JAR_WAR|
 |通过class文件对应指定层级的目录路径判断是否跳过合并当前jar、war文件|_javacg2_merge_file_switch/ignore_jar_war_by_class_dir_prefix.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX|
+|指定仅合并目录中的哪些jar文件（白名单）|_javacg2_merge_file_switch/include_jar_in_dir.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_IN_DIR|
+|指定仅合并目录中的哪些war文件（白名单）|_javacg2_merge_file_switch/include_war_in_dir.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_WAR_IN_DIR|
+|指定仅合并目录中的哪些class文件（白名单）|_javacg2_merge_file_switch/include_class_in_dir.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_CLASS_IN_DIR|
+|指定仅合并目录中的哪些非jar、war、class文件（白名单）|_javacg2_merge_file_switch/include_other_in_dir.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_OTHER_IN_DIR|
+|指定仅合并jar、war中的哪些jar文件（白名单）|_javacg2_merge_file_switch/include_jar_in_jar_war.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_IN_JAR_WAR|
+|指定仅合并jar、war中的哪些class文件（白名单）|_javacg2_merge_file_switch/include_class_in_jar_war.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_CLASS_IN_JAR_WAR|
+|指定仅合并jar、war中的哪些非jar、war、class文件（白名单）|_javacg2_merge_file_switch/include_other_in_jar_war.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_OTHER_IN_JAR_WAR|
+|通过class文件对应指定层级的目录路径判断仅合并哪些jar、war文件（白名单）|_javacg2_merge_file_switch/include_jar_war_by_class_dir_prefix.av|JavaCG2ElConfigEnum.ECE_MERGE_FILE_INCLUDE_JAR_WAR_BY_CLASS_DIR_PREFIX|
 |指定是否跳过解析类|_javacg2_parse_class_method_switch/parse_ignore_class.av|JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS|
 |指定仅解析哪些类（白名单）|_javacg2_parse_class_method_switch/parse_include_class.av|JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_CLASS|
 |指定是否跳过解析方法|_javacg2_parse_class_method_switch/parse_ignore_method.av|JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD|
@@ -24,7 +32,10 @@
 
 # 包含（白名单）表达式说明
 parse_include_class.av、parse_include_method.av、parse_include_method_call.av、parse_include_method_call_type_value_caller.av为包含（白名单）表达式配置
+include_jar_in_dir.av、include_war_in_dir.av、include_class_in_dir.av、include_other_in_dir.av、include_jar_in_jar_war.av、include_class_in_jar_war.av、include_other_in_jar_war.av、include_jar_war_by_class_dir_prefix.av为合并jar、war文件开关的包含（白名单）表达式配置
 包含（白名单）表达式的判断方向与忽略（黑名单）表达式相反：表达式执行结果为true时解析对应数据，为false时跳过；未设置（空白）时不生效，即全部解析
+合并开关的包含（白名单）表达式执行结果为true时合并（及解析）对应文件，为false时跳过；未设置（空白）时不生效，即全部合并
+合并开关中被跳过的文件不会进入合并生成的jar文件，即被排除出本次分析
 包含表达式与忽略表达式同时设置时两道判断串联：先判断包含表达式，后判断忽略表达式；包含表达式未命中时直接跳过，且不再判断忽略表达式；即跳过 =（包含表达式已设置且未命中）或（忽略表达式命中）
 包含（白名单）表达式配置不生成表达式忽略数据文件，未命中包含表达式的数据不会记录在el_ignore_data.log文件中
 
@@ -40,6 +51,12 @@ parse_include_class.av、parse_include_method.av、parse_include_method_call.av�
 仅解析指定方法调用类型的方法调用：string.equalsAny(method_call_type, 'VIR', 'INT')
 
 仅解析调用方属于指定包的方法调用：string.startsWithAny(er_package_name, 'com.business.')
+
+仅合并目录中指定名称的jar文件：string.equalsAny(file_name, 'aaa_business.jar', 'bbb_business.jar')
+
+仅合并目录中指定路径下的jar文件（file_path为规范路径，其中的反斜杠已替换为斜杠）：string.startsWithAny(file_path, '/data/lib/business')
+
+仅合并jar、war文件中指定目录下的jar文件，例如仅合并fat jar中的指定内嵌依赖（file_path为相对jar、war文件根目录的相对路径）：string.startsWithAny(file_path, 'lib/business/')
 
 # 表达式调试方式
 将配置文件 _javacg2_config/config.properties 的 el.debug.mode 参数设置为 true 可以使表达式执行时开启调试模式，会在应用日志中输出表达式执行时的详细信息

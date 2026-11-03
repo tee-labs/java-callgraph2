@@ -571,8 +571,8 @@ public class MergeJarHandler {
 
     // 处理jar、war文件，将其中的文件添加到目标jar文件中
     private boolean handleJarWarFile(File sourceJarFile, String jarWarCanonicalPath, String firstLevelDirName, ZipOutputStream targetZos) throws IOException {
-        if (javaCG2ElManager.checkNeedIgnoreJarWarByClassDirPrefix()) {
-            // 通过class文件对应指定层级的目录路径判断是否跳过合并当前的jar、war文件
+        if (javaCG2ElManager.checkNeedJarWarByClassDirPrefix()) {
+            // 通过class文件对应指定层级的目录路径判断是否跳过合并/仅合并当前的jar、war文件
             // 文件流需要单独作为try-with-resources的资源，避免zip4j的ZipInputStream未成功读取任何entry时close()不关闭底层文件流
             try (InputStream sourceJarFileInputStream = new BufferedInputStream(new FileInputStream(sourceJarFile));
                  ZipInputStream zipInputStream = new ZipInputStream(sourceJarFileInputStream)) {
@@ -642,10 +642,10 @@ public class MergeJarHandler {
                     throw new JavaCG2RuntimeException("缓存jar文件内容失败");
                 }
 
-                // 判断是否需要通过class文件对应指定层级的目录路径判断是否跳过合并当前的jar/war文件
-                if (javaCG2ElManager.checkNeedIgnoreJarWarByClassDirPrefix()) {
+                // 判断是否需要通过class文件对应指定层级的目录路径判断是否跳过合并/仅合并当前的jar/war文件
+                if (javaCG2ElManager.checkNeedJarWarByClassDirPrefix()) {
                     ZipInputStream innerZipInputStream = new ZipInputStream(cachedInputStream);
-                    // 通过class文件对应指定层级的目录路径判断是否跳过合并当前的jar、war文件
+                    // 通过class文件对应指定层级的目录路径判断是否跳过合并/仅合并当前的jar、war文件
                     if (checkIgnoreJarWarByClassDirPrefix(innerZipInputStream)) {
                         // 跳过处理jar、war文件中的jar文件
                         ignoreJarInJarWar(jarWarCanonicalPath, jarEntryPath);

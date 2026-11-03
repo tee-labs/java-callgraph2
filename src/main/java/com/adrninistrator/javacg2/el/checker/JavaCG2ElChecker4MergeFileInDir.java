@@ -14,15 +14,19 @@ public class JavaCG2ElChecker4MergeFileInDir extends JavaCG2ElChecker {
     protected void javaCG2DoCheck(JavaCG2ElManager elManager, JavaCG2ElConfigEnum elConfig) {
         switch(elConfig){
             case ECE_MERGE_FILE_IGNORE_JAR_IN_DIR:
+            case ECE_MERGE_FILE_INCLUDE_JAR_IN_DIR:
                 elManager.checkIgnoreMergeFileInDir("/a/b.jar");
                 break;
             case ECE_MERGE_FILE_IGNORE_WAR_IN_DIR:
+            case ECE_MERGE_FILE_INCLUDE_WAR_IN_DIR:
                 elManager.checkIgnoreMergeFileInDir("/a/b.war");
                 break;
             case ECE_MERGE_FILE_IGNORE_CLASS_IN_DIR:
+            case ECE_MERGE_FILE_INCLUDE_CLASS_IN_DIR:
                 elManager.checkIgnoreMergeFileInDir("/a/b.class");
                 break;
             case ECE_MERGE_FILE_IGNORE_OTHER_IN_DIR:
+            case ECE_MERGE_FILE_INCLUDE_OTHER_IN_DIR:
                 elManager.checkIgnoreMergeFileInDir("/a/b.xml");
                 break;
             default:

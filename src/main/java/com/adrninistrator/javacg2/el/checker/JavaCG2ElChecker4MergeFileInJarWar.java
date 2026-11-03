@@ -19,15 +19,19 @@ public class JavaCG2ElChecker4MergeFileInJarWar extends JavaCG2ElChecker {
     protected void javaCG2DoCheck(JavaCG2ElManager elManager, JavaCG2ElConfigEnum elConfig) {
         switch (elConfig) {
             case ECE_MERGE_FILE_IGNORE_JAR_IN_JAR_WAR:
+            case ECE_MERGE_FILE_INCLUDE_JAR_IN_JAR_WAR:
                 elManager.checkIgnoreMergeFileInJarWar("a/b.jar");
                 break;
             case ECE_MERGE_FILE_IGNORE_CLASS_IN_JAR_WAR:
+            case ECE_MERGE_FILE_INCLUDE_CLASS_IN_JAR_WAR:
                 elManager.checkIgnoreMergeFileInJarWar("a/b.class");
                 break;
             case ECE_MERGE_FILE_IGNORE_OTHER_IN_JAR_WAR:
+            case ECE_MERGE_FILE_INCLUDE_OTHER_IN_JAR_WAR:
                 elManager.checkIgnoreMergeFileInJarWar("a/b.xml");
                 break;
             case ECE_MERGE_FILE_IGNORE_JAR_WAR_BY_CLASS_DIR_PREFIX:
+            case ECE_MERGE_FILE_INCLUDE_JAR_WAR_BY_CLASS_DIR_PREFIX:
                 Map<Integer, Set<String>> classDirPrefixMap = new HashMap<>();
                 classDirPrefixMap.put(1, JavaCG2Util.genSetFromArray("a1", "a2", "a3"));
                 classDirPrefixMap.put(2, JavaCG2Util.genSetFromArray("a1.b1", "a2.b2", "a3.b3"));

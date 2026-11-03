@@ -96,7 +96,12 @@ public class JavaCG2FileUtil {
      * @throws IOException
      */
     public static void write2FileWithTab(Writer writer, String... data) throws IOException {
-        writer.write(appendFileColumn(data) + JavaCG2Constants.NEW_LINE);
+        /*
+            列串与换行符分两次写入，避免通过字符串拼接复制整行内容
+            StringUtils.join在入参数组为null时返回null，需要通过String.valueOf转为"null"，与拼接时的写出内容保持一致
+         */
+        writer.write(String.valueOf(appendFileColumn(data)));
+        writer.write(JavaCG2Constants.NEW_LINE);
     }
 
     /**

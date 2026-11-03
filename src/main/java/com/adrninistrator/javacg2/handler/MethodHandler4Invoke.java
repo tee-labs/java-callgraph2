@@ -1596,32 +1596,46 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
             return false;
         }
 
+        /*
+            先检查各Map是否包含被调用类名，均未包含时直接返回，不再构建参数类型串
+            绝大多数<init>方法调用不会命中以下Map，将参数类型串的构建延迟到确认命中之后，避免无效的字符串拼接开销
+            以下各方法只会在对应的Map中写入数据，先通过containsKey判断不会导致判断结果与后续处理不一致
+        */
+        boolean inRunnableImplClassMap = runnableImplClassMap.containsKey(calleeClassName);
+        boolean inCallableImplClassMap = callableImplClassMap.containsKey(calleeClassName);
+        boolean inTransactionCallbackImplClassMap = transactionCallbackImplClassMap.containsKey(calleeClassName);
+        boolean inTransactionCallbackWithoutResultChildClassMap = transactionCallbackWithoutResultChildClassMap.containsKey(calleeClassName);
+        if (!inRunnableImplClassMap && !inCallableImplClassMap && !inTransactionCallbackImplClassMap && !inTransactionCallbackWithoutResultChildClassMap) {
+            // 记录原始的方法调用类型
+            return false;
+        }
+
         boolean skipRawMethodCall = false;
         String calleeMethodArgTypes = JavaCG2ClassMethodUtil.genArgTypeStr(argTypes);
 
         // 处理Runnable实现类，run方法返回类型为void
-        if (handleSpecialInitMethod(runnableImplClassMap, calleeClassName, calleeMethodName, calleeMethodArgTypes, JavaCG2CallTypeEnum.CTE_RUNNABLE_INIT_RUN1,
+        if (inRunnableImplClassMap && handleSpecialInitMethod(runnableImplClassMap, calleeClassName, calleeMethodName, calleeMethodArgTypes, JavaCG2CallTypeEnum.CTE_RUNNABLE_INIT_RUN1,
                 JavaCG2CallTypeEnum.CTE_RUNNABLE_INIT_RUN2, JavaCG2CommonNameConstants.METHOD_RUNNABLE_RUN, JavaCG2Constants.EMPTY_METHOD_ARGS,
                 JavaCG2CommonNameConstants.RETURN_TYPE_VOID)) {
             skipRawMethodCall = true;
         }
 
         // 处理 Callable 实现类，call 方法返回类型使用 Object
-        if (handleSpecialInitMethod(callableImplClassMap, calleeClassName, calleeMethodName, calleeMethodArgTypes, JavaCG2CallTypeEnum.CTE_CALLABLE_INIT_CALL1,
+        if (inCallableImplClassMap && handleSpecialInitMethod(callableImplClassMap, calleeClassName, calleeMethodName, calleeMethodArgTypes, JavaCG2CallTypeEnum.CTE_CALLABLE_INIT_CALL1,
                 JavaCG2CallTypeEnum.CTE_CALLABLE_INIT_CALL2, JavaCG2CommonNameConstants.METHOD_CALLABLE_CALL, JavaCG2Constants.EMPTY_METHOD_ARGS,
                 JavaCG2CommonNameConstants.CLASS_NAME_OBJECT)) {
             skipRawMethodCall = true;
         }
 
         // 处理 TransactionCallback 实现类，doInTransaction 方法返回类型使用 Object
-        if (handleSpecialInitMethod(transactionCallbackImplClassMap, calleeClassName, calleeMethodName, calleeMethodArgTypes, JavaCG2CallTypeEnum.CTE_TX_CALLBACK_INIT_CALL1,
+        if (inTransactionCallbackImplClassMap && handleSpecialInitMethod(transactionCallbackImplClassMap, calleeClassName, calleeMethodName, calleeMethodArgTypes, JavaCG2CallTypeEnum.CTE_TX_CALLBACK_INIT_CALL1,
                 JavaCG2CallTypeEnum.CTE_TX_CALLBACK_INIT_CALL2, JavaCG2CommonNameConstants.METHOD_NAME_DO_IN_TRANSACTION, JavaCG2CommonNameConstants.ARGS_TRANSACTION_STATUS,
                 JavaCG2CommonNameConstants.CLASS_NAME_OBJECT)) {
             skipRawMethodCall = true;
         }
 
         // 处理TransactionCallbackWithoutResult实现类，doInTransactionWithoutResult 方法返回类型为void
-        if (handleSpecialInitMethod(transactionCallbackWithoutResultChildClassMap, calleeClassName, calleeMethodName, calleeMethodArgTypes,
+        if (inTransactionCallbackWithoutResultChildClassMap && handleSpecialInitMethod(transactionCallbackWithoutResultChildClassMap, calleeClassName, calleeMethodName, calleeMethodArgTypes,
                 JavaCG2CallTypeEnum.CTE_TX_CALLBACK_WR_INIT_CALL1, JavaCG2CallTypeEnum.CTE_TX_CALLBACK_WR_INIT_CALL2,
                 JavaCG2CommonNameConstants.METHOD_NAME_DO_IN_TRANSACTION_WITHOUT_RESULT, JavaCG2CommonNameConstants.ARGS_TRANSACTION_STATUS,
                 JavaCG2CommonNameConstants.RETURN_TYPE_VOID)) {

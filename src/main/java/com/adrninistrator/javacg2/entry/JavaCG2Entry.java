@@ -194,7 +194,8 @@ public class JavaCG2Entry {
          */
         try (JavaCG2RecordSinkHolder recordSinkHolder = JavaCG2RecordSinkHolder.genMainRecordSinkHolder(outputAdapter);
              // 方法处理耗时日志文件为无列结构的自由格式文本文件，经输出适配器创建Writer，未写入时不创建文件（或内存缓冲）
-             WriterSupportSkip logMethodSpendTimeWriter = new WriterSupportSkip(outputAdapter, javaCG2OutputInfo.getMainFileName(JavaCG2OutPutFileTypeEnum.OPFTE_LOG_METHOD_SPEND_TIME), false)
+             // 使用缓冲方式写出，避免每写一行执行一次flush，缓冲的内容在Writer关闭时统一写出
+             WriterSupportSkip logMethodSpendTimeWriter = new WriterSupportSkip(outputAdapter, javaCG2OutputInfo.getMainFileName(JavaCG2OutPutFileTypeEnum.OPFTE_LOG_METHOD_SPEND_TIME), true)
         ) {
             // 仅向解析类传递持有器，各处理类按需取用需要的记录Sink
             jarEntryHandleParser.recordRecordSinkHolder(recordSinkHolder);

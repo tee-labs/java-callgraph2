@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +40,15 @@ public abstract class AbstractElManager implements Closeable {
             value   表达式处理类
          */
     private final Map<String, ElHandler> elHandlerMap = new HashMap<>();
+
+    /*
+        方法调用忽略检查的结果缓存
+        key     方法调用类型 + 分隔符 + 调用方完整方法 + 分隔符 + 被调用方完整方法
+        value   checkIgnoreMethodCall方法对相同入参的最终返回值（仅解析白名单与忽略两组表达式叠加后的结果）
+        本字段声明在父类中，在父类的字段初始化阶段完成创建，先于构造函数执行，使构造函数中执行表达式检查时即可使用
+        使用ConcurrentHashMap：当前组件中解析为单线程执行，但表达式管理类可能在下游项目中被多线程调用
+    */
+    final Map<String, Boolean> checkIgnoreMethodCallResultMap = new ConcurrentHashMap<>();
 
     // 是否调试模式
     private final boolean debugMode;
@@ -177,6 +187,18 @@ public abstract class AbstractElManager implements Closeable {
      */
     protected boolean checkElHandlerExists(ElConfigInterface elConfig) {
         return elHandlerMap.containsKey(elConfig.getKey());
+    }
+
+    /**
+     * 检查指定的表达式是否已配置表达式文本
+     * 与getElHandlerMap方法不同，本方法不记录有使用的表达式配置，可用于无需副作用的判断场景
+     *
+     * @param elConfig
+     * @return true: 已配置 false: 未配置
+     */
+    protected boolean checkElTextConfigured(ElConfigInterface elConfig) {
+        ElHandler elHandler = elHandlerMap.get(elConfig.getKey());
+        return elHandler != null && elHandler.checkExpressionConfigured();
     }
 
     @Override

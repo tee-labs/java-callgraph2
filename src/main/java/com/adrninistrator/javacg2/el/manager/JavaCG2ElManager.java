@@ -20,6 +20,15 @@ import java.util.Set;
  */
 public class JavaCG2ElManager extends CommonElManager {
 
+    /*
+        方法调用忽略检查结果缓存的key分隔符
+        使用\1控制字符：方法调用类型、类名、方法名及参数类型串均为字节码中解析出的标识符，不可能包含控制字符，可保证各组成部分拼接后不会产生歧义
+    */
+    private static final String CHECK_IGNORE_METHOD_CALL_CACHE_KEY_SEPARATOR = "\1";
+
+    // 方法调用忽略检查结果缓存的最大条目数量，超过时清空缓存，避免解析大量方法调用时缓存占用的内存持续膨胀
+    private static final int CHECK_IGNORE_METHOD_CALL_CACHE_MAX_SIZE = 200000;
+
     public JavaCG2ElManager(BaseConfigureWrapper configureWrapper, ElConfigInterface[] elConfigInterfaces, String outputDirPath) {
         super(configureWrapper, elConfigInterfaces, outputDirPath);
     }
@@ -492,6 +501,31 @@ public class JavaCG2ElManager extends CommonElManager {
      * @return
      */
     public boolean checkIgnoreMethodCall(String methodCallType, String callerFullMethod, String calleeFullMethod) {
+        /*
+            仅在解析方法调用的忽略（黑名单）或仅解析（白名单）表达式有配置时使用结果缓存
+            两组表达式均未配置时保持原有的短路逻辑，不查询也不写入缓存
+            结果缓存checkIgnoreMethodCallResultMap声明在父类AbstractElManager中，保证在构造函数执行表达式检查阶段已完成初始化
+        */
+        if (checkElTextConfigured(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_METHOD_CALL) || checkElTextConfigured(JavaCG2ElConfigEnum.ECE_PARSE_INCLUDE_METHOD_CALL)) {
+            String cacheKey = methodCallType + CHECK_IGNORE_METHOD_CALL_CACHE_KEY_SEPARATOR + callerFullMethod + CHECK_IGNORE_METHOD_CALL_CACHE_KEY_SEPARATOR +
+                    calleeFullMethod;
+            Boolean cachedResult = checkIgnoreMethodCallResultMap.get(cacheKey);
+            if (cachedResult != null) {
+                return cachedResult;
+            }
+            boolean result = doCheckIgnoreMethodCall(methodCallType, callerFullMethod, calleeFullMethod);
+            if (checkIgnoreMethodCallResultMap.size() >= CHECK_IGNORE_METHOD_CALL_CACHE_MAX_SIZE) {
+                // 超过缓存最大条目数量时清空缓存，避免内存持续膨胀
+                checkIgnoreMethodCallResultMap.clear();
+            }
+            checkIgnoreMethodCallResultMap.put(cacheKey, result);
+            return result;
+        }
+        return doCheckIgnoreMethodCall(methodCallType, callerFullMethod, calleeFullMethod);
+    }
+
+    // 执行方法调用忽略检查的原有逻辑，先判断仅解析（白名单）表达式，后判断忽略（黑名单）表达式
+    private boolean doCheckIgnoreMethodCall(String methodCallType, String callerFullMethod, String calleeFullMethod) {
         if (checkNotIncludeMethodCall(methodCallType, callerFullMethod, calleeFullMethod)) {
             return true;
         }

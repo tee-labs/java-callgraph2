@@ -302,4 +302,13 @@ public class ElHandler {
     public boolean checkExpressionTextFixedTrue() {
         return Boolean.parseBoolean(expressionText);
     }
+
+    /**
+     * 检查是否已配置表达式文本
+     *
+     * @return true: 已配置 false: 未配置
+     */
+    public boolean checkExpressionConfigured() {
+        return expression != null;
+    }
 }

@@ -24,6 +24,7 @@ import com.adrninistrator.javacg2.dto.field.ClassFieldTypeAndName;
 import com.adrninistrator.javacg2.dto.fieldrelationship.GetSetFieldRelationship;
 import com.adrninistrator.javacg2.dto.inputoutput.JavaCG2InputAndOutput;
 import com.adrninistrator.javacg2.dto.instruction.InvokeInstructionPosAndCallee;
+import com.adrninistrator.javacg2.dto.instruction.JavaCG2InvokeInstructionInfo;
 import com.adrninistrator.javacg2.dto.jar.ClassAndJarNum;
 import com.adrninistrator.javacg2.dto.method.JavaCG2BootstrapMethod;
 import com.adrninistrator.javacg2.dto.method.JavaCG2MethodInfo;
@@ -187,6 +188,43 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
     // 方法级去重：记录已写入的"行号\t字段声明类型\t字段名称\t实际类型"，避免同一方法内重复写入
     private Set<String> methodCallFieldActualTypeRecordedSet;
 
+    /*
+        方法调用指令解析结果的缓存，与MethodHandler4TypeAndValue、InstructionHandler可共享同一实例
+        key     指令位置
+        value   方法调用指令解析出的不可变要素
+        生命周期为当前方法（单个MethodGen）的处理期，禁止跨方法复用
+     */
+    private Map<Integer, JavaCG2InvokeInstructionInfo> invokeInstructionInfoMap;
+
+    /*
+        指定字段对应的Spring Bean类型列表缓存
+        key     字段名称（callerClassName对当前实例是常量）
+        value   useSpringBeanByAnnotationHandler.getSpringBeanTypeList()的返回值，可能为空列表
+        Spring Bean相关的Map在方法调用处理阶段不再变化（在前置扫描阶段已构建完），同一（调用方类名，字段名称）的查询结果不变
+     */
+    private Map<String, List<String>> springBeanTypeListOfFieldNameMap;
+
+    // 获取方法调用指令解析结果的缓存
+    private Map<Integer, JavaCG2InvokeInstructionInfo> getInvokeInstructionInfoMap() {
+        if (invokeInstructionInfoMap == null) {
+            invokeInstructionInfoMap = new HashMap<>(100);
+        }
+        return invokeInstructionInfoMap;
+    }
+
+    // 获取指定字段对应的Spring Bean类型列表，同一字段的查询结果在当前方法处理期内记忆化
+    private List<String> getSpringBeanTypeList(String fieldName) {
+        if (springBeanTypeListOfFieldNameMap == null) {
+            springBeanTypeListOfFieldNameMap = new HashMap<>(50);
+        }
+        List<String> springBeanTypeList = springBeanTypeListOfFieldNameMap.get(fieldName);
+        if (springBeanTypeList == null) {
+            springBeanTypeList = useSpringBeanByAnnotationHandler.getSpringBeanTypeList(callerClassName, fieldName);
+            springBeanTypeListOfFieldNameMap.put(fieldName, springBeanTypeList);
+        }
+        return springBeanTypeList;
+    }
+
     public MethodHandler4Invoke(Method method,
                                 MethodGen mg,
                                 JavaClass javaClass,
@@ -282,6 +320,8 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
         methodHandler4TypeAndValue = new MethodHandler4TypeAndValue(method, mg, javaClass, callerFullMethod, javaCG2InputAndOutput);
         methodHandler4TypeAndValue.setFailCounter(failCounter);
         methodHandler4TypeAndValue.setParseMethodCallTypeValueFlag(true);
+        // 与符号执行共享方法调用指令解析结果的缓存，当前类的主循环可直接使用符号执行阶段已解析的结果
+        methodHandler4TypeAndValue.setInvokeInstructionInfoMap(getInvokeInstructionInfoMap());
         methodHandler4TypeAndValue.recordRecordSinkHolder(recordSinkHolder);
         methodHandler4TypeAndValue.setRecordedSetMethodSet(recordedSetMethodSet);
         methodHandler4TypeAndValue.setNonStaticFieldNameTypeMap(nonStaticFieldNameTypeMap);
@@ -635,7 +675,10 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
                 return "";
             }
             INVOKEVIRTUAL catchInvokeVirtual = (INVOKEVIRTUAL) catchInvokeVirtualIh.getInstruction();
-            JavaCG2MethodInfo catchCalleeInfo = JavaCG2InstructionUtil.getCalleeMethodInfo(catchInvokeVirtual, cpg);
+            // 主循环已处理过当前指令，方法调用指令解析结果已在缓存中
+            JavaCG2InvokeInstructionInfo catchInvokeInstructionInfo = JavaCG2InstructionUtil.getInvokeInstructionInfo(catchInvokeVirtual, cpg,
+                    getInvokeInstructionInfoMap(), catchInvokeVirtualIh.getPosition());
+            JavaCG2MethodInfo catchCalleeInfo = catchInvokeInstructionInfo.getMethodInfo();
             // catch中的方法调用被调用方法应为 Throwable.addSuppressed(Throwable)
             if (!JavaCG2CommonNameConstants.CLASS_NAME_THROWABLE.equals(catchCalleeInfo.getClassName()) ||
                     !JavaCG2CommonNameConstants.METHOD_NAME_ADD_SUPPRESSED.equals(catchCalleeInfo.getMethodName()) ||
@@ -850,7 +893,10 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
         }
 
         Instruction invokeInstruction = ih.getInstruction();
-        JavaCG2MethodInfo calleeMethodInfo = JavaCG2InstructionUtil.getCalleeMethodInfo((InvokeInstruction) invokeInstruction, cpg);
+        // 优先从缓存中获取方法调用指令解析出的不可变要素
+        JavaCG2InvokeInstructionInfo invokeInstructionInfo = JavaCG2InstructionUtil.getInvokeInstructionInfo((InvokeInstruction) invokeInstruction, cpg,
+                getInvokeInstructionInfoMap(), ih.getPosition());
+        JavaCG2MethodInfo calleeMethodInfo = invokeInstructionInfo.getMethodInfo();
         switch (invokeInstruction.getOpcode()) {
             case Const.INVOKEVIRTUAL:
                 // 处理INVOKEVIRTUAL指令
@@ -1095,8 +1141,9 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
 
             if (JavaCG2InstructionUtil.isMethodInvokeInstructionExcludeDynamic(nextOpcode)) {
                 // 向后找到非INVOKEDYNAMIC方法调用指令，记录对应的方法
-                JavaCG2MethodInfo nextCalleeMethodInfo = JavaCG2InstructionUtil.getCalleeMethodInfo((InvokeInstruction) nextInstruction, cpg);
-                nextCalleeFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(nextCalleeMethodInfo);
+                JavaCG2InvokeInstructionInfo nextInvokeInstructionInfo = JavaCG2InstructionUtil.getInvokeInstructionInfo((InvokeInstruction) nextInstruction, cpg,
+                        getInvokeInstructionInfoMap(), nextIh.getPosition());
+                nextCalleeFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(nextInvokeInstructionInfo.getMethodInfo());
                 break;
             }
             nextIh = nextIh.getNext();
@@ -1216,7 +1263,7 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
             // 1) Spring Bean 注入：一个字段可能匹配多个 Bean 类型，仅保留与声明类型不同的
             List<String> actualTypeList = null;
             if (useSpringBeanByAnnotationHandler.hasUseSpringBean()) {
-                List<String> springBeanTypeList = useSpringBeanByAnnotationHandler.getSpringBeanTypeList(callerClassName, fieldName);
+                List<String> springBeanTypeList = getSpringBeanTypeList(fieldName);
                 if (!JavaCG2Util.isCollectionEmpty(springBeanTypeList)) {
                     List<String> differentTypeList = new ArrayList<>(springBeanTypeList.size());
                     for (String springBeanType : springBeanTypeList) {
@@ -1279,7 +1326,7 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
                 continue;
             }
             // 获取指定类指定字段对应的Spring Bean类型
-            List<String> springBeanFieldTypeList = useSpringBeanByAnnotationHandler.getSpringBeanTypeList(callerClassName, nonStaticField.getFieldName());
+            List<String> springBeanFieldTypeList = getSpringBeanTypeList(nonStaticField.getFieldName());
             if (JavaCG2Util.isCollectionEmpty(springBeanFieldTypeList)) {
                 continue;
             }
@@ -1499,7 +1546,15 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
                                            Type calleeReturnType,
                                            JavaCG2CalleeObjTypeEnum objTypeEnum) {
         String usedCalleeClassName = calleeTypeRuntime != null ? calleeTypeRuntime : calleeClassName;
-        String calleeFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(usedCalleeClassName, calleeMethodName, displayCalleeArgTypes);
+        // 用于显示的参数类型数组与方法调用指令中的原始参数类型数组相同（引用相同）时，直接使用缓存的参数类型串
+        JavaCG2InvokeInstructionInfo invokeInstructionInfo = invokeInstructionInfoMap != null ? invokeInstructionInfoMap.get(ih.getPosition()) : null;
+        boolean useCachedArgTypeStr = invokeInstructionInfo != null && displayCalleeArgTypes == invokeInstructionInfo.getArgumentTypes();
+        String calleeFullMethod;
+        if (useCachedArgTypeStr) {
+            calleeFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(usedCalleeClassName, calleeMethodName, invokeInstructionInfo.getArgTypeStr());
+        } else {
+            calleeFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(usedCalleeClassName, calleeMethodName, displayCalleeArgTypes);
+        }
         // 判断当前方法调用是否需要忽略
         if (javaCG2ElManager.checkIgnoreMethodCall(callTypeEnum.getType(), callerFullMethod, calleeFullMethod)) {
             return null;
@@ -1509,8 +1564,8 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
         String actualReturnType = "";
         if (invokeInstruction != null) {
             // 传入的方法调用指令非空，处理方法返回类型
-            // 获取方法原始返回类型
-            Type returnType = invokeInstruction.getReturnType(cpg);
+            // 获取方法原始返回类型（当前指令的解析结果已在缓存中时直接使用）
+            Type returnType = (invokeInstructionInfo != null ? invokeInstructionInfo.getReturnType() : invokeInstruction.getReturnType(cpg));
             rawReturnType = returnType.toString();
             if (Type.VOID != returnType) {
                 // 获取方法实际返回类型
@@ -1537,7 +1592,7 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
         methodCall.setCallerReturnType(methodReturnType);
         methodCall.setCalleeClassName(usedCalleeClassName);
         methodCall.setCalleeMethodName(calleeMethodName);
-        methodCall.setCalleeMethodArgTypes(JavaCG2ClassMethodUtil.genArgTypeStr(displayCalleeArgTypes));
+        methodCall.setCalleeMethodArgTypes(useCachedArgTypeStr ? invokeInstructionInfo.getArgTypeStr() : JavaCG2ClassMethodUtil.genArgTypeStr(displayCalleeArgTypes));
         methodCall.setRawCalleeArgTypes(rawCalleeArgTypes);
         methodCall.setCalleeArrayDimensions(calleeArrayDimensions);
         methodCall.setCalleeObjTypeEnum(objTypeEnum);
@@ -1876,7 +1931,7 @@ public class MethodHandler4Invoke extends AbstractMethodHandler {
             ClassFieldTypeAndName nonStaticField = methodCallPossibleEntry.getNonStaticField();
             if (nonStaticField != null) {
                 // 获取指定类指定字段对应的Spring Bean类型
-                List<String> springBeanFieldTypeList = useSpringBeanByAnnotationHandler.getSpringBeanTypeList(callerClassName, nonStaticField.getFieldName());
+                List<String> springBeanFieldTypeList = getSpringBeanTypeList(nonStaticField.getFieldName());
                 if (!JavaCG2Util.isCollectionEmpty(springBeanFieldTypeList)) {
                     for (String springBeanFieldType : springBeanFieldTypeList) {
                         // 记录信息

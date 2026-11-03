@@ -22,6 +22,7 @@ import com.adrninistrator.javacg2.dto.frame.FieldInformationMap;
 import com.adrninistrator.javacg2.dto.frame.JavaCG2LocalVariables;
 import com.adrninistrator.javacg2.dto.frame.JavaCG2OperandStack;
 import com.adrninistrator.javacg2.dto.inputoutput.JavaCG2InputAndOutput;
+import com.adrninistrator.javacg2.dto.instruction.JavaCG2InvokeInstructionInfo;
 import com.adrninistrator.javacg2.dto.instruction.parseresult.AThrowNullParseResult;
 import com.adrninistrator.javacg2.dto.instruction.parseresult.AThrowParseResult;
 import com.adrninistrator.javacg2.dto.instruction.parseresult.BaseInstructionParseResult;
@@ -79,6 +80,7 @@ import org.apache.bcel.generic.Type;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -149,6 +151,26 @@ public class InstructionHandler {
     // 当前方法是否为静态代码块
     @Setter
     private boolean inClinitMethod;
+
+    /*
+        方法调用指令解析结果的缓存
+        key     指令位置
+        value   方法调用指令解析出的不可变要素
+        生命周期为当前方法（当前InstructionHandler实例）的处理期，禁止跨方法复用；当前类与MethodHandler4TypeAndValue、MethodHandler4Invoke可共享同一实例
+     */
+    @Setter
+    private Map<Integer, JavaCG2InvokeInstructionInfo> invokeInstructionInfoMap;
+
+    // 本地变量签名解析结果的缓存，key为签名，value为类型字符串；Utility.typeSignatureToString为纯函数，按签名记忆化不改变行为
+    private final Map<String, String> signatureToTypeMap = new HashMap<>();
+
+    /*
+        STORE指令位置与LocalVariableTable查询结果的缓存
+        key     STORE指令位置
+        value   LocalVariableTable.getLocalVariable()的返回值，可能为null
+        同一STORE指令位置重复处理时LocalVariableTable的内容不变，查询结果一致；返回的LocalVariable仅被读取名称与签名，未被修改
+     */
+    private final Map<Integer, LocalVariable> storeInstructionLocalVariableMap = new HashMap<>();
 
     // 以下两个字段不修改为本地变量
     // 当前处理的指令偏移量
@@ -741,8 +763,15 @@ public class InstructionHandler {
         BaseElement baseElement = stack.pop();
         String poppedElementType = baseElement.getType();
 
-        // 从LocalVariableTable中获取本地变量对应类型
-        LocalVariable localVariable = localVariableTable.getLocalVariable(index, ih.getNext().getPosition());
+        // 从LocalVariableTable中获取本地变量对应类型（LocalVariableTable中可能存在槽位复用，需按（变量序号，位置）查询，不可仅按变量序号缓存）
+        LocalVariable localVariable;
+        if (storeInstructionLocalVariableMap.containsKey(instructionPosition)) {
+            // 同一STORE指令位置重复处理时LocalVariableTable的内容不变，查询结果一致，使用缓存
+            localVariable = storeInstructionLocalVariableMap.get(instructionPosition);
+        } else {
+            localVariable = localVariableTable.getLocalVariable(index, ih.getNext().getPosition());
+            storeInstructionLocalVariableMap.put(instructionPosition, localVariable);
+        }
         String variableName = (localVariable != null ? localVariable.getName() : null);
         if (typeEnum == null) {
             // 处理ASTORE指令
@@ -755,13 +784,23 @@ public class InstructionHandler {
         // 处理非ASTORE指令，或操作数栈中元素类型未获取到值
         String actualType;
         if (localVariable != null) {
-            actualType = Utility.typeSignatureToString(localVariable.getSignature(), false);
+            actualType = getTypeFromSignature(localVariable.getSignature());
         } else {
             actualType = typeEnum.getType();
         }
 
         // 添加本地变量
         locals.add(actualType, baseElement, index, variableName);
+    }
+
+    // 通过签名获取对应的类型字符串，Utility.typeSignatureToString为纯函数，按签名记忆化不改变行为
+    private String getTypeFromSignature(String signature) {
+        String type = signatureToTypeMap.get(signature);
+        if (type == null) {
+            type = Utility.typeSignatureToString(signature, false);
+            signatureToTypeMap.put(signature, type);
+        }
+        return type;
     }
 
     // 处理数组赋值
@@ -1172,8 +1211,11 @@ public class InstructionHandler {
 
     // 处理方法调用指令
     private MethodCallParseResult handleMethodInvoke(InvokeInstruction invokeInstruction, InstructionHandle ih, boolean userObjectReference) {
+        // 优先从缓存中获取方法调用指令解析出的不可变要素，避免同一指令在分支被重复处理时重复解析常量池
+        JavaCG2InvokeInstructionInfo invokeInstructionInfo = JavaCG2InstructionUtil.getInvokeInstructionInfo(invokeInstruction, cpg, invokeInstructionInfoMap,
+                ih.getPosition());
         // 处理参数
-        Type[] argTypes = invokeInstruction.getArgumentTypes(cpg);
+        Type[] argTypes = invokeInstructionInfo.getArgumentTypes();
         int argumentNumber = argTypes.length;
         List<BaseElement> argElementList = new ArrayList<>(argumentNumber);
         for (int i = 0; i < argumentNumber; i++) {
@@ -1188,10 +1230,10 @@ public class InstructionHandler {
         }
 
         // 处理返回值
-        Type returnType = invokeInstruction.getReturnType(cpg);
+        Type returnType = invokeInstructionInfo.getReturnType();
         String returnTypeStr = returnType.toString();
-        String calleeClassName = invokeInstruction.getReferenceType(cpg).toString();
-        String calleeMethodName = invokeInstruction.getMethodName(cpg);
+        String calleeClassName = invokeInstructionInfo.getRawReferenceTypeStr();
+        String calleeMethodName = invokeInstructionInfo.getMethodName();
         if (Type.VOID != returnType) {
             // 被调用方法返回类型非void
             VariableElement variableElement;
@@ -1204,7 +1246,7 @@ public class InstructionHandler {
                 variableElement = new VariableElement(returnTypeStr);
             }
             VariableDataSourceMethodCallReturn variableDataSourceMethodCallReturn = new VariableDataSourceMethodCallReturn(ih.getPosition(),
-                    invokeInstruction.getClass().getSimpleName(), calleeClassName, calleeMethodName, JavaCG2ClassMethodUtil.genArgTypeStr(argTypes), returnType.toString(),
+                    invokeInstruction.getClass().getSimpleName(), calleeClassName, calleeMethodName, invokeInstructionInfo.getArgTypeStr(), returnTypeStr,
                     objectElement, argElementList);
 
             // 记录变量的数据来源
@@ -1218,7 +1260,7 @@ public class InstructionHandler {
                 VariableElement topVariableElement = (VariableElement) topElement;
                 // 修改数据来源
                 VariableDataSourceMethodCallReturn variableDataSourceMethodCallReturn = new VariableDataSourceMethodCallReturn(ih.getPosition(),
-                        invokeInstruction.getClass().getSimpleName(), calleeClassName, calleeMethodName, JavaCG2ClassMethodUtil.genArgTypeStr(argTypes), calleeClassName,
+                        invokeInstruction.getClass().getSimpleName(), calleeClassName, calleeMethodName, invokeInstructionInfo.getArgTypeStr(), calleeClassName,
                         objectElement, argElementList);
                 topVariableElement.recordVariableDataSource(variableDataSourceMethodCallReturn, frEqConversionMethodMap);
             }

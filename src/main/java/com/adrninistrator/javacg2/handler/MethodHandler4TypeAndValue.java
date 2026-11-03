@@ -25,6 +25,7 @@ import com.adrninistrator.javacg2.dto.frame.JavaCG2LocalVariables;
 import com.adrninistrator.javacg2.dto.frame.JavaCG2OperandStack;
 import com.adrninistrator.javacg2.dto.inputoutput.JavaCG2InputAndOutput;
 import com.adrninistrator.javacg2.dto.instruction.InvokeInstructionPosAndCallee;
+import com.adrninistrator.javacg2.dto.instruction.JavaCG2InvokeInstructionInfo;
 import com.adrninistrator.javacg2.dto.instruction.parseresult.AThrowNullParseResult;
 import com.adrninistrator.javacg2.dto.instruction.parseresult.AThrowParseResult;
 import com.adrninistrator.javacg2.dto.instruction.parseresult.BaseInstructionParseResult;
@@ -194,6 +195,23 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
         value   get方法对应的数据来源指令位置
      */
     private Map<Integer, Set<Integer>> getSetMethodCallMap;
+
+    /*
+        方法调用指令解析结果的缓存，与InstructionHandler、MethodHandler4Invoke可共享同一实例
+        key     指令位置
+        value   方法调用指令解析出的不可变要素
+        生命周期为当前方法（单个MethodGen）的处理期，禁止跨方法复用
+     */
+    @Setter
+    private Map<Integer, JavaCG2InvokeInstructionInfo> invokeInstructionInfoMap;
+
+    // 获取方法调用指令解析结果的缓存，未通过外部方法设置时在当前实例中创建
+    private Map<Integer, JavaCG2InvokeInstructionInfo> getInvokeInstructionInfoMap() {
+        if (invokeInstructionInfoMap == null) {
+            invokeInstructionInfoMap = new HashMap<>(100);
+        }
+        return invokeInstructionInfoMap;
+    }
 
     public MethodHandler4TypeAndValue(Method method, MethodGen mg, JavaClass javaClass, String callerFullMethod, JavaCG2InputAndOutput javaCG2InputAndOutput) {
         super(method, mg, javaClass, callerFullMethod, javaCG2InputAndOutput);
@@ -379,6 +397,7 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
         }
 
         instructionHandler = new InstructionHandler(javaCG2InputAndOutput, mg, localVariableTable, stack, locals, nonStaticFieldInfoMap, staticFieldInfoMap);
+        instructionHandler.setInvokeInstructionInfoMap(getInvokeInstructionInfoMap());
         instructionHandler.setParseMethodCallTypeValueFlag(parseMethodCallTypeValueFlag);
         instructionHandler.setRecordFieldPossibleTypeFlag(recordFieldPossibleTypeFlag);
         instructionHandler.setEnumInitMethodFlag(enumInitMethodFlag);
@@ -905,11 +924,14 @@ public class MethodHandler4TypeAndValue extends AbstractMethodHandler {
         }
         MethodCallPossibleInfo methodCallPossibleInfo = methodCallPossibleInfoMap.computeIfAbsent(ih.getPosition(), k -> new MethodCallPossibleInfo());
 
-        JavaCG2MethodInfo calleeMethodInfo = JavaCG2InstructionUtil.getCalleeMethodInfo(invokeInstruction, cpg);
+        // 优先从缓存中获取方法调用指令解析出的不可变要素
+        JavaCG2InvokeInstructionInfo invokeInstructionInfo = JavaCG2InstructionUtil.getInvokeInstructionInfo(invokeInstruction, cpg, getInvokeInstructionInfoMap(),
+                ih.getPosition());
+        JavaCG2MethodInfo calleeMethodInfo = invokeInstructionInfo.getMethodInfo();
         String calleeClassName = calleeMethodInfo.getClassName();
         String calleeMethodName = calleeMethodInfo.getMethodName();
         Type[] calleeArgTypes = calleeMethodInfo.getMethodArgumentTypes();
-        String calleeFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(calleeClassName, calleeMethodName, calleeArgTypes);
+        String calleeFullMethod = JavaCG2ClassMethodUtil.formatFullMethod(calleeClassName, calleeMethodName, invokeInstructionInfo.getArgTypeStr());
 
         if (log.isDebugEnabled()) {
             log.debug("被调用方法: {}", calleeFullMethod);

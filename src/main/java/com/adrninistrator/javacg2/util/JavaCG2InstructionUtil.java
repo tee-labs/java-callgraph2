@@ -1,5 +1,6 @@
 package com.adrninistrator.javacg2.util;
 
+import com.adrninistrator.javacg2.dto.instruction.JavaCG2InvokeInstructionInfo;
 import com.adrninistrator.javacg2.dto.method.JavaCG2MethodInfo;
 import org.apache.bcel.Const;
 import org.apache.bcel.generic.ArrayType;
@@ -18,6 +19,7 @@ import org.apache.bcel.generic.TypedInstruction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author adrninistrator
@@ -218,6 +220,59 @@ public class JavaCG2InstructionUtil {
         }
 
         return new JavaCG2MethodInfo(calleeClassName, calleeMethodName, calleeArgTypes, invokeInstruction.getReturnType(cpg), calleeArrayDimensions);
+    }
+
+    /**
+     * 获取方法调用指令解析出的不可变要素，优先从缓存中获取（key为指令位置）
+     * 缓存的生命周期由调用方控制，仅限单个方法（单个MethodGen）的处理期内使用，禁止跨方法复用
+     *
+     * @param invokeInstruction 方法调用指令
+     * @param cpg
+     * @param cache             缓存Map，允许为null（为null时仅解析不缓存）
+     * @param position          指令位置
+     * @return
+     */
+    public static JavaCG2InvokeInstructionInfo getInvokeInstructionInfo(InvokeInstruction invokeInstruction, ConstantPoolGen cpg,
+                                                                        Map<Integer, JavaCG2InvokeInstructionInfo> cache, int position) {
+        if (cache != null) {
+            JavaCG2InvokeInstructionInfo cachedInvokeInstructionInfo = cache.get(position);
+            if (cachedInvokeInstructionInfo != null) {
+                return cachedInvokeInstructionInfo;
+            }
+        }
+
+        String calleeMethodName = invokeInstruction.getMethodName(cpg);
+        Type[] calleeArgTypes = invokeInstruction.getArgumentTypes(cpg);
+        Type calleeReturnType = invokeInstruction.getReturnType(cpg);
+        // ReferenceType.toString()的结果与getCalleeMethodInfo使用的被调用类名的语义可能不同（数组类型），分别记录
+        String rawReferenceTypeStr = invokeInstruction.getReferenceType(cpg).toString();
+
+        JavaCG2MethodInfo methodInfo;
+        if (invokeInstruction instanceof INVOKEDYNAMIC) {
+            // getReferenceType()方法获取到的类型为java.lang.Object，需要使用getType()获取（即返回类型）
+            String calleeClassName = calleeReturnType.toString();
+            methodInfo = new JavaCG2MethodInfo(calleeClassName, calleeMethodName, calleeArgTypes, calleeReturnType);
+        } else {
+            ReferenceType referenceType = invokeInstruction.getReferenceType(cpg);
+            String calleeClassName;
+            int calleeArrayDimensions = 0;
+            if (referenceType instanceof ArrayType) {
+                ArrayType arrayType = (ArrayType) referenceType;
+                calleeClassName = arrayType.getBasicType().getClassName();
+                calleeArrayDimensions = arrayType.getDimensions();
+            } else {
+                calleeClassName = referenceType.toString();
+            }
+
+            methodInfo = new JavaCG2MethodInfo(calleeClassName, calleeMethodName, calleeArgTypes, calleeReturnType, calleeArrayDimensions);
+        }
+
+        JavaCG2InvokeInstructionInfo invokeInstructionInfo = new JavaCG2InvokeInstructionInfo(methodInfo, rawReferenceTypeStr,
+                JavaCG2ClassMethodUtil.genArgTypeStr(calleeArgTypes));
+        if (cache != null) {
+            cache.put(position, invokeInstructionInfo);
+        }
+        return invokeInstructionInfo;
     }
 
     /**
